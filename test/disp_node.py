@@ -1,8 +1,10 @@
 import serial
 import re
 
+
 nranges = 0
 nsuccess = 0
+j = 0
 
 current_range = 0
 last_pass = False
@@ -21,9 +23,8 @@ for i in range(0, 10):
     except:
         pass
 
-
 with serial_port as ser:
-    while True:
+    while j < 1000:
         line = ser.readline().strip().decode("utf8")
 
         match = re.match("^distance 1: *([0-9]+)mm", line)
@@ -55,3 +56,7 @@ with serial_port as ser:
 
             nsuccess += 1
             last_pass = True
+
+    j += 1
+
+print("Distance value: ", distance)
