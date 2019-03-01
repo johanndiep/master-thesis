@@ -27,9 +27,9 @@ with serial_port as ser:
     while j < 1000:
         line = ser.readline().strip().decode("utf8")
 
-        match = re.match("^distance 1: *([0-9]+)mm", line)
+        match = re.match("^distance 0: *([0-9]+)mm", line)
 
-        if line == "Interrogating anchor 1":
+        if line == "Interrogating anchor 0":
             # Printing state
             template = "\r\033[2K{} Ranges {} Failed ({:.0f}% pass), Mean: {}m"
             
