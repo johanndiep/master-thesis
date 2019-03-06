@@ -21,8 +21,8 @@ class Serial():
 		while j < 1000:
 			current_line = str(self.ser.readline())
 			if "distance" in current_line:
-				print(int(current_line[15:19]) + 300)
-				list.append(int(current_line[15:19]) + 300)
+				print(int(current_line[15:19]))
+				list.append(int(current_line[15:19]))
 
 				print(j)
 				j = j + 1

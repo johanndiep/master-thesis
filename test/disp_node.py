@@ -57,6 +57,7 @@ with serial_port as ser:
             nsuccess += 1
             last_pass = True
 
-    j += 1
+            j += 1
 
 print("Distance value: ", distance)
+
