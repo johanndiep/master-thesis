@@ -1,0 +1,52 @@
+clear
+clc
+
+%%
+
+if ~isempty(instrfind)
+    fclose(instrfind);
+    delete(instrfind);   
+end
+
+%%
+
+port = seriallist;
+serial = serial(port);
+fopen(serial)
+
+index = 1;
+iterations = 1000;
+first_iteration = true;
+
+while 1   
+line = fgetl(serial);
+
+    if first_iteration == true
+        
+    end
+
+    if strncmpi(line, "distance", 8)    
+         switch line(10)      
+             case "0"
+                distance_holder(1, index) = str2num(line(13:17));              
+             case "1"
+                distance_holder(2, index) = str2num(line(13:17));               
+             case "2"
+                distance_holder(3, index) = str2num(line(13:17));                 
+             case "3"
+                distance_holder(4, index) = str2num(line(13:17));               
+             case "4"
+                distance_holder(5, index) = str2num(line(13:17));               
+             case "5"
+                distance_holder(6, index) = str2num(line(13:17));               
+             case "6"
+                distance_holder(7, index) = str2num(line(13:17));               
+             case "7"
+                distance_holder(8, index) = str2num(line(13:17));
+         end    
+    end  
+  
+    if str2num(line(10)) == 7
+        index = index + 1;   
+    end  
+end
