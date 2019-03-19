@@ -8,17 +8,22 @@ if ~isempty(instrfind)
     delete(instrfind);   
 end
 
+%% Parameters
+
+anchors = 8;
+index = 1;
+iterations = 1000;
+first_iteration = true;
+
 %% Range aquisition form each anchor via TWR
 
 port = seriallist;
 serial = serial(port);
 fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
 
-index = 1;
-iterations = 1000;
-first_iteration = true;
-
-while 1   
+while index < iterations + 1
+disp(index);
+    
 line = fgetl(serial);
 
     % avoid unfavourable first line serial read
@@ -34,25 +39,36 @@ line = fgetl(serial);
     if strncmpi(line, "distance", 8)    
          switch line(10)      
              case "0"
-                distance_holder(1, index) = str2num(line(13:17));              
+                range_array(1, index) = str2num(line(13:17));              
              case "1"
-                distance_holder(2, index) = str2num(line(13:17));               
+                range_array(2, index) = str2num(line(13:17));               
              case "2"
-                distance_holder(3, index) = str2num(line(13:17));                 
+                range_array(3, index) = str2num(line(13:17));                 
              case "3"
-                distance_holder(4, index) = str2num(line(13:17));               
+                range_array(4, index) = str2num(line(13:17));               
              case "4"
-                distance_holder(5, index) = str2num(line(13:17));               
+                range_array(5, index) = str2num(line(13:17));               
              case "5"
-                distance_holder(6, index) = str2num(line(13:17));               
+                range_array(6, index) = str2num(line(13:17));               
              case "6"
-                distance_holder(7, index) = str2num(line(13:17));               
+                range_array(7, index) = str2num(line(13:17));               
              case "7"
-                distance_holder(8, index) = str2num(line(13:17));
+                range_array(8, index) = str2num(line(13:17));
          end    
     end  
   
     if str2num(line(10)) == 7
         index = index + 1;   
     end  
+end
+
+%% Histogram generation for visualization
+
+for j = 1:8
+    [range_outliers_removed, TF] = rmoutliers(range_array(j,:));
+
+    subplot(2, 4, j);
+    histogram(range_outliers_removed, 50, 'FaceColor', 'y');
+    
+    title("Anchor " + j + ": " + mean(range_outliers_removed)/1000 + " m", 'FontWeight', 'normal');
 end
