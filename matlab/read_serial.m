@@ -14,6 +14,7 @@ anchors = 8;
 index = 1;
 iterations = 1000;
 first_iteration = true;
+averaging_number = 20;
 
 %% Range aquisition form each anchor via TWR
 
@@ -22,44 +23,48 @@ serial = serial(port);
 fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
 
 while index < iterations + 1
-disp(index);
-    
-line = fgetl(serial);
+    line = fgetl(serial);
 
     % avoid unfavourable first line serial read
     if first_iteration == true
         while ~strncmpi(line, "distance", 8)
             line = fgetl(serial);
         end
-        
+
         first_iteration = false;
     end
 
-    % storing range measurement in array of size (#anchors, #measurements) 
+        % storing range measurement in array of size (#anchors, #measurements) 
     if strncmpi(line, "distance", 8)    
-         switch line(10)      
-             case "0"
+        switch line(10)      
+            case "0"
                 range_array(1, index) = str2num(line(13:17));              
-             case "1"
+            case "1"
                 range_array(2, index) = str2num(line(13:17));               
-             case "2"
+            case "2"
                 range_array(3, index) = str2num(line(13:17));                 
-             case "3"
+            case "3"
                 range_array(4, index) = str2num(line(13:17));               
-             case "4"
+            case "4"
                 range_array(5, index) = str2num(line(13:17));               
-             case "5"
+            case "5"
                 range_array(6, index) = str2num(line(13:17));               
-             case "6"
+            case "6"
                 range_array(7, index) = str2num(line(13:17));               
-             case "7"
+            case "7"
                 range_array(8, index) = str2num(line(13:17));
-         end    
+        end    
     end  
-  
-    if str2num(line(10)) == 7
-        index = index + 1;   
-    end  
+
+    if strncmpi(line, "distance 7", 10)
+        index = index + 1;
+        
+        if mod(size(range_array, 2), averaging_number) == 0
+            range_mean = mean(range_array(:, end-(averaging_number-1):end), 2);
+            current_position = gauss_newton(range_mean);
+            disp(current_position);
+        end
+    end   
 end
 
 %% Histogram generation for visualization
