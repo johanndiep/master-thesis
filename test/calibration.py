@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import linear_model
 
-Data = pd.read_csv("measurements.csv").values
+Data = pd.read_csv("measurements_2.csv").values
 
 X_data = Data[:, 0]
-Y_data = Data[:, 1] * 100
+Y_data = Data[:, 1]
 
-x = np.arange(250)
+x = np.arange(3)
 
 plt.plot(X_data, Y_data, "ro")
 plt.plot(x, x)
@@ -26,3 +26,5 @@ Y_data_predict = regression.predict(X_data_regression)
 plt.plot(X_data_regression, Y_data_predict, color = "green")
 
 plt.show()
+
+print(regression.intercept_)
