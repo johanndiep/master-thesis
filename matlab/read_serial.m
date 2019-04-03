@@ -13,7 +13,7 @@ end
 anchors = 8;
 index = 1;
 range_index = 1;
-iterations = 2000;
+iterations = 3000;
 first_iteration = true;
 averaging_number = 100;
 range_offset = 0; % 0.557715 * 1000; % previous calibration value
@@ -77,8 +77,6 @@ while index < iterations + 1
         end
     end   
 end
-
-%calibration_parameter(range_mean/1000);
 
 %% Histogram generation for visualization
 
