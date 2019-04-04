@@ -1,7 +1,7 @@
-function p = gauss_newton(d)
+% Estimate the position of the tag via Gauss-Newton algorithm
+function p = PositionEstimation(d)
 
-% transform to [m] unit
-
+    % transform to [m] unit
     d_0 = d(1)/1000;
     d_1 = d(2)/1000;
     d_2 = d(3)/1000;
@@ -29,6 +29,7 @@ function p = gauss_newton(d)
 
 %% Objective function
 
+    % Objective function to minimize
     f = @(p) [(a_0(1)-p(1))^2 + (a_0(2)-p(2))^2 + (a_0(3)-p(3))^2 - d_0^2; ...
         (a_1(1)-p(1))^2 + (a_1(2)-p(2))^2 + (a_1(3)-p(3))^2 - d_1^2; ...
         (a_2(1)-p(1))^2 + (a_2(2)-p(2))^2 + (a_2(3)-p(3))^2 - d_2^2; ...
@@ -54,19 +55,14 @@ function p = gauss_newton(d)
     p = [0; 0; 0]; % initial guess
 
     while 1
-      b = f(p); % evaluate f
-      A = fp(p); % evaluate Jacobian
+        b = f(p); % evaluate f
+        A = fp(p); % evaluate Jacobian
 
-      d = -A\b; % solve linear least squares problem norm(A*d+b)=min
-      p = p + d; % update
+        d = -A\b; % solve linear least squares problem norm(A*d+b)=min
+        p = p + d; % update
 
-      if norm(d) <= 1e-15 % stop iteration if norm(d) <= StepTolerance
-        break
-      end
+        if norm(d) <= 1e-15 % stop iteration if norm(d) <= StepTolerance
+            break
+        end
     end
-
-    %disp("p_x: " + p(1));
-    %disp("p_y: " + p(2));
-    %disp("p_z: " + p(3));
-
 end
