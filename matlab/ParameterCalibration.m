@@ -2,7 +2,12 @@
 function ParameterCalibration = ParameterCalibration(ranges)
 
     % transform to [m] unit
-    ranges = ranges / 1000;
+    ranges = ranges/1000;
+    
+    % hardcoded pressure height
+    pressure_height_tag = 0.225;
+    pressure_height_bottom = 0.27;
+    pressure_height_top = 2.43;
     
 %% Parameters to estimate
 
@@ -19,7 +24,7 @@ function ParameterCalibration = ParameterCalibration(ranges)
     % placement of the anchors
     room_width = 4;
     room_length = 4;
-    anchor_height = 2.4;
+    anchor_height = pressure_height_top-pressure_height_bottom;
 
     anchor_pos = [0,room_width,0; ...
         room_length,room_width,anchor_height; ...
@@ -39,36 +44,31 @@ function ParameterCalibration = ParameterCalibration(ranges)
 %% Objective function to minimize
     
     index = 1; % for indexing the objective function
-    f = sym(zeros(size(anchor_pos,1) * size(ranges,2),1));
+    f = sym(zeros(size(anchor_pos,1)*size(ranges,2),1));
     
     % ranging constraints
     for i = 1:size(ranges, 2)
         for j = 1:size(anchor_pos, 1)
-            f(index) = sqrt((anchor_pos(j,1)-p_x(i))^2 + (anchor_pos(j,2)-p_y(i))^2 + ...
-                (anchor_pos(j,3)-p_z(i))^2) - ranges(j,i) - o_p(j);
-            index = index + 1;
+            f(index) = sqrt((anchor_pos(j,1)-p_x(i))^2+(anchor_pos(j,2)-p_y(i))^2+ ...
+                (anchor_pos(j,3)-p_z(i))^2)-ranges(j,i)-o_p(j);
+            index = index+1;
         end
     end
     
-    % hardcoded pressure height
-    pressure_height_tag = 0.225;
-    pressure_height_bottom = 0;
-    pressure_height_top = 2.4;
-    
     % height constraints for each measurement position
     for i = 1:size(ranges,2)
-        f(index) = p_z(i) - pressure_height_tag;
-        index = index + 1;
+        f(index) = p_z(i)-(pressure_height_bottom-pressure_height_tag);
+        index = index+1;
     end
     
     % height constraints for each anchor
     for j = 1:size(anchor_pos,1)
         if j == 1 || j == 3 || j == 6 || j == 8
-            f(index) = anchor_pos(j,3) - pressure_height_bottom;
-            index = index + 1;
+            f(index) = anchor_pos(j,3)-(pressure_height_bottom-pressure_height_bottom);
+            index = index+1;
         else
-            f(index) = anchor_pos(j,3) - pressure_height_top;
-            index = index + 1;
+            f(index) = anchor_pos(j,3)-(pressure_height_top-pressure_height_bottom);
+            index = index+1;
         end
     end
        
@@ -89,7 +89,7 @@ function ParameterCalibration = ParameterCalibration(ranges)
 
     % initial guess for tag position
     p_x_i = normrnd(2,0.1,[1,size(ranges,2)]);
-    p_y_i = normrnd(2, 0.1,[1,size(ranges,2)]);
+    p_y_i = normrnd(2,0.1,[1,size(ranges,2)]);
     p_z_i = normrnd(2,0.1,[1,size(ranges,2)]);
 
     % initial guess for anchor position
@@ -128,7 +128,7 @@ function ParameterCalibration = ParameterCalibration(ranges)
     anchor_pos = [0,room_width,0; ...
         room_length,room_width,anchor_height; ...
         room_length,0,0; ...
-        0, 0, anchor_height; ...
+        0,0,anchor_height; ...
         a_x_i(1),a_y_i(1),a_z_i(1); ...
         a_x_i(2),a_y_i(2),a_z_i(2); ...
         a_x_i(3),a_y_i(3),a_z_i(3); ...

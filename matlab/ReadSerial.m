@@ -13,9 +13,9 @@ end
 anchors = 8;
 index = 1;
 range_index = 1;
-iterations = 3000;
+iterations = 4000;
 first_iteration = true;
-averaging_number = 100;
+averaging_number = 200;
 range_offset = 0; % 0.557715 * 1000 for previous calibration value
 
 %% Range aquisition form each anchor via TWR
