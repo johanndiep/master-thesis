@@ -14,22 +14,6 @@ function ParameterCalibration = ParameterCalibration(ranges)
     pressure_height_bottom = 0.27;
     pressure_height_top = 2.43;
     
-    d_coeff = 0.005; % damp value for Gauss-Newton update step
-    
-    %% Parameters to estimate (range offsets and tag locations, perhaps anchor positions)
-
-    % 8 unknowns for range offsets
-    syms o_0 o_1 o_2 o_3 o_4 o_5 o_6 o_7
-    o_p = [o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7];
-
-    % unknowns for positions of antennas, uncomment this to calibrate
-    % anchor positions
-%     a_x = sym('a_x_',[1,1]);
-%     a_y = sym('a_y_',[1,1]);
-%     a_z = sym('a_z_',[1,1]);
-%     a_p = [a_x,a_y];
-%     unknown_value = size(a_x,2);
-    
     % placement of the anchors
     room_width = 4;
     room_length = 4;
@@ -41,7 +25,15 @@ function ParameterCalibration = ParameterCalibration(ranges)
         0,room_width,anchor_height; ...
         room_length,room_width,0; ...
         room_length,0,anchor_height; ...
-        0,0,0];
+        0,0,0]; 
+    
+    d_coeff = 0.005; % damp value for Gauss-Newton update step
+    
+    %% Parameters to estimate (range offsets and tag locations, perhaps anchor positions)
+
+    % 8 unknowns for range offsets
+    syms o_0 o_1 o_2 o_3 o_4 o_5 o_6 o_7
+    o_p = [o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7];
         
     % locations, size(ranges, 2) * 3 unknowns
     p_x = sym('p_x_',[1,size(ranges,2)]);
@@ -99,15 +91,10 @@ function ParameterCalibration = ParameterCalibration(ranges)
     p_x_i = normrnd(2,0.1,[1,size(ranges,2)]);
     p_y_i = normrnd(2,0.1,[1,size(ranges,2)]);
     p_z_i = normrnd(2,0.1,[1,size(ranges,2)]);
-
-    % initial guess for anchor position
-%     a_x_i = normrnd(2,0.1,[1,unknown_value]);
-%     a_y_i = normrnd(2,0.1,[1,unknown_value]);
-%     a_z_i = normrnd(2,0.1,[1,unknown_value]);
             
     while true
         b = f([o_i,p_x_i,p_y_i,p_z_i]); % evaluate f
-        disp("Objective Norm: " + norm(b));
+        %disp("Objective Norm: " + norm(b));
 
         A = fp([p_x_i,p_y_i,p_z_i]); % evaluate Jacobian
         d = - A\b; % solve linear least squares problem
@@ -118,9 +105,6 @@ function ParameterCalibration = ParameterCalibration(ranges)
         p_x_i = opa(9:9+size(ranges,2)-1);
         p_y_i = opa(9+size(ranges,2):9+size(ranges,2)*2-1);
         p_z_i = opa(9+size(ranges,2)*2:9+size(ranges,2)*3-1);
-%         a_x_i = opa(9+size(ranges,2)*3:9+size(ranges,2)*3+unknown_value-1);
-%         a_y_i = opa(9+size(ranges,2)*3+unknown_value:9+size(ranges,2)*3+unknown_value*2-1);
-%         a_z_i = opa(9+size(ranges,2)*3+unknown_value*2:9+size(ranges,2)*3+unknown_value*3-1);
 
         if norm(d) <= 1e-10 % stop iteration if norm(d) passes a tolerance
             break

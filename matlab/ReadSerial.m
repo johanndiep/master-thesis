@@ -19,8 +19,8 @@ end
 anchors = 8;
 index = 1;
 mean_index = 1;
-iterations = 100;
-averaging_number = 50;
+iterations = 1000;
+averaging_number = 250;
 first_iteration = true;
 next_column = false;
 
