@@ -14,7 +14,7 @@ end
 
 %% Parameters
 
-index = 1;
+index = 0;
 iterations = 100;
 averaging_number = 50;
 anchors = 6;
@@ -27,8 +27,9 @@ serial = serial(port);
 fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
 
 for i = 1:anchors
+
     fwrite(serial, "c");
-    while index < iterations + 1
+    while index < iterations
         line = fgetl(serial);
        
         if first_iteration == true
@@ -41,23 +42,20 @@ for i = 1:anchors
         if strncmpi(line,"Anchor",6)
             switch line(8)
                 case "1"
-                    range_array(i,1,index) = str2num(line(20:24));
+                    line(
                 case "2"
-                    range_array(i,2,index) = str2num(line(20:24));
                 case "3"
-                    range_array(i,3,index) = str2num(line(20:24));
                 case "4"
-                    range_array(i,4,index) = str2num(line(20:24));
                 case "5"
-                    range_array(i,5,index) = str2num(line(20:24));
                 case "6"
-                    range_array(i,6,index) = str2num(line(20:24));
             end
-        end        
-        index = index + 1;
-    end  
+        end
+    end
+       
+       
+       index = index + 1;
+    end
     index = 0;
     fwrite(serial, "y");
-    
-    first_iteration = true;
+
 end
