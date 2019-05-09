@@ -1,6 +1,10 @@
 % Johann Diep (jdiep@student.ethz.ch) - May 2019
 
-% This program reads and controls the modified Sniffer module.
+% This program reads the distances from a Bitcraze Loco Positioning System anchor setup. 
+% The module which is connected to the computer should be changed into the modified Sniffer mode.
+% The sniffer sequentially turns each single anchor into a tag, which then starts ranging with
+% its neighboring anchors. With the resulting distances from the anchor setup, self-calibration
+% of the setup can be obtained.
 
 clear 
 clc
@@ -15,26 +19,27 @@ end
 %% Parameters
 
 index = 1;
-iterations = 100;
-averaging_number = 50;
-anchors = 6;
-first_iteration = true;
 next_index = false;
+first_iteration = true;
+iterations = 1000;
+anchors = 6;
 
-%% Range aquisition form each anchor via TWR
+%% Setup serial port
 
 port = seriallist;
 serial = serial(port);
 fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
 
-for i = 1:anchors
-    fwrite(serial, "c");
+%% Range aquisition form each anchor via TWR
+
+for i = 1:anchors % each anchor becomes a tag once
+    fwrite(serial, "c"); % sending switch_to_tag command, beginning at anchor 1 and ending at anchor 6
     while index < iterations + 1
         line = fgetl(serial);
        
-        % start with anchor 1 and avoid information overload
+        % start readout with anchor 1 and avoid pre-information overload
         if first_iteration == true
-            if i == 1
+            if i == 1 % no information on anchor 1 if first anchor is tag
                 while ~strncmpi(line,"Anchor 2",8)
                     line = fgetl(serial);
                 end
@@ -68,10 +73,9 @@ for i = 1:anchors
                     range_array(i,4,index) = str2num(line(24:end));
                     next_index = false;
                 case "5" % anchor 5
-                    range_array(i,5,index) = str2num(line(24:end)); 
-                    
+                    range_array(i,5,index) = str2num(line(24:end));
                     % solves indexing issue at last anchor index
-                    if i == 6 
+                    if i == 6
                         next_index = true;
                     elseif i < 6
                         next_index = false;
@@ -82,15 +86,17 @@ for i = 1:anchors
             end
         end
         
-        if next_index % gathered measurement for anchor 1 to 6
+        if next_index % gather measurement for anchor 1 to 6 before updating index
            index = index + 1;
            next_index = false;
         end
     end
     
     index = 1;
-    fwrite(serial, "y");
-    pause(2);
+    
+    fwrite(serial, "y"); % sending switch_to_anchor command
+    pause(2); % pause the system to avoid signal overload
+    
     first_iteration = true;
 end
 
@@ -98,7 +104,7 @@ end
 
 for row = 1:anchors
    for column = 1:anchors
-      range_mean(row,column) = mean(rmoutliers(permute(range_array(row,column,:),[1,3,2]))); 
+      range_mean(row,column) = mean(rmoutliers(permute(range_array(row,column,:),[1,3,2]))); % remove outliers and averaging 
    end
 end
 
