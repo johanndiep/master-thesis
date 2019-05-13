@@ -22,7 +22,7 @@ index = 1;
 next_index = false;
 first_iteration = true;
 iterations = 1000;
-anchors = 6;
+anchors = 8;
 
 %% Setup serial port
 
@@ -74,19 +74,25 @@ for i = 1:anchors % each anchor becomes a tag once
                     next_index = false;
                 case "5" % anchor 5
                     range_array(i,5,index) = str2num(line(24:end));
-                    % solves indexing issue at last anchor index
-                    if i == 6
-                        next_index = true;
-                    elseif i < 6
-                        next_index = false;
-                    end
+                    next_index = false;
                 case "6" % anchor 6
                     range_array(i,6,index) = str2num(line(24:end));
+                    next_index = false;
+                case "7" % anchor 7
+                    range_array(i,7,index) = str2num(line(24:end));
+                    % solves indexing issue at last anchor index
+                    if i == 8
+                        next_index = true;
+                    elseif i < 8
+                        next_index = false;
+                    end
+                case "8" % anchor 8
+                    range_array(i,8,index) = str2num(line(24:end));
                     next_index = true;
             end
         end
         
-        if next_index % gather measurement for anchor 1 to 6 before updating index
+        if next_index % gather measurement for anchor 1 to 8 before updating index
            index = index + 1;
            next_index = false;
         end
