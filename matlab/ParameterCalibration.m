@@ -84,8 +84,7 @@ function ParameterCalibration = ParameterCalibration(ranges)
     f = convertToAcceptArray(f);
     fp = convertToAcceptArray(fp);
 
-    % initial guess for offset
-    o_i = normrnd(0.5,0.1,[1,8]);
+    o_i = normrnd(0.5,0.1,[1,8]); % initial guess for offset
 
     % initial guess for tag position
     p_x_i = normrnd(2,0.1,[1,size(ranges,2)]);
