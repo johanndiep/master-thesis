@@ -21,8 +21,8 @@ end
 index = 1;
 next_index = false;
 first_iteration = true;
-iterations = 1000;
-anchors = 8;
+iterations = 1000; % number of range data per anchor
+anchors = 8; % number of anchors
 
 %% Setup serial port
 
@@ -33,6 +33,7 @@ fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
 %% Range aquisition form each anchor via TWR
 
 for i = 1:anchors % each anchor becomes a tag once
+    disp("Interrogating anchor " + i);
     fwrite(serial, "c"); % sending switch_to_tag command, beginning at anchor 1 and ending at anchor 6
     while index < iterations + 1
         line = fgetl(serial);
