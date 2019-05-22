@@ -5,7 +5,7 @@
 % positioning systems" by Mathias Pelka, Grigori Goronzy and Horst
 % Hellbrueck.
 
-function AnchorCalibration = AnchorCalibration(range_mean)
+function anchor_pos = AnchorCalibration(range_mean)
     %% Hardcoding values
     
     range_mean = range_mean/1000; % transform to [m] unit
