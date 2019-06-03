@@ -28,11 +28,26 @@ for i = 1:100
    end
     
    line = fgetl(serial);
+   line = fgetl(serial);
+   line = fgetl(serial);
+   line = fgetl(serial);
+   line = fgetl(serial);
+   line = fgetl(serial);
+   line = fgetl(serial);
+   line = fgetl(serial);
    
    if tictoc_variable == 1
        time(i) = toc;
        tictoc_variable = 0;
    end
 end
-
+t = mean(time)
 freq = 1/mean(time)
+
+%% GetRangeMeasurement function
+
+tic;
+getRangeMeasurement(serial);
+time = toc;
+
+freq = 1/time

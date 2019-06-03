@@ -18,7 +18,7 @@ function range_mean = getRangeMeasurement(serial)
     index  = 1;
     next_index = false;
     first_iteration = true;
-    iterations = 20;
+    iterations = 10;
     
     %% Setup serial port
     
@@ -43,28 +43,28 @@ function range_mean = getRangeMeasurement(serial)
        if strncmpi(line,"distance",8)
            switch line(10)
                case "1" % anchor 1
-                   range_array(1,index) = str2num(line(12:17));
+                   range_array(1,index) = str2double(line(12:17));
                    next_index = false;
                case "2" % anchor 2
-                   range_array(2,index) = str2num(line(12:17));
+                   range_array(2,index) = str2double(line(12:17));
                    next_index = false;
                case "3" % anchor 3
-                   range_array(3,index) = str2num(line(12:17));
+                   range_array(3,index) = str2double(line(12:17));
                    next_index = false;
                case "4" % anchor 4
-                   range_array(4,index) = str2num(line(12:17));
+                   range_array(4,index) = str2double(line(12:17));
                    next_index = false;
                case "5" % anchor 5
-                   range_array(5,index) = str2num(line(12:17));
+                   range_array(5,index) = str2double(line(12:17));
                    next_index = false;
                case "6" % anchor 6
-                   range_array(6,index) = str2num(line(12:17));
+                   range_array(6,index) = str2double(line(12:17));
                    next_index = false;
                case "7" % anchor 7
-                   range_array(7,index) = str2num(line(12:17));
+                   range_array(7,index) = str2double(line(12:17));
                    next_index = false;
                case "8" % anchor 8
-                   range_array(8,index) = str2num(line(12:17));
+                   range_array(8,index) = str2double(line(12:17));
                    next_index = true;
            end
        end

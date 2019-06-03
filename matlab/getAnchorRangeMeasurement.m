@@ -19,7 +19,7 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
     index = 1;
     next_index = false;
     first_iteration = true;
-    iterations = 20; % number of range data per anchor
+    iterations = 100; % number of range data per anchor
     anchors = 8; % number of anchors
 
     %% Setup serial port
@@ -52,7 +52,7 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
 
             % in case of overlapping
             while line(17) ~= int2str(i)
-                disp("Detection of wrong sequence number.");
+                disp("Detection of wrong sequence number, re-interrogating ...");
                 line = fgetl(serial);
             end
 
@@ -60,25 +60,25 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
             if strncmpi(line,"Anchor",6)
                 switch line(8)
                     case "1" % anchor 1
-                        range_array(i,1,index) = str2num(line(24:end));
+                        range_array(i,1,index) = str2double(line(24:end));
                         next_index = false;
                     case "2" % anchor 2
-                        range_array(i,2,index) = str2num(line(24:end));
+                        range_array(i,2,index) = str2double(line(24:end));
                         next_index = false;
                     case "3" % anchor 3
-                        range_array(i,3,index) = str2num(line(24:end));
+                        range_array(i,3,index) = str2double(line(24:end));
                         next_index = false;
                     case "4" % anchor 4
-                        range_array(i,4,index) = str2num(line(24:end));
+                        range_array(i,4,index) = str2double(line(24:end));
                         next_index = false;
                     case "5" % anchor 5
-                        range_array(i,5,index) = str2num(line(24:end));
+                        range_array(i,5,index) = str2double(line(24:end));
                         next_index = false;
                     case "6" % anchor 6
-                        range_array(i,6,index) = str2num(line(24:end));
+                        range_array(i,6,index) = str2double(line(24:end));
                         next_index = false;
                     case "7" % anchor 7
-                        range_array(i,7,index) = str2num(line(24:end));
+                        range_array(i,7,index) = str2double(line(24:end));
                         % solves indexing issue at last anchor index
                         if i == 8
                             next_index = true;
@@ -86,7 +86,7 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
                             next_index = false;
                         end
                     case "8" % anchor 8
-                        range_array(i,8,index) = str2num(line(24:end));
+                        range_array(i,8,index) = str2double(line(24:end));
                         next_index = true;
                 end
             end

@@ -100,7 +100,19 @@ function anchor_pos = AnchorCalibration(anchor_range_mean,plotting)
 
     if plotting == true
         figure()
-        scatter3(anchor_pos(:,1),anchor_pos(:,2),anchor_pos(:,3),'s')
+        hold on
+        title("Flying arena coordinate system");
+        xlabel("x-Axis [m]");
+        ylabel("y-Axis [m]");
+        zlabel("z-Axis [m]");
+        grid on
+
+        scatter3(anchor_pos(:,1),anchor_pos(:,2),anchor_pos(:,3),'MarkerFaceColor',[0,0,0]);
+
+        line([anchor_pos(1,1),anchor_pos(5,1)],[anchor_pos(1,2),anchor_pos(5,2)],[anchor_pos(1,3),anchor_pos(5,3)],'Color',[.5,.5,.5]);
+        line([anchor_pos(8,1),anchor_pos(4,1)],[anchor_pos(8,2),anchor_pos(4,2)],[anchor_pos(8,3),anchor_pos(4,3)],'Color',[.5,.5,.5]);
+        line([anchor_pos(6,1),anchor_pos(2,1)],[anchor_pos(6,2),anchor_pos(2,2)],[anchor_pos(6,3),anchor_pos(2,3)],'Color',[.5,.5,.5]);
+        line([anchor_pos(3,1),anchor_pos(7,1)],[anchor_pos(3,2),anchor_pos(7,2)],[anchor_pos(3,3),anchor_pos(7,3)],'Color',[.5,.5,.5]);
 
         for i = 1:size(anchor_pos,1)
             text(anchor_pos(i,1)+0.1,anchor_pos(i,2)+0.1,anchor_pos(i,3)+0.1,"Anchor " + int2str(i));
