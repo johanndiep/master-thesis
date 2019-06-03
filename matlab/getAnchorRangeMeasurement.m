@@ -6,38 +6,38 @@
 % its neighboring anchors. With the resulting distances from the anchor setup, self-calibration
 % of the setup can be obtained.
 
-function range_mean = getAnchorRangeMeasurements()
+function anchor_range_mean = getAnchorRangeMeasurement(serial)
     %% Closing and deleting ports
 
-    if ~isempty(instrfind)
-        fclose(instrfind);
-        delete(instrfind);   
-    end
+%     if ~isempty(instrfind)
+%         fclose(instrfind);
+%         delete(instrfind);   
+%     end
 
     %% Parameters
 
     index = 1;
     next_index = false;
     first_iteration = true;
-    iterations = 1000; % number of range data per anchor
+    iterations = 20; % number of range data per anchor
     anchors = 8; % number of anchors
 
     %% Setup serial port
 
-    port = seriallist;
-    serial = serial(port);
+%     port = seriallist;
+%     serial = serial(port);
     fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
 
     %% Range aquisition form each anchor via TWR
 
     for i = 1:anchors % each anchor becomes a tag once
-        disp("Interrogating anchor " + i);
         fwrite(serial, "c"); % sending switch_to_tag command, beginning at anchor 1 and ending at anchor 6
         while index < iterations + 1
             line = fgetl(serial);
 
             % start readout with anchor 1 and avoid pre-information overload
             if first_iteration == true
+                progress_bar = waitbar(0,"Interrogating anchor " + i); % creating waitbar
                 if i == 1 % no information on anchor 1 if first anchor is tag
                     while ~strncmpi(line,"Anchor 2",8)
                         line = fgetl(serial);
@@ -50,10 +50,10 @@ function range_mean = getAnchorRangeMeasurements()
                 first_iteration = false;
             end
 
-            % Abortion statement
-            if line(17) ~= int2str(i)
-                disp("Aborting due to detection of wrong sequence number.");
-                break;
+            % in case of overlapping
+            while line(17) ~= int2str(i)
+                disp("Detection of wrong sequence number.");
+                line = fgetl(serial);
             end
 
             % storing range measurement in array of size (#anchors, #anchors, #measurements)
@@ -93,6 +93,7 @@ function range_mean = getAnchorRangeMeasurements()
 
             if next_index % gather measurement for anchor 1 to 8 before updating index
                index = index + 1;
+               waitbar(index/(iterations + 1),progress_bar,"Interrogating anchor " + i);
                next_index = false;
             end
         end
@@ -101,15 +102,19 @@ function range_mean = getAnchorRangeMeasurements()
 
         fwrite(serial, "y"); % sending switch_to_anchor command
         pause(2); % pause the system to avoid signal overload
+        
+        close(progress_bar);
 
         first_iteration = true;
     end
+    
+    fclose(serial);
 
     %% Averaging measurements
 
     for row = 1:anchors
        for column = 1:anchors
-          range_mean(row,column) = mean(rmoutliers(permute(range_array(row,column,:),[1,3,2]))); % remove outliers and averaging 
+          anchor_range_mean(row,column) = mean(rmoutliers(permute(range_array(row,column,:),[1,3,2]))); % remove outliers and averaging 
        end
     end
 end

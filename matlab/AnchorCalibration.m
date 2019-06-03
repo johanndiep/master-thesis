@@ -5,10 +5,10 @@
 % positioning systems" by Mathias Pelka, Grigori Goronzy and Horst
 % Hellbrueck.
 
-function anchor_pos = AnchorCalibration(range_mean)
+function anchor_pos = AnchorCalibration(anchor_range_mean,plotting)
     %% Hardcoding values
     
-    range_mean = range_mean/1000; % transform to [m] unit
+    anchor_range_mean = anchor_range_mean/1000; % transform to [m] unit
     anchors = 8; % number of anchors
     height_top = 2.43; % anchor heights
 
@@ -16,7 +16,7 @@ function anchor_pos = AnchorCalibration(range_mean)
 
     for i = 1:anchors
         for j = 1:anchors
-            ranges_averaged(i,j) = (range_mean(i,j) + range_mean(j,i))/2;
+            ranges_averaged(i,j) = (anchor_range_mean(i,j) + anchor_range_mean(j,i))/2;
         end
     end
             
@@ -97,11 +97,13 @@ function anchor_pos = AnchorCalibration(range_mean)
         0,a_i(9),0; ...
         a_i(10),a_i(11),height_top; ...
         a_i(12),a_i(13),0];
-    
-    figure()
-    scatter3(anchor_pos(:,1),anchor_pos(:,2),anchor_pos(:,3),'s')
-    
-    for i = 1:size(anchor_pos,1)
-        text(anchor_pos(i,1)+0.1,anchor_pos(i,2)+0.1,anchor_pos(i,3)+0.1,"Anchor " + int2str(i));
+
+    if plotting == true
+        figure()
+        scatter3(anchor_pos(:,1),anchor_pos(:,2),anchor_pos(:,3),'s')
+
+        for i = 1:size(anchor_pos,1)
+            text(anchor_pos(i,1)+0.1,anchor_pos(i,2)+0.1,anchor_pos(i,3)+0.1,"Anchor " + int2str(i));
+        end
     end
 end
