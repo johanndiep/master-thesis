@@ -5,9 +5,7 @@
 
 function drone_position_gt = getGroundTruth()
     %% ROS communication initialization, plotting setup
-    
-    rosinit;
-    
+        
     figure();
     hold on;
     title("VICON coordinate system");
@@ -32,8 +30,4 @@ function drone_position_gt = getGroundTruth()
         scatter3(drone_position(1),drone_position(2),drone_position(3),5,'r'); % plotting waypoints
         drawnow
     end
-    
-    %% Closing ROS communication
-    
-    rosshutdown;
 end

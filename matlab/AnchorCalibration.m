@@ -70,9 +70,8 @@ function anchor_pos = AnchorCalibration(anchor_range_mean,plotting)
     f = convertToAcceptArray(f);
     fp = convertToAcceptArray(fp);
     
-    % initialization
-    % a_i = normrnd(2,0.1,[1,size(a_p,2)])
-    a_i = [2.0349,1.9271,2.0327,1.9485,1.9104]; 
+    % a_i = normrnd(2,0.1,[1,size(a_p,2)])% initialization with normal distribution
+    a_i = [2.0349,1.9271,2.0327,1.9485,1.9104]; % working initialization
         
     while true
         b = f(a_i); % evaluate f
