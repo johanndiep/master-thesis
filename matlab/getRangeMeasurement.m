@@ -14,7 +14,8 @@ function range_mean = getRangeMeasurement(serial)
     
     %% Parameters
     
-    anchors = 8;
+%     anchors = 8;
+    anchors = 6;
     index  = 1;
     next_index = false;
     first_iteration = true;
@@ -33,39 +34,39 @@ function range_mean = getRangeMeasurement(serial)
        
        % start readout with anchor 1 and avoid pre-information overload
        if first_iteration == true
-          while ~strncmpi(line,"distance 1",10)
+          while ~strncmpi(line,"Anchor 1",8)
               line = fgetl(serial);
           end
           first_iteration = false;
        end
               
        % storing range measurement in array of size (#anchors, #measurements)
-       if strncmpi(line,"distance",8)
-           switch line(10)
+       if strncmpi(line,"Anchor",6)
+           switch line(8)
                case "1" % anchor 1
-                   range_array(1,index) = str2double(line(12:17));
+                   range_array(1,index) = str2double(line(24:end));
                    next_index = false;
                case "2" % anchor 2
-                   range_array(2,index) = str2double(line(12:17));
+                   range_array(2,index) = str2double(line(24:end));
                    next_index = false;
                case "3" % anchor 3
-                   range_array(3,index) = str2double(line(12:17));
+                   range_array(3,index) = str2double(line(24:end));
                    next_index = false;
                case "4" % anchor 4
-                   range_array(4,index) = str2double(line(12:17));
+                   range_array(4,index) = str2double(line(24:end));
                    next_index = false;
                case "5" % anchor 5
-                   range_array(5,index) = str2double(line(12:17));
+                   range_array(5,index) = str2double(line(24:end));
                    next_index = false;
                case "6" % anchor 6
-                   range_array(6,index) = str2double(line(12:17));
-                   next_index = false;
-               case "7" % anchor 7
-                   range_array(7,index) = str2double(line(12:17));
-                   next_index = false;
-               case "8" % anchor 8
-                   range_array(8,index) = str2double(line(12:17));
+                   range_array(6,index) = str2double(line(24:end));
                    next_index = true;
+%                case "7" % anchor 7
+%                    range_array(7,index) = str2double(line(24:end));
+%                    next_index = false;
+%                case "8" % anchor 8
+%                    range_array(8,index) = str2double(line(24:end));
+%                    next_index = true;
            end
        end
        

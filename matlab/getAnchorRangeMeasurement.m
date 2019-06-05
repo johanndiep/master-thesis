@@ -19,8 +19,9 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
     index = 1;
     next_index = false;
     first_iteration = true;
-    iterations = 10; % number of range data per anchor
-    anchors = 8; % number of anchors
+    iterations = 100; % number of range data per anchor
+%     anchors = 8; % number of anchors
+    anchors = 6; % number of anchors
 
     %% Setup serial port
 
@@ -73,21 +74,25 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
                         next_index = false;
                     case "5" % anchor 5
                         range_array(i,5,index) = str2double(line(24:end));
-                        next_index = false;
-                    case "6" % anchor 6
-                        range_array(i,6,index) = str2double(line(24:end));
-                        next_index = false;
-                    case "7" % anchor 7
-                        range_array(i,7,index) = str2double(line(24:end));
-                        % solves indexing issue at last anchor index
-                        if i == 8
+                        if i == 6
                             next_index = true;
-                        elseif i < 8
+                        elseif i < 6
                             next_index = false;
                         end
-                    case "8" % anchor 8
-                        range_array(i,8,index) = str2double(line(24:end));
+                    case "6" % anchor 6
+                        range_array(i,6,index) = str2double(line(24:end));
                         next_index = true;
+%                     case "7" % anchor 7
+%                         range_array(i,7,index) = str2double(line(24:end));
+%                         % solves indexing issue at last anchor index
+%                         if i == 8
+%                             next_index = true;
+%                         elseif i < 8
+%                             next_index = false;
+%                         end
+%                     case "8" % anchor 8
+%                         range_array(i,8,index) = str2double(line(24:end));
+%                         next_index = true;
                 end
             end
 
@@ -112,9 +117,10 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
 
     %% Averaging measurements
 
+    % remove outliers and averaging
     for row = 1:anchors
        for column = 1:anchors
-          anchor_range_mean(row,column) = mean(rmoutliers(permute(range_array(row,column,:),[1,3,2]))); % remove outliers and averaging 
+          anchor_range_mean(row,column) = mean(rmoutliers(permute(range_array(row,column,:),[1,3,2]))); 
        end
     end
 end
