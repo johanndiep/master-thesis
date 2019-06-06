@@ -35,7 +35,7 @@ index = 1;
 % measured deviation of Vicon-frame from World-frame
 X_ViconToWorld = 0.255;
 Y_ViconToWorld = 0.22;
-Z_ViconToWorld = -0.28;
+Z_ViconToWorld = -0.225;
 
 % homogeneous transformation matrix, assumed to have no rotation
 T_ViconToWorld = [1,0,0,X_ViconToWorld; ...
@@ -43,10 +43,13 @@ T_ViconToWorld = [1,0,0,X_ViconToWorld; ...
     0,0,1,Z_ViconToWorld;
     0,0,0,1];
 
+% read from VICON system
+tag_BodyFrame = [11.873/1000;16.7275/1000;77.5299/1000];
+
 %% Calling anchor calibration executables
 
 input("Place anchors in the room and press [ENTER]");
-input("Change the additional module into Sniffer mode and press [ENTER]");
+input("Change the connected module into Sniffer mode and press [ENTER]");
 
 % starting anchor self-calibration procedure
 anchor_range_mean = getAnchorRangeMeasurement(serial);
@@ -89,7 +92,7 @@ end
 %% Calling the position estimation executables
 
 disp("Preparing to gather " + iterations + " waypoints");
-input("Change the additional module on the Bebop drone into Tag mode and press [ENTER]");
+input("Change the module on the Bebop drone into Tag mode and press [ENTER]");
 
 % delete and re-initialize serial
 fclose(instrfind);
@@ -105,7 +108,9 @@ tag_position_current = TagPositionEstimation(anchor_pos,range_array);
 scatter3(tag_position_current(1),tag_position_current(2),tag_position_current(3),5,'r');
 
 % plotting starting ground-truth position
-tag_position_gt_current = T_ViconToWorld * [getGroundTruth(ViconSub_pos);1];
+[drone_position_gt_current,drone_quaternion_gt_current] = getGroundTruth(ViconSub_pos);
+drone_rotation_gt_current = quat2rotm(drone_quaternion_gt_current');
+tag_position_gt_current = T_ViconToWorld * [drone_rotation_gt_current,drone_position_gt_current;0,0,0,1] * [tag_BodyFrame;1];
 scatter3(tag_position_gt_current(1),tag_position_gt_current(2),tag_position_gt_current(3),5,'b');
 
 while index < iterations + 1
@@ -121,7 +126,9 @@ while index < iterations + 1
     
     % reading ground-truth position
     tic;
-    tag_position_gt_next = T_ViconToWorld * [getGroundTruth(ViconSub_pos);1];
+    [drone_position_gt,drone_quaternion_gt] = getGroundTruth(ViconSub_pos);
+    drone_rotation_gt = quat2rotm(drone_quaternion_gt');
+    tag_position_gt_next = T_ViconToWorld * [drone_rotation_gt,drone_position_gt;0,0,0,1] * [tag_BodyFrame;1];
     time = toc;
     disp("New ground-truth position aquired in " + time + " seconds");
     disp("VICON position estimation frequency: " + 1/time);
