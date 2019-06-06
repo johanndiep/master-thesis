@@ -7,8 +7,8 @@ function tag_position = TagPositionEstimation(anchor_pos,range_array)
     %% Hardcoding values
     
     range_array = range_array/1000; % transform to [m] unit 
-%     anchors = 8; % number of anchors
-    anchors = 6; % number of anchors
+    % anchors = 8; % for 8 anchors network
+    anchors = 6; % for 6 anchors network
     
     %% Parameters to estimate
     

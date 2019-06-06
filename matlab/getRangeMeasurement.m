@@ -7,15 +7,15 @@
 function range_mean = getRangeMeasurement(serial)
     %% Closing and deleting ports
 
-%     if ~isempty(instrfind)
-%         fclose(instrfind);
-%         delete(instrfind);   
-%     end
+    % if ~isempty(instrfind)
+    %   fclose(instrfind);
+    %   delete(instrfind);   
+    % end
     
     %% Parameters
     
-%     anchors = 8;
-    anchors = 6;
+    % anchors = 8; % for 8 anchors network
+    anchors = 6; % for 6 anchors network
     index  = 1;
     next_index = false;
     first_iteration = true;
@@ -23,8 +23,8 @@ function range_mean = getRangeMeasurement(serial)
     
     %% Setup serial port
     
-%     port = seriallist;
-%     serial = serial(port);
+    % port = seriallist;
+    % serial = serial(port);
     fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
     
     %% Range aquisition from each anchor via TWR
@@ -60,17 +60,22 @@ function range_mean = getRangeMeasurement(serial)
                    next_index = false;
                case "6" % anchor 6
                    range_array(6,index) = str2double(line(24:end));
+                   % differentiate between 6 and 6 anchors network
+                   if anchors == 6
+                       next_index = true;
+                   else
+                       next_index = false;
+                   end
+               case "7" % anchor 7
+                   range_array(7,index) = str2double(line(24:end));
+                   next_index = false;
+               case "8" % anchor 8
+                   range_array(8,index) = str2double(line(24:end));
                    next_index = true;
-%                case "7" % anchor 7
-%                    range_array(7,index) = str2double(line(24:end));
-%                    next_index = false;
-%                case "8" % anchor 8
-%                    range_array(8,index) = str2double(line(24:end));
-%                    next_index = true;
            end
        end
        
-       if next_index % gather measurement for anchor 1 to 8 before updating index
+       if next_index % gather measurement for all anchors before updating index
            index = index + 1;
            next_index = false;
        end

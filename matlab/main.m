@@ -1,6 +1,9 @@
 % Johann Diep (jdiep@student.ethz.ch) - June 2019
 
 % This program is the main function which is used to call each executable.
+% It will guide the user through each steps, starting from anchor setup
+% self-calibration through gathering waypoint datas on the Bebop drone with
+% the UWB-ranging method  as well as through the VICON system. 
 
 clear;
 clc;
@@ -61,6 +64,7 @@ grid on
 
 scatter3(anchor_pos(:,1),anchor_pos(:,2),anchor_pos(:,3),'MarkerFaceColor',[0,0,0]);
 
+% for 8 anchors network
 % line([anchor_pos(1,1),anchor_pos(5,1)],[anchor_pos(1,2),anchor_pos(5,2)], ...
 %     [anchor_pos(1,3),anchor_pos(5,3)],'Color',[.5,.5,.5]);
 % line([anchor_pos(8,1),anchor_pos(4,1)],[anchor_pos(8,2),anchor_pos(4,2)], ...
@@ -70,13 +74,22 @@ scatter3(anchor_pos(:,1),anchor_pos(:,2),anchor_pos(:,3),'MarkerFaceColor',[0,0,
 % line([anchor_pos(3,1),anchor_pos(7,1)],[anchor_pos(3,2),anchor_pos(7,2)], ...
 %     [anchor_pos(3,3),anchor_pos(7,3)],'Color',[.5,.5,.5]);
 
+% for 6 anchors network
+line([anchor_pos(1,1),anchor_pos(2,1)],[anchor_pos(1,2),anchor_pos(2,2)], ...
+    [anchor_pos(1,3),anchor_pos(2,3)],'Color',[.5,.5,.5]);
+line([anchor_pos(3,1),anchor_pos(4,1)],[anchor_pos(3,2),anchor_pos(4,2)], ...
+    [anchor_pos(3,3),anchor_pos(4,3)],'Color',[.5,.5,.5]);
+line([anchor_pos(5,1),anchor_pos(6,1)],[anchor_pos(5,2),anchor_pos(6,2)], ...
+    [anchor_pos(5,3),anchor_pos(6,3)],'Color',[.5,.5,.5]);
+
 for i = 1:size(anchor_pos,1)
     text(anchor_pos(i,1)+0.1,anchor_pos(i,2)+0.1,anchor_pos(i,3)+0.1,"Anchor " + int2str(i));
 end
 
 %% Calling the position estimation executables
 
-input("Change the additional module into Tag mode and press [ENTER]");
+disp("Preparing to gather " + iterations + " waypoints");
+input("Change the additional module on the Bebop drone into Tag mode and press [ENTER]");
 
 % delete and re-initialize serial
 fclose(instrfind);
@@ -116,6 +129,8 @@ while index < iterations + 1
     % plotting the estimated and ground-truth positions
     scatter3(tag_position_next(1),tag_position_next(2),tag_position_next(3),5,'r');
     scatter3(tag_position_gt_next(1),tag_position_gt_next(2),tag_position_gt_next(3),5,'b');
+    
+    % connecting neighboring positions
     line([tag_position_current(1),tag_position_next(1)], ...
         [tag_position_current(2),tag_position_next(2)], ...
         [tag_position_current(3),tag_position_next(3)],'Color',[1,.2,.2]);
@@ -131,5 +146,7 @@ while index < iterations + 1
 end
 
 %% Closing ROS communication
+
+disp("Finished gathering waypoints, shutting the system down");
 
 rosshutdown;

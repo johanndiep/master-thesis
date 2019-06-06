@@ -9,10 +9,10 @@
 function anchor_range_mean = getAnchorRangeMeasurement(serial)
     %% Closing and deleting ports
 
-%     if ~isempty(instrfind)
-%         fclose(instrfind);
-%         delete(instrfind);   
-%     end
+    % if ~isempty(instrfind)
+    %   fclose(instrfind);
+    %   delete(instrfind);   
+    % end
 
     %% Parameters
 
@@ -20,13 +20,13 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
     next_index = false;
     first_iteration = true;
     iterations = 100; % number of range data per anchor
-%     anchors = 8; % number of anchors
-    anchors = 6; % number of anchors
+    % anchors = 8; % for 8 anchors network
+    anchors = 6; % for 6 anchors network
 
     %% Setup serial port
 
-%     port = seriallist;
-%     serial = serial(port);
+    % port = seriallist;
+    % serial = serial(port);
     fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
 
     %% Range aquisition form each anchor via TWR
@@ -53,7 +53,7 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
 
             % in case of overlapping
             while line(17) ~= int2str(i)
-                disp("Detection of wrong sequence number, re-interrogating ...");
+                disp("WARNING: Detection of wrong sequence number, re-interrogating ...");
                 line = fgetl(serial);
             end
 
@@ -74,25 +74,36 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
                         next_index = false;
                     case "5" % anchor 5
                         range_array(i,5,index) = str2double(line(24:end));
-                        if i == 6
-                            next_index = true;
-                        elseif i < 6
+                        % differentiate between 6 and 6 anchors network
+                        if anchors == 6
+                            % solves indexing issue at last anchor index
+                            if i == 6
+                                next_index = true;
+                            elseif i < 6
+                                next_index = false;
+                            end
+                        else
                             next_index = false;
                         end
                     case "6" % anchor 6
                         range_array(i,6,index) = str2double(line(24:end));
+                        % differentiate between 6 and 6 anchors network
+                        if anchors == 6
+                            next_index = true;
+                        else
+                            next_index = false;
+                        end
+                    case "7" % anchor 7
+                        range_array(i,7,index) = str2double(line(24:end));
+                        % solves indexing issue at last anchor index
+                        if i == 8
+                            next_index = true;
+                        elseif i < 8
+                            next_index = false;
+                        end
+                    case "8" % anchor 8
+                        range_array(i,8,index) = str2double(line(24:end));
                         next_index = true;
-%                     case "7" % anchor 7
-%                         range_array(i,7,index) = str2double(line(24:end));
-%                         % solves indexing issue at last anchor index
-%                         if i == 8
-%                             next_index = true;
-%                         elseif i < 8
-%                             next_index = false;
-%                         end
-%                     case "8" % anchor 8
-%                         range_array(i,8,index) = str2double(line(24:end));
-%                         next_index = true;
                 end
             end
 
