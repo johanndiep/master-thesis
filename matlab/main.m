@@ -156,7 +156,7 @@ while index < iterations + 1
     tag_position_next = TagPositionEstimation(anchor_pos,range_array);
     time = toc;
     disp("- New position estimated in " + time + " seconds");
-    disp("- UWB position estimation frequency: " + 1/time);
+    disp("- UWB position estimation frequency: " + 1/time + " Hz");
     
     % reading ground-truth position
     tic;
@@ -165,7 +165,7 @@ while index < iterations + 1
     tag_position_gt_next = T_ViconToWorld * [drone_rotation_gt,drone_position_gt;0,0,0,1] * [tag_BodyFrame;1];
     time = toc;
     disp("- New ground-truth position aquired in " + time + " seconds");
-    disp("- VICON position estimation frequency: " + 1/time);
+    disp("- VICON position estimation frequency: " + 1/time + " Hz");
     disp("*************************************************");
     
     % plotting the estimated and ground-truth positions
@@ -175,10 +175,10 @@ while index < iterations + 1
     % connecting neighboring positions
     line([tag_position_current(1),tag_position_next(1)], ...
         [tag_position_current(2),tag_position_next(2)], ...
-        [tag_position_current(3),tag_position_next(3)],'Color',[1,.2,.2]);
+        [tag_position_current(3),tag_position_next(3)],'Color',[1,.6196,.6196]);
     line([tag_position_gt_current(1),tag_position_gt_next(1)], ...
         [tag_position_gt_current(2),tag_position_gt_next(2)], ...
-        [tag_position_gt_current(3),tag_position_gt_next(3)],'Color',[.2,.2,1]);
+        [tag_position_gt_current(3),tag_position_gt_next(3)],'Color',[.6196,.6196,1]);
     drawnow
     
     % update

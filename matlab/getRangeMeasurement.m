@@ -19,7 +19,7 @@ function range_mean = getRangeMeasurement(serial)
     index  = 1;
     next_index = false;
     first_iteration = true;
-    iterations = 10;
+    iterations = 5;
     
     %% Setup serial port
     
