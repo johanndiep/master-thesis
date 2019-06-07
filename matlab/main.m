@@ -8,6 +8,12 @@
 clear;
 clc;
 
+disp("This program is the main function which is used to call each executable.");
+disp("It will guide the user through each steps, starting from anchor setup");
+disp("self-calibration through gathering waypoint datas on the Bebop drone with");
+disp("the UWB-ranging method  as well as through the VICON system.");
+disp("*************************************************");
+
 %% Closing and deleting ports
 
 if ~isempty(instrfind)
