@@ -11,7 +11,7 @@ function anchor_pos = AnchorCalibration(anchor_range_mean,plotting)
     anchor_range_mean = anchor_range_mean/1000; % transform to [m] unit
     % anchors = 8; % for 8 anchor network
     anchors = 6; % for 6 anchors network
-    height_top = 2.43; % anchors heights
+    height_top = 2.43-0.275; % anchors heights
 
     %% Preprocessing range data
 
