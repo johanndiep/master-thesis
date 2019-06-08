@@ -1,6 +1,6 @@
 % Johann Diep (jdiep@student.ethz.ch) - June 2019
 
-% This program is the main function which is used to call each executable.
+% This program is the main function which is used to call each executable for the Gauss-Newton method.
 % It will guide the user through each steps, starting from anchor setup
 % self-calibration through gathering waypoint datas on the Bebop drone with
 % the UWB-ranging method  as well as through the VICON system. 
@@ -8,7 +8,7 @@
 clear;
 clc;
 
-disp("This program is the main function which is used to call each executable.");
+disp("This program is the main function which is used to call each executable for the Gauss-Newton method.");
 disp("It will guide the user through each steps, starting from anchor setup");
 disp("self-calibration through gathering waypoint datas on the Bebop drone with");
 disp("the UWB-ranging method  as well as through the VICON system.");
