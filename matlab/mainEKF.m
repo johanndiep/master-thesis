@@ -87,13 +87,17 @@ serial = serial(port);
 x_posteriori = [0,0,0,0,0,0];
 P_posteriori = 10*eye(6);
 
-% getting time for batch of range measurements
-tic;
-getRangeMeasurement(serial);
-dT = toc;
+
 
 while index < iterations + 1
-    [x_posteriori,P_posteriori] = VanillaEKF(anchor_pos,x_posteriori, P_posteriori,dT);
+    % getting range measurements and time for single batch
+    tic;
+    z = getRangeMeasurement(serial);
+    dT = toc;
+    
+    [x_posteriori,P_posteriori] = VanillaEKF(anchor_pos,x_posteriori,P_posteriori,dT,z); % estimating a posteriori position
+    
+    scatter3(x_posteriori(1),x_posteriori(3),x_posteriori(5),5,'r'); % plotting points
 end
 
 

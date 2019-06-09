@@ -6,13 +6,14 @@
 function [anchors_position_gt,anchors_quaternion_gt] = getAnchorsGroundTruth(ViconAnchorsSub_pos)
     %% Reading position data from ROS stream
 
-        % reading current position
         msg = ViconAnchorsSub_pos.LatestMessage;
+        
         anchors_position_gt = [msg.Transform.Translation.X; ...
             msg.Transform.Translation.Y; ...
-            msg.Transform.Translation.Z];
+            msg.Transform.Translation.Z]; % position
+        
         anchors_quaternion_gt = [msg.Transform.Rotation.X; ...
             msg.Transform.Rotation.Y; ...
             msg.Transform.Rotation.Z; ...
-            msg.Transform.Rotation.W];
+            msg.Transform.Rotation.W]; % orientation
 end

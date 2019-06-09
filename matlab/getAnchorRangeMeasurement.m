@@ -7,13 +7,6 @@
 % of the setup can be obtained.
 
 function anchor_range_mean = getAnchorRangeMeasurement(serial)
-    %% Closing and deleting ports
-
-    % if ~isempty(instrfind)
-    %   fclose(instrfind);
-    %   delete(instrfind);   
-    % end
-
     %% Parameters
 
     index = 1;
@@ -23,10 +16,8 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
     % anchors = 8; % for 8 anchors network
     anchors = 6; % for 6 anchors network
 
-    %% Setup serial port
+    %% Open serial port
 
-    % port = seriallist;
-    % serial = serial(port);
     fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
 
     %% Range aquisition form each anchor via TWR
@@ -122,7 +113,7 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
         close(progress_bar);
 
         first_iteration = true;
-    end
+    end  
     
     fclose(serial);
 

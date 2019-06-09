@@ -5,13 +5,6 @@
 % and 8 nodes distributed around the space function as anchors.
 
 function range_mean = getRangeMeasurement(serial)
-    %% Closing and deleting ports
-
-    % if ~isempty(instrfind)
-    %   fclose(instrfind);
-    %   delete(instrfind);   
-    % end
-    
     %% Parameters
     
     % anchors = 8; % for 8 anchors network
@@ -19,12 +12,10 @@ function range_mean = getRangeMeasurement(serial)
     index  = 1;
     next_index = false;
     first_iteration = true;
-    iterations = 1;
+    iterations = 5;
     
-    %% Setup serial port
-    
-    % port = seriallist;
-    % serial = serial(port);
+    %% Open serial port
+
     fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
     
     %% Range aquisition from each anchor via TWR

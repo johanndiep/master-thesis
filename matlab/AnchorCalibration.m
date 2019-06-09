@@ -1,17 +1,17 @@
 % Johann Diep (jdiep@student.ethz.ch) - May 2019
 
-% This program implements the method towards anchor position calibration
+% This program implements the method of anchor position calibration
 % described in the paper "Iterative approach for anchor configuration of
 % positioning systems" by Mathias Pelka, Grigori Goronzy and Horst
 % Hellbrueck.
 
-function anchor_pos = AnchorCalibration(anchor_range_mean,plotting)
+function anchor_pos = AnchorCalibration(anchor_range_mean)
     %% Hardcoding values
     
     anchor_range_mean = anchor_range_mean/1000; % transform to [m] unit
     % anchors = 8; % for 8 anchor network
     anchors = 6; % for 6 anchors network
-    height_top = 2.43-0.275; % anchors heights
+    height_top = 2.43-0.275; % top anchors heights measured from bottom anchor
 
     %% Preprocessing range data
 
@@ -108,9 +108,7 @@ function anchor_pos = AnchorCalibration(anchor_range_mean,plotting)
             break
         end
     end
-    
-    %% Plotting
-    
+
     % for 8 anchors network
     % anchor_pos = [0,0,0; ...
     %     0,a_i(1),height_top; ...
@@ -128,38 +126,4 @@ function anchor_pos = AnchorCalibration(anchor_range_mean,plotting)
         a_i(1),a_i(2),height_top; ...
         0,a_i(3),0; ...
         0,a_i(3),height_top];
-
-    if plotting == true
-        figure()
-        hold on
-        title("Flying arena coordinate system");
-        xlabel("x-Axis [m]");
-        ylabel("y-Axis [m]");
-        zlabel("z-Axis [m]");
-        grid on
-
-        scatter3(anchor_pos(:,1),anchor_pos(:,2),anchor_pos(:,3),'MarkerFaceColor',[0,0,0]);
-
-        % for 8 anchors network
-        % line([anchor_pos(1,1),anchor_pos(5,1)],[anchor_pos(1,2),anchor_pos(5,2)], ...
-        %     [anchor_pos(1,3),anchor_pos(5,3)],'Color',[.5,.5,.5]);
-        % line([anchor_pos(8,1),anchor_pos(4,1)],[anchor_pos(8,2),anchor_pos(4,2)], ...
-        %     [anchor_pos(8,3),anchor_pos(4,3)],'Color',[.5,.5,.5]);
-        % line([anchor_pos(6,1),anchor_pos(2,1)],[anchor_pos(6,2),anchor_pos(2,2)], ...
-        %     [anchor_pos(6,3),anchor_pos(2,3)],'Color',[.5,.5,.5]);
-        % line([anchor_pos(3,1),anchor_pos(7,1)],[anchor_pos(3,2),anchor_pos(7,2)], ...
-        %     [anchor_pos(3,3),anchor_pos(7,3)],'Color',[.5,.5,.5]);
-
-        % for 6 anchors network
-        line([anchor_pos(1,1),anchor_pos(2,1)],[anchor_pos(1,2),anchor_pos(2,2)], ...
-            [anchor_pos(1,3),anchor_pos(2,3)],'Color',[.5,.5,.5]);
-        line([anchor_pos(3,1),anchor_pos(4,1)],[anchor_pos(3,2),anchor_pos(4,2)], ...
-            [anchor_pos(3,3),anchor_pos(4,3)],'Color',[.5,.5,.5]);
-        line([anchor_pos(5,1),anchor_pos(6,1)],[anchor_pos(5,2),anchor_pos(6,2)], ...
-            [anchor_pos(5,3),anchor_pos(6,3)],'Color',[.5,.5,.5]);
-
-        for i = 1:size(anchor_pos,1)
-            text(anchor_pos(i,1)+0.1,anchor_pos(i,2)+0.1,anchor_pos(i,3)+0.1,"Anchor " + int2str(i));
-        end
-    end
 end
