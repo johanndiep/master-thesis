@@ -12,7 +12,7 @@ disp("This program is the main function which is used to call each executable fo
 disp("position estimation method. It will guide the user through each steps, starting from anchor setup");
 disp("self-calibration through gathering waypoint datas on the Bebop drone with");
 disp("the UWB-ranging method as well as with the VICON system.");
-disp("**********************************************************************");
+disp("******************************************************************************************************");
 
 %% Closing and deleting ports
 
@@ -37,8 +37,10 @@ pause(5); % time needed for initialization
 
 %% Hardcoded parameters and coordinate transformations
 
-iterations = 100; % number of position data
 index = 1;
+iterations = 100; % number of position data
+height_top = 2.43-0.275; % top anchors heights measured from bottom anchor
+anchor_tag_deviation = 0.03; % measured deviation of anchor markers to bottom anchor
 
 % measured deviation of VICON-frame from world-frame
 X_ViconToWorld = 0.255;
@@ -57,14 +59,11 @@ anchors_12_BodyFrame = [-1165.03/1000;-1641.83/1000;21.9812/1000];
 anchors_34_BodyFrame = [2353.66/1000;63.3209/1000;-34.1397/1000];
 anchors_56_BodyFrame = [-1188.64/1000;1578.51/1000;12.1585/1000];
 
-height_top = 2.43-0.275; % top anchors heights measured from bottom anchor
-anchor_tag_deviation = 0.03; % measured deviation of anchor markers to bottom anchor
-
 %% Calling anchor calibration executables
 
 input("Place anchors in the room and press [ENTER]");
 input("Change the connected module into Sniffer mode and press [ENTER]");
-disp("**********************************************************************");
+disp("******************************************************************************************************");
 disp("Starting self-calibration");
 
 % starting anchor self-calibration procedure
@@ -79,7 +78,7 @@ title("Tinamu Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-grid on
+grid on;
 
 scatter3(anchor_pos(:,1),anchor_pos(:,2),anchor_pos(:,3),'MarkerEdgeColor','k','MarkerFaceColor',[0,0,0]);
 
@@ -123,10 +122,10 @@ end
 
 %% Calling the position estimation executables
 
-disp("**********************************************************************");
+disp("******************************************************************************************************");
 disp("Preparing to gather " + iterations + " waypoints");
 input("Change the module on the Bebop drone into Tag mode and press [ENTER]");
-disp("**********************************************************************");
+disp("******************************************************************************************************");
 
 % delete and re-initialize serial
 fclose(instrfind);
@@ -166,7 +165,7 @@ while index < iterations + 1
     time = toc;
     disp("- New ground-truth position aquired in " + time + " seconds");
     disp("- VICON position estimation frequency: " + 1/time + " Hz");
-    disp("**********************************************************************");
+    disp("******************************************************************************************************");
     
     % plotting the estimated and ground-truth positions
     scatter3(tag_position_next(1),tag_position_next(2),tag_position_next(3),5,'r');
@@ -179,7 +178,7 @@ while index < iterations + 1
     line([tag_position_gt_current(1),tag_position_gt_next(1)], ...
         [tag_position_gt_current(2),tag_position_gt_next(2)], ...
         [tag_position_gt_current(3),tag_position_gt_next(3)],'Color',[.6196,.6196,1]);
-    drawnow
+    drawnow;
     
     % update
     tag_position_current = tag_position_next;

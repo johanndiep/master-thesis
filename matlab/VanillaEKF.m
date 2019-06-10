@@ -2,36 +2,37 @@
 
 % This is an implementation of an extended Kalman Filter for nonlinear
 % dynamics systems. The function returns the state estimate x and
-% covariance P for nonlinear dynamics system of form:
+% covariance P for a constant velocity model:
+%
 %   - x_k = q(x_{k-1},v_{k-1}), v_{k-1} ~ N(0,Q)
 %   - z_k = h(x_{k},w_{k}), w ~ N(0,R)
-% Here, a constant velocity model is implemented.
+%
 % Inputs:
-%   - x_posterior: a priori state estimate
-%   - P_posterior: a priori estimated state covariance
+%   - x_posterior: a priori state estimate, posterior estimate from previous iteration
+%   - P_posterior: a priori estimated state covariance, posterior estimate from previous iteration
 %   - z: current measurement
 %   - dT: time interval between measurements
+%
 % Outputs:
 %   - x_posterior: a posteriori state estimate
 %   - P_posterior: a posteriori state covariance
 
 function [x_posterior,P_posterior] = VanillaEKF(anchor_pos,x_posterior,P_posterior,dT,z)
-%% Symbolic values and parameters
+%% Symbolic values definition
 
-    syms p_x p_y p_z % position
-    syms v_x v_y v_z % velocity
-    x = [p_x,v_x,p_y,v_y,p_z,v_z];
-    
-    q_sigma = 0.125;
+    % position and velocity parameters
+    syms p_x p_y p_z
+    syms v_x v_y v_z
+    x = [p_x,p_y,p_z,v_x,v_y,v_z];
 
 %% Process and measurement model
 
     % system matrix for constant velocity model
-    A = [1,dT,0,0,0,0; ...
-        0,1,0,0,0,0; ...
-        0,0,1,dT,0,0; ...
+    A = [1,0,0,dT,0,0; ...
+        0,1,0,0,dT,0; ...
+        0,0,1,0,0,dT; ...
         0,0,0,1,0,0; ...
-        0,0,0,0,1,dT; ...
+        0,0,0,0,1,0; ...
         0,0,0,0,0,1];
     
     % non-linear measurement prediction model
@@ -44,27 +45,23 @@ function [x_posterior,P_posterior] = VanillaEKF(anchor_pos,x_posterior,P_posteri
     
     % measurement matrix
     H = jacobian(r,x);
+    H = matlabFunction(H);
     H = convertToAcceptArray(H);
     
-    % process noise covariance
-    dQ = [1/4*dT^4,1/2*dT^3; ...
-        1/2*dT^3,dT^2]*q_sigma;
-    Q = [dQ,zeros(2,4);
-        zeros(2,2),dQ,zeros(2,4); ...
-        zeros(2,4),dQ];
-    
-    R = eye(6)*0.2; % measurement noise covariance
+    Q = diag([0,0,0,1,1,1]); % process noise covariance
+    R = eye(size(anchor_pos,1))*0.1; % measurement noise covariance
     
     
 %% Prior update
 
-    x_prior = A*x_posterior';
-    P_prior = A*P_posterior*A'+Q;
+    x_prior = A*x_posterior; % project the state ahead
+    P_prior = A*P_posterior*A'+Q; % project the error covariance ahead
     
 %% A posteriori update
     
-    K = P_prior*H(x_prior)'*(H(x_prior)*P*H(x_prior)'+R)^(-1);
-    x_posterior = x_prior+K*(z-H(x_prior)*x_prior);
-    P_posterior = (eye(6)-K*H(x_prior))*P_prior;
+    K = P_prior*H(x_prior(1:3)')'*(H(x_prior(1:3)')*P_prior*H(x_prior(1:3)')'+R)^(-1); % compute the Kalman gain
+    
+    x_posterior = x_prior+K*(z-H(x_prior(1:3)')*x_prior); % update the estimate with measurement z
+    P_posterior = (eye(6)-K*H(x_prior(1:3)'))*P_prior; % update the error covariance
 end
    
