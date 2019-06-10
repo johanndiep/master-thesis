@@ -12,7 +12,7 @@ function range_mean = getRangeMeasurement(serial)
     index  = 1;
     next_index = false;
     first_iteration = true;
-    iterations = 5;
+    iterations = 1;
     
     %% Open serial port
 

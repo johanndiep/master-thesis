@@ -12,7 +12,7 @@ function anchor_range_mean = getAnchorRangeMeasurement(serial)
     index = 1;
     next_index = false;
     first_iteration = true;
-    iterations = 200; % number of range data per anchor
+    iterations = 100; % number of range data per anchor
     % anchors = 8; % for 8 anchors network
     anchors = 6; % for 6 anchors network
 

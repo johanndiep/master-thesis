@@ -34,34 +34,36 @@ function [x_posterior,P_posterior] = VanillaEKF(anchor_pos,x_posterior,P_posteri
         0,0,0,1,0,0; ...
         0,0,0,0,1,0; ...
         0,0,0,0,0,1];
-    
+            
     % non-linear measurement prediction model
     index = 1; 
     r = sym(zeros(size(anchor_pos,1),1));
     for i = 1:size(anchor_pos,1)
-        r(index) = sqrt((x(1)-anchor_pos(i,1))^2+(x(3)-anchor_pos(i,2))^2+(x(5)-anchor_pos(i,3))^2);
+        r(index) = sqrt((x(1)-anchor_pos(i,1))^2+(x(2)-anchor_pos(i,2))^2+(x(3)-anchor_pos(i,3))^2);
         index = index + 1;
     end
-    
+        
     % measurement matrix
     H = jacobian(r,x);
     H = matlabFunction(H);
     H = convertToAcceptArray(H);
     
-    Q = diag([0,0,0,1,1,1]); % process noise covariance
-    R = eye(size(anchor_pos,1))*0.1; % measurement noise covariance
-    
-    
+    r = matlabFunction(r);
+    r = convertToAcceptArray(r);
+            
+    Q = diag([1,1,1,1,1,1]); % process noise covariance
+    R = eye(size(anchor_pos,1))*0.05; % measurement noise covariance
+        
 %% Prior update
 
     x_prior = A*x_posterior; % project the state ahead
     P_prior = A*P_posterior*A'+Q; % project the error covariance ahead
-    
+        
 %% A posteriori update
     
     K = P_prior*H(x_prior(1:3)')'*(H(x_prior(1:3)')*P_prior*H(x_prior(1:3)')'+R)^(-1); % compute the Kalman gain
-    
-    x_posterior = x_prior+K*(z-H(x_prior(1:3)')*x_prior); % update the estimate with measurement z
-    P_posterior = (eye(6)-K*H(x_prior(1:3)'))*P_prior; % update the error covariance
+        
+    x_posterior = x_prior+K*(z-r(x_prior(1:3)')); % update the estimate with measurement z
+    P_posterior = (eye(size(anchor_pos,1))-K*H(x_prior(1:3)'))*P_prior; % update the error covariance   
 end
    

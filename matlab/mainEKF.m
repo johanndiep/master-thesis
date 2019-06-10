@@ -29,7 +29,7 @@ serial = serial(port);
 index = 1;
 iterations = 100; % gather 50 position data
 height_top = 2.43-0.275; % anchors heights
-time_iterations = 20;
+time_iterations = 10;
 
 %% Calling anchor calibration executables
 
@@ -93,22 +93,32 @@ port = seriallist;
 serial = serial(port);
 
 % initialization of state [p_x,p_y,p_z,v_x,v_y,v_z] and covariance
-x_posteriori = [0,0,0,0,0,0]';
-P_posteriori = 10*eye(6);
+x_posterior_current = normrnd(2,0.1,[1,6])';
+P_posterior = 1*eye(size(x_posterior_current,1));
 
-% getting range measurements and time for single batch
-tic;
-for i = 1:time_iterations
-    z = getRangeMeasurement(serial);
-end
-dT = toc/time_iterations;
+scatter3(x_posterior_current(1),x_posterior_current(2),x_posterior_current(3),5,'r'); % plotting points
+drawnow;
 
 while index < iterations + 1
-    z = getRangeMeasurement(serial);
-    [x_posteriori,P_posteriori] = VanillaEKF(anchor_pos,x_posteriori,P_posteriori,dT,z); % estimating a posteriori position
     
-    scatter3(x_posteriori(1),x_posteriori(3),x_posteriori(5),5,'r'); % plotting points
+    % getting range measurements and time for single batch
+    tic;
+    z = getRangeMeasurement(serial)'/1000;
+    dT = toc;
+    
+    [x_posterior_next,P_posterior] = VanillaEKF(anchor_pos,x_posterior_current,P_posterior,dT,z); % estimating a posteriori position
+    
+    scatter3(x_posterior_next(1),x_posterior_next(2),x_posterior_next(3),5,'r'); % plotting points
+    
+    % connecting neighboring positions
+    line([x_posterior_current(1),x_posterior_next(1)], ...
+        [x_posterior_current(2),x_posterior_next(2)], ...
+        [x_posterior_current(3),x_posterior_next(3)],'Color',[1,.6196,.6196]);
     drawnow;
+    
+    % update 
+    x_posterior_current = x_posterior_next;
+    index = index + 1;
 end
 
 
