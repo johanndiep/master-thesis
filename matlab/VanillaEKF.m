@@ -28,12 +28,7 @@ function [x_posterior,P_posterior] = VanillaEKF(anchor_pos,x_posterior,P_posteri
 %% Process and measurement model
 
     % system matrix for constant velocity model
-    A = [1,0,0,dT,0,0; ...
-        0,1,0,0,dT,0; ...
-        0,0,1,0,0,dT; ...
-        0,0,0,1,0,0; ...
-        0,0,0,0,1,0; ...
-        0,0,0,0,0,1];
+    A = [1,0,0,dT,0,0;0,1,0,0,dT,0;0,0,1,0,0,dT;0,0,0,1,0,0;0,0,0,0,1,0;0,0,0,0,0,1];
             
     % non-linear measurement prediction model
     index = 1; 
@@ -50,8 +45,13 @@ function [x_posterior,P_posterior] = VanillaEKF(anchor_pos,x_posterior,P_posteri
     
     r = matlabFunction(r);
     r = convertToAcceptArray(r);
-            
-    Q = diag([1,1,1,1,1,1]); % process noise covariance
+    
+    % process noise covariance
+    q_1= 0.125 * dT^4/3;
+    q_2 = 0.125 * dT^3/2;
+    q_3 = 0.125 * dT/2;
+    Q = [q_1,0,0,q_2,0,0;0,q_1,0,0,q_2,0;0,0,q_1,0,0,q_2;q_2,0,0,q_3,0,0;0,q_2,0,0,q_3,0;0,0,q_2,0,0,q_3];
+    
     R = eye(size(anchor_pos,1))*0.05; % measurement noise covariance
         
 %% Prior update

@@ -30,6 +30,7 @@ index = 1;
 iterations = 100; % gather 50 position data
 height_top = 2.43-0.275; % anchors heights
 time_iterations = 10;
+PreviousTime = 0;
 
 %% Calling anchor calibration executables
 
@@ -92,35 +93,35 @@ clear serial;
 port = seriallist;
 serial = serial(port);
 
+% using Gauss-Newton for Kalman-Filter initialization 
+range_array = getRangeMeasurement(serial);
+starting_position = TagPositionEstimation(anchor_pos,range_array);
+
 % initialization of state [p_x,p_y,p_z,v_x,v_y,v_z] and covariance
-x_posterior_current = normrnd(2,0.1,[1,6])';
-P_posterior = 1*eye(size(x_posterior_current,1));
+x_posterior = [starting_position,normrnd(0,0.1,[1,3])]';
+P_posterior = 0.05*eye(size(x_posterior_current,1));
+SavedWaypoints(1,1:3) = x_posterior(1:3);
 
-scatter3(x_posterior_current(1),x_posterior_current(2),x_posterior_current(3),5,'r'); % plotting points
-drawnow;
-
+tic; % starting timer
 while index < iterations + 1
+    z = getRangeMeasurement(serial)'/1000; % getting range measurements for single batch
     
-    % getting range measurements and time for single batch
-    tic;
-    z = getRangeMeasurement(serial)'/1000;
-    dT = toc;
+    TimeSinceStart = toc;
+    [x_posterior,P_posterior] = VanillaEKF(anchor_pos,x_posterior,P_posterior,TimeSinceStart-PreviousTime,z); % estimating a posteriori position
+    SavedWaypoints(i+1,1:3) = x_posterior(1:3);
     
-    [x_posterior_next,P_posterior] = VanillaEKF(anchor_pos,x_posterior_current,P_posterior,dT,z); % estimating a posteriori position
-    
-    scatter3(x_posterior_next(1),x_posterior_next(2),x_posterior_next(3),5,'r'); % plotting points
-    
-    % connecting neighboring positions
-    line([x_posterior_current(1),x_posterior_next(1)], ...
-        [x_posterior_current(2),x_posterior_next(2)], ...
-        [x_posterior_current(3),x_posterior_next(3)],'Color',[1,.6196,.6196]);
-    drawnow;
-    
-    % update 
-    x_posterior_current = x_posterior_next;
+    % update
     index = index + 1;
+    PreviousTime = TimeSinceStart;
 end
 
-
-
-
+%% Plotting
+ 
+scatter3(SavedWaypoints(:,1),SavedWaypoints(:,2),SavedWaypoints(:,3),5,'r'); % plotting points
+    
+% connecting neighboring positions
+for i = 1:(size(SavedWaypoints,1)-1)
+    line([SavedWaypoints(i,1),SavedWaypoints(i+1,1)], ...
+        [SavedWaypoints(i,2),SavedWaypoints(i+1,2)], ...
+        [SavedWaypoints(i,3),SavedWaypoints(i+1,3)],'Color',[1,.6196,.6196]);
+end
