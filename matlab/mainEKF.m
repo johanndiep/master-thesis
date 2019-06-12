@@ -99,7 +99,7 @@ starting_position = TagPositionEstimation(anchor_pos,range_array);
 
 % initialization of state [p_x,p_y,p_z,v_x,v_y,v_z] and covariance
 x_posterior = [starting_position,normrnd(0,0.1,[1,3])]';
-P_posterior = 0.05*eye(size(x_posterior_current,1));
+P_posterior = 0.05*eye(size(x_posterior,1));
 SavedWaypoints(1,1:3) = x_posterior(1:3);
 
 tic; % starting timer
@@ -108,7 +108,7 @@ while index < iterations + 1
     
     TimeSinceStart = toc;
     [x_posterior,P_posterior] = VanillaEKF(anchor_pos,x_posterior,P_posterior,TimeSinceStart-PreviousTime,z); % estimating a posteriori position
-    SavedWaypoints(i+1,1:3) = x_posterior(1:3);
+    SavedWaypoints(index+1,1:3) = x_posterior(1:3);
     
     % update
     index = index + 1;
