@@ -1,19 +1,19 @@
 % Johann Diep (jdiep@student.ethz.ch) - June 2019
+%
+% This function reads the position ground-truth data of the drone from the 
+% VICON system over a ROS bridge. In order to execute this function, the 
+% corresponding ROS driver for the VICON motion capture system needs to be 
+% launched (more informations on https://github.com/ethz-asl/vicon_bridge).
+%
+% Input:
+%   - ViconDroneSubscriber: Subscriber object to '/vicon/Bebop_Johann/Bebop_Johann' topic
+% 
+% Output:
+%   - DronePositionGroundTruth: Position of the drone body-fixed frame in VICON inertial coordinate frame
+%   - DroneQuaternionGroundTruth: Quaternion of the drone body-fixed frame relative to the VICON inertial coordinate frame
 
-% This function reads the position ground-truth data from the VICON system
-% over a ROS bridge.
-
-function [drone_position_gt,drone_quaternion_gt] = getGroundTruth(ViconSub_pos)
-    %% Reading position data from ROS stream
-
-        msg = ViconSub_pos.LatestMessage;
-        
-        drone_position_gt = [msg.Transform.Translation.X; ...
-            msg.Transform.Translation.Y; ...
-            msg.Transform.Translation.Z]; % position
-        
-        drone_quaternion_gt = [msg.Transform.Rotation.X; ...
-            msg.Transform.Rotation.Y; ...
-            msg.Transform.Rotation.Z; ...
-            msg.Transform.Rotation.W]; % orientation
+function [DronePositionGroundTruth,DroneQuaternionGroundTruth] = getGroundTruth(ViconDroneSubscriber)
+        LatestMessage = ViconDroneSubscriber.LatestMessage;    
+        DronePositionGroundTruth = [LatestMessage.Transform.Translation.X;LatestMessage.Transform.Translation.Y;LatestMessage.Transform.Translation.Z];
+        DroneQuaternionGroundTruth = [LatestMessage.Transform.Rotation.X;LatestMessage.Transform.Rotation.Y;LatestMessage.Transform.Rotation.Z;LatestMessage.Transform.Rotation.W];
 end

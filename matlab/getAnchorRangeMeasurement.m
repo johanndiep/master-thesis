@@ -1,129 +1,127 @@
 % Johann Diep (jdiep@student.ethz.ch) - May 2019
+%
+% This program reads the distances from a Bitcraze Loco Positioning System 
+% anchor setup. The module which is connected to the computer should be 
+% changed into the modified Sniffer mode. The sniffer sequentially turns 
+% each single anchor into a tag, which then starts ranging with its 
+% neighboring anchors. With the resulting distances from the anchor setup, 
+% self-calibration of the setup can be obtained.
+%
+% Input:
+%   - SerialObject: Serial port object
+%   - NumberOfIterationsForCalibration: Desired amount of ranges to be gathered before averaged
+%   - NumberOfAnchors: Amount of anchors in the setup
+% 
+% Output:
+%   - AnchorRangeMean: Stores the averaged ranges measurements between each anchor in format [NumberofAnchors, NumberofAnchors]
 
-% This program reads the distances from a Bitcraze Loco Positioning System anchor setup. 
-% The module which is connected to the computer should be changed into the modified Sniffer mode.
-% The sniffer sequentially turns each single anchor into a tag, which then starts ranging with
-% its neighboring anchors. With the resulting distances from the anchor setup, self-calibration
-% of the setup can be obtained.
+function AnchorRangeMean = getAnchorRangeMeasurement(SerialObject,NumberOfIterationsForCalibration,NumberOfAnchors)
+    IterationIndex = 1;
+    NextIndex = false;
+    FirstIteration = true;
 
-function anchor_range_mean = getAnchorRangeMeasurement(serial)
-    %% Parameters
+    fopen(SerialObject); % run sudo chmod 666 /dev/ttyACM* on console first
 
-    index = 1;
-    next_index = false;
-    first_iteration = true;
-    iterations = 100; % number of range data per anchor
-    % anchors = 8; % for 8 anchors network
-    anchors = 6; % for 6 anchors network
-
-    %% Open serial port
-
-    fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
-
-    %% Range aquisition form each anchor via TWR
-
-    for i = 1:anchors % each anchor becomes a tag once
-        fwrite(serial, "c"); % sending switch_to_tag command, beginning at anchor 1 and ending at anchor 6
-        while index < iterations + 1
-            line = fgetl(serial);
+    for AnchorIterationIndex = 1:NumberOfAnchors % each anchor becomes a tag once
+        fwrite(SerialObject, "c"); % sending Switch-to-Tag command, beginning at anchor 1 and ending at last anchor
+        while IterationIndex < NumberOfIterationsForCalibration + 1
+            LineSerial = fgetl(SerialObject);
 
             % start readout with anchor 1 and avoid pre-information overload
-            if first_iteration == true
-                progress_bar = waitbar(0,"Interrogating anchor " + i); % creating waitbar
-                if i == 1 % no information on anchor 1 if first anchor is tag
-                    while ~strncmpi(line,"Anchor 2",8)
-                        line = fgetl(serial);
+            if FirstIteration == true
+                ProgressBar = waitbar(0,"Interrogating anchor " + AnchorIterationIndex); % creating waitbar     
+                if AnchorIterationIndex == 1 % no information on anchor 1 if first anchor is tag
+                    while ~strncmpi(LineSerial,"Anchor 2",8)
+                        LineSerial = fgetl(SerialObject);
                     end
-                elseif i > 1
-                    while ~strncmpi(line,"Anchor 1",8)
-                        line = fgetl(serial);
+                elseif AnchorIterationIndex > 1
+                    while ~strncmpi(LineSerial,"Anchor 1",8)
+                        LineSerial = fgetl(SerialObject);
                     end
                 end
-                first_iteration = false;
+                FirstIteration = false;
             end
 
             % in case of overlapping
-            while line(17) ~= int2str(i)
+            while LineSerial(17) ~= int2str(AnchorIterationIndex)
                 disp("WARNING: Detection of wrong sequence number, re-interrogating ...");
-                line = fgetl(serial);
+                LineSerial = fgetl(SerialObject);
             end
 
-            % storing range measurement in array of size (#anchors, #anchors, #measurements)
-            if strncmpi(line,"Anchor",6)
-                switch line(8)
+            % storing range measurement in an array
+            if strncmpi(LineSerial,"Anchor",6)
+                switch LineSerial(8)
                     case "1" % anchor 1
-                        range_array(i,1,index) = str2double(line(24:end));
-                        next_index = false;
+                        RangeArray(AnchorIterationIndex,1,IterationIndex) = str2double(LineSerial(24:end));
+                        NextIndex = false;
                     case "2" % anchor 2
-                        range_array(i,2,index) = str2double(line(24:end));
-                        next_index = false;
+                        RangeArray(AnchorIterationIndex,2,IterationIndex) = str2double(LineSerial(24:end));
+                        NextIndex = false;
                     case "3" % anchor 3
-                        range_array(i,3,index) = str2double(line(24:end));
-                        next_index = false;
+                        RangeArray(AnchorIterationIndex,3,IterationIndex) = str2double(LineSerial(24:end));
+                        NextIndex = false;
                     case "4" % anchor 4
-                        range_array(i,4,index) = str2double(line(24:end));
-                        next_index = false;
+                        RangeArray(AnchorIterationIndex,4,IterationIndex) = str2double(LineSerial(24:end));
+                        NextIndex = false;
                     case "5" % anchor 5
-                        range_array(i,5,index) = str2double(line(24:end));
-                        % differentiate between 6 and 6 anchors network
-                        if anchors == 6
+                        RangeArray(AnchorIterationIndex,5,IterationIndex) = str2double(LineSerial(24:end));
+                        % differentiate between 6 and 8 anchors network
+                        if NumberOfAnchors == 6
                             % solves indexing issue at last anchor index
-                            if i == 6
-                                next_index = true;
-                            elseif i < 6
-                                next_index = false;
+                            if AnchorIterationIndex == 6
+                                NextIndex = true;
+                            elseif AnchorIterationIndex < 6
+                                NextIndex = false;
                             end
                         else
-                            next_index = false;
+                            NextIndex = false;
                         end
                     case "6" % anchor 6
-                        range_array(i,6,index) = str2double(line(24:end));
-                        % differentiate between 6 and 6 anchors network
-                        if anchors == 6
-                            next_index = true;
+                        RangeArray(AnchorIterationIndex,6,IterationIndex) = str2double(LineSerial(24:end));
+                        % differentiate between 6 and 8 anchors network
+                        if NumberOfAnchors == 6
+                            NextIndex = true;
                         else
-                            next_index = false;
+                            NextIndex = false;
                         end
                     case "7" % anchor 7
-                        range_array(i,7,index) = str2double(line(24:end));
+                        RangeArray(AnchorIterationIndex,7,IterationIndex) = str2double(LineSerial(24:end));
                         % solves indexing issue at last anchor index
-                        if i == 8
-                            next_index = true;
-                        elseif i < 8
-                            next_index = false;
+                        if AnchorIterationIndex == 8
+                            NextIndex = true;
+                        elseif AnchorIterationIndex < 8
+                            NextIndex = false;
                         end
                     case "8" % anchor 8
-                        range_array(i,8,index) = str2double(line(24:end));
-                        next_index = true;
+                        RangeArray(AnchorIterationIndex,8,IterationIndex) = str2double(LineSerial(24:end));
+                        NextIndex = true;
                 end
             end
 
-            if next_index % gather measurement for anchor 1 to 8 before updating index
-               index = index + 1;
-               waitbar(index/(iterations + 1),progress_bar,"Interrogating anchor " + i);
-               next_index = false;
+            if NextIndex % gather measurement for anchor 1 to last anchor before updating index
+                IterationIndex = IterationIndex + 1;
+                waitbar(IterationIndex/(NumberOfIterationsForCalibration + 1),ProgressBar,"Interrogating anchor " + AnchorIterationIndex);
+                NextIndex = false;
             end
         end
 
-        index = 1;
+        IterationIndex = 1;
 
-        fwrite(serial, "y"); % sending switch_to_anchor command
+        fwrite(SerialObject, "y"); % sending Switch-to-Anchor command
         pause(2); % pause the system to avoid signal overload
         
-        close(progress_bar);
+        close(ProgressBar);
 
-        first_iteration = true;
+        FirstIteration = true;
     end  
     
-    fclose(serial);
-
-    %% Averaging measurements
+    fclose(SerialObject);
 
     % remove outliers and averaging
-    for row = 1:anchors
-       for column = 1:anchors
-          anchor_range_mean(row,column) = mean(rmoutliers(permute(range_array(row,column,:),[1,3,2]))); 
-       end
+    for ArrayRow = 1:NumberOfAnchors
+        for ArrayColumn = 1:NumberOfAnchors
+           AnchorRangeMean(ArrayRow,ArrayColumn) = mean(rmoutliers(permute(RangeArray(ArrayRow,ArrayColumn,:),[1,3,2]))); 
+        end
     end
 end
 

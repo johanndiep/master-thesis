@@ -1,69 +1,43 @@
 % Johann Diep (jdiep@student.ethz.ch) - June 2019
-
+%
 % This is an implementation of an extended Kalman Filter for nonlinear
 % dynamics systems. The function returns the state estimate x and
-% covariance P for a constant velocity model:
+% covariance P for a constant velocity model.
 %
-%   - x_k = q(x_{k-1},v_{k-1}), v_{k-1} ~ N(0,Q)
-%   - z_k = h(x_{k},w_{k}), w ~ N(0,R)
+%   - x(k) = q[x(k-1),v(k-1)], v(k-1) ~ N(0,Q)
+%   - z(k) = h[x(k),w(k)], w(k) ~ N(0,R)
 %
 % Inputs:
-%   - x_posterior: a priori state estimate, posterior estimate from previous iteration
-%   - P_posterior: a priori estimated state covariance, posterior estimate from previous iteration
+%   - NumberOfAnchors: Amount of anchors in the setup
+%   - x_Posterior: A priori state estimate, posterior estimate from previous iteration
+%   - P_Posterior: A priori estimated state covariance, posterior estimate from previous iteration
 %   - z: current measurement
-%   - dT: time interval between measurements
+%   - DeltaT: time interval between measurements
+%   - h: non-linear measurement prediction model
+%   - H: Jacobian of non-linear measurement prediction model
 %
 % Outputs:
-%   - x_posterior: a posteriori state estimate
-%   - P_posterior: a posteriori state covariance
+%   - x_Posterior: A posteriori state estimate
+%   - P_Posterior: A posteriori state covariance
 
-function [x_posterior,P_posterior] = VanillaEKF(anchor_pos,x_posterior,P_posterior,dT,z)
-%% Symbolic values definition
-
-    % position and velocity parameters
-    syms p_x p_y p_z
-    syms v_x v_y v_z
-    x = [p_x,p_y,p_z,v_x,v_y,v_z];
-
-%% Process and measurement model
-
+function [x_Posterior,P_Posterior] = VanillaEKF(NumberOfAnchors,x_Posterior,P_Posterior,DeltaT,z,h,H)  
     % system matrix for constant velocity model
-    A = [1,0,0,dT,0,0;0,1,0,0,dT,0;0,0,1,0,0,dT;0,0,0,1,0,0;0,0,0,0,1,0;0,0,0,0,0,1];
-            
-    % non-linear measurement prediction model
-    index = 1; 
-    r = sym(zeros(size(anchor_pos,1),1));
-    for i = 1:size(anchor_pos,1)
-        r(index) = sqrt((x(1)-anchor_pos(i,1))^2+(x(2)-anchor_pos(i,2))^2+(x(3)-anchor_pos(i,3))^2);
-        index = index + 1;
-    end
-        
-    % measurement matrix
-    H = jacobian(r,x);
-    H = matlabFunction(H);
-    H = convertToAcceptArray(H);
-    
-    r = matlabFunction(r);
-    r = convertToAcceptArray(r);
+    A = [1,0,0,DeltaT,0,0;0,1,0,0,DeltaT,0;0,0,1,0,0,DeltaT;0,0,0,1,0,0;0,0,0,0,1,0;0,0,0,0,0,1];
     
     % process noise covariance
-    q_1= 0.125 * dT^4/3;
-    q_2 = 0.125 * dT^3/2;
-    q_3 = 0.125 * dT/2;
-    Q = [q_1,0,0,q_2,0,0;0,q_1,0,0,q_2,0;0,0,q_1,0,0,q_2;q_2,0,0,q_3,0,0;0,q_2,0,0,q_3,0;0,0,q_2,0,0,q_3];
+    Q_1= 0.125 * DeltaT^4/3;
+    Q_2 = 0.125 * DeltaT^3/2;
+    Q_3 = DeltaT/2;
+    Q = [Q_1,0,0,Q_2,0,0;0,Q_1,0,0,Q_2,0;0,0,Q_1,0,0,Q_2;Q_2,0,0,Q_3,0,0;0,Q_2,0,0,Q_3,0;0,0,Q_2,0,0,Q_3];
     
-    R = eye(size(anchor_pos,1))*0.05; % measurement noise covariance
+    R = eye(NumberOfAnchors)*0.05; % measurement noise covariance
         
-%% Prior update
-
-    x_prior = A*x_posterior; % project the state ahead
-    P_prior = A*P_posterior*A'+Q; % project the error covariance ahead
+    x_Prior = A*x_Posterior; % project the state ahead
+    P_Prior = A*P_Posterior*A'+Q; % project the error covariance ahead
+            
+    K = P_Prior*H(x_Prior(1:3)')'*(H(x_Prior(1:3)')*P_Prior*H(x_Prior(1:3)')'+R)^(-1); % compute the Kalman gain
         
-%% A posteriori update
-    
-    K = P_prior*H(x_prior(1:3)')'*(H(x_prior(1:3)')*P_prior*H(x_prior(1:3)')'+R)^(-1); % compute the Kalman gain
-        
-    x_posterior = x_prior+K*(z-r(x_prior(1:3)')); % update the estimate with measurement z
-    P_posterior = (eye(size(anchor_pos,1))-K*H(x_prior(1:3)'))*P_prior; % update the error covariance   
+    x_Posterior = x_Prior+K*(z-h(x_Prior(1:3)')); % update the estimate with measurement z
+    P_Posterior = (eye(NumberOfAnchors)-K*H(x_Prior(1:3)'))*P_Prior; % update the error covariance
 end
    

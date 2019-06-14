@@ -1,19 +1,20 @@
 % Johann Diep (jdiep@student.ethz.ch) - June 2019
+%
+% This function reads the position ground-truth data of the anchor network
+% from the VICON system over a ROS bridge. In order to execute this 
+% function, the corresponding ROS driver for the VICON motion capture 
+% system needs to be launched (more informations on 
+% https://github.com/ethz-asl/vicon_bridge).
+%
+% Input:
+%   - ViconAnchorsSubscriber: Subscriber object to '/vicon/Anchors_Johann/Anchors_Johann' topic
+% 
+% Output:
+%   - AnchorsPositionGroundTruth: Position of the anchors body-fixed frame in VICON inertial coordinate frame
+%   - AnchorsQuaternionGroundTruth: Quaternion of the anchors body-fixed frame relative to the VICON inertial coordinate frame
 
-% This function reads the ground-truth position of the anchors network from the VICON system
-% over a ROS bridge.
-
-function [anchors_position_gt,anchors_quaternion_gt] = getAnchorsGroundTruth(ViconAnchorsSub_pos)
-    %% Reading position data from ROS stream
-
-        msg = ViconAnchorsSub_pos.LatestMessage;
-        
-        anchors_position_gt = [msg.Transform.Translation.X; ...
-            msg.Transform.Translation.Y; ...
-            msg.Transform.Translation.Z]; % position
-        
-        anchors_quaternion_gt = [msg.Transform.Rotation.X; ...
-            msg.Transform.Rotation.Y; ...
-            msg.Transform.Rotation.Z; ...
-            msg.Transform.Rotation.W]; % orientation
+function [AnchorsPositionGroundTruth,AnchorsQuaternionGroundTruth] = getAnchorsGroundTruth(ViconAnchorsSubscriber)
+        LatestMessage = ViconAnchorsSubscriber.LatestMessage;
+        AnchorsPositionGroundTruth = [LatestMessage.Transform.Translation.X;LatestMessage.Transform.Translation.Y;LatestMessage.Transform.Translation.Z];
+        AnchorsQuaternionGroundTruth = [LatestMessage.Transform.Rotation.X;LatestMessage.Transform.Rotation.Y;LatestMessage.Transform.Rotation.Z;LatestMessage.Transform.Rotation.W];
 end

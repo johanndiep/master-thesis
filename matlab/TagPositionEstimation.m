@@ -1,60 +1,56 @@
 % Johann Diep (jdiep@student.ethz.ch) - May 2019
+%
+% This function Estimates the position of the tag with a set of range 
+% measurements from each anchor with Gauss-Newton optimization.
+%
+% Input:
+%   - AnchorPositions: The position coordinates of each anchor in format [NumberofAnchors,3]
+%   - RangeMean: Stores the range measurement towards all anchors in format [NumberOfAnchors,1]
+%   - NumberOfAnchors: Amount of anchors in the setup 
+%
+% Output:
+%   - TagPosition: Stores the position of the tag in format [3,1]
 
-% Estimate the position of the tag with a set of range measurements with
-% each anchor.
-
-function tag_position = TagPositionEstimation(anchor_pos,range_array)
-    %% Hardcoding values
-    
-    range_array = range_array/1000; % transform to [m] unit 
-    % anchors = 8; % for 8 anchors network
-    anchors = 6; % for 6 anchors network
-    
-    %% Parameters to estimate
+function TagPosition = TagPositionEstimation(AnchorPositions,RangeMean,NumberOfAnchors)
+    RangeMean = RangeMean/1000; % transform to [m] unit 
+    FunctionIndex = 1; 
     
     % coordinates of the current position of the tag
     syms p_x p_y p_z 
     p = [p_x,p_y,p_z];
     
-    %% Objective function to minimize
-    
-    index = 1; 
-    f = sym(zeros(anchors,1));
-    
     %ranging constraints
-    for i = 1:anchors
-        f(index) = sqrt((p(1)-anchor_pos(index,1))^2 + ...
-            (p(2)-anchor_pos(index,2))^2 + ...
-            (p(3)-anchor_pos(index,3))^2) - range_array(index);
-        index = index + 1;
+    ObjectiveFunction = sym(zeros(NumberOfAnchors,1));
+    for i = 1:NumberOfAnchors
+        ObjectiveFunction(FunctionIndex) = sqrt((p(1)-AnchorPositions(i,1))^2+(p(2)-AnchorPositions(i,2))^2+(p(3)-AnchorPositions(i,3))^2)-RangeMean(i);
+        FunctionIndex = FunctionIndex + 1;
     end
-    
-    %% Gauss-Newton algorithm
-    
-    fp = jacobian(f,p); % calculate Jacobian
+        
+    Jacobian = jacobian(ObjectiveFunction,p); % calculate Jacobian
     
     % convert symbolic expression to function handle
-    f = matlabFunction(f);
-    fp = matlabFunction(fp);
+    ObjectiveFunction = matlabFunction(ObjectiveFunction);
+    Jacobian = matlabFunction(Jacobian);
     
     % allow function to handle array input
-    f = convertToAcceptArray(f);
-    fp = convertToAcceptArray(fp);
+    ObjectiveFunction = convertToAcceptArray(ObjectiveFunction);
+    Jacobian = convertToAcceptArray(Jacobian);
     
     % initialization
     p_i = normrnd(0,0.1,[1,size(p,2)]);
         
     while true
-        b = f(p_i); % evaluate f
-        A = fp(p_i); % evaluate Jacobian
-        d = -A\b; % solve linear least squares problem
+        EvaluatedObjectiveFunction = ObjectiveFunction(p_i); % evaluate objective function
+        EvaluatedJacobian = Jacobian(p_i); % evaluate Jacobian
+        IterationStep = -EvaluatedJacobian\EvaluatedObjectiveFunction; % solve linear least squares problem
         
-        p_i = p_i + d'; % update
+        p_i = p_i + IterationStep'; % update
         
-        if norm(d) <= 1e-10 % stop iteration of norm(d) passes a tolerance
-            break
+        % stop iteration of norm of IterationStep passes a tolerance
+        if norm(IterationStep) <= 1e-10
+        	break
         end
     end
 
-    tag_position = p_i; % return solved position
+    TagPosition = p_i; % return solved position
 end

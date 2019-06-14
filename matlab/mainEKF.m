@@ -1,5 +1,5 @@
 % Johann Diep (jdiep@student.ethz.ch) - June 2019
-
+%
 % This program is the main function which is used to call each executable for the EKF method.
 % It will guide the user through each steps, starting from anchor setup self-calibration
 % through gathering waypoint datas on the Bebop drone with the UWB-ranging method.
@@ -12,70 +12,66 @@ disp("It will guide the user through each steps, starting from anchor setup self
 disp("through gathering waypoint datas on the Bebop drone with the UWB-ranging method.");
 disp("******************************************************************************************************");
 
-%% Closing and deleting ports
+%% Setup serial port
 
 if ~isempty(instrfind)
     fclose(instrfind);
     delete(instrfind);
 end
 
-%% Setup serial port
-
-port = seriallist;
-serial = serial(port);
+PortAddress = seriallist;
+SerialObject = serial(PortAddress);
 
 %% Hardcoded parameters
 
-index = 1;
-iterations = 100; % gather 50 position data
-height_top = 2.43-0.275; % anchors heights
-time_iterations = 10;
+IterationIndex = 1;
 PreviousTime = 0;
+
+%% Set desired parameters
+
+NumberOfAnchors = 6;
+NumberOfIterations = 100; % number of position data
+NumberOfIterationsForCalibration = 100; % amount of ranges to be gathered before averaged for anchor calibration
+NumberOfIterationsForRanging = 10; % amount of ranges to be gathered before averaged for ranging
 
 %% Calling anchor calibration executables
 
 input("Place anchors in the room and press [ENTER]");
 input("Change the connected module into Sniffer mode and press [ENTER]");
 disp("******************************************************************************************************");
-disp("Starting self-calibration");
+disp("Starting anchor self-calibration procedure");
 
 % starting anchor self-calibration procedure
-anchor_range_mean = getAnchorRangeMeasurement(serial);
-anchor_pos = AnchorCalibration(anchor_range_mean);
+AnchorRangeMean = getAnchorRangeMeasurement(SerialObject,NumberOfIterationsForCalibration,NumberOfAnchors);
+AnchorPositions = AnchorCalibration(AnchorRangeMean,NumberOfAnchors);
 
 %% Plotting the anchors
 
 figure()
 hold on
-title("Tinamu Flying Machine Arena");
+title("Tinamu Labs Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
 grid on
 
-scatter3(anchor_pos(:,1),anchor_pos(:,2),anchor_pos(:,3),'MarkerEdgeColor','k','MarkerFaceColor',[0,0,0]);
+scatter3(AnchorPositions(:,1),AnchorPositions(:,2),AnchorPositions(:,3),'MarkerEdgeColor','k','MarkerFaceColor',[0,0,0]);
 
-% for 8 anchors network
-% anchor_comb = [1,5;4,8;2,6;3,7];
-% for i = 1:size(anchor_comb,1)
-%     line([anchor_pos(anchor_comb(i,1),1),anchor_pos(anchor_comb(i,2),1)], ...
-%         [anchor_pos(anchor_comb(i,1),2),anchor_pos(anchor_comb(i,2),2)], ...
-%         [anchor_pos(anchor_comb(i,1),3),anchor_pos(anchor_comb(i,2),3)], ...
-%         'Color',[.9412,.9412,.9412],'LineWidth',3);
-% end
-
-% for 6 anchors network
-for i = 1:size(anchor_pos,1)
-    if mod(i,2) == 1
-        line([anchor_pos(i,1),anchor_pos(i+1,1)], ...
-            [anchor_pos(i,2),anchor_pos(i+1,2)], ...
-            [anchor_pos(i,3),anchor_pos(i+1,3)], ...
-            'Color',[.9412,.9412,.9412],'LineWidth',3);
-   end
+if NumberOfAnchors == 8
+    AnchorCombinations = [1,5;4,8;2,6;3,7];
+    for i = 1:size(AnchorCombinations,1)
+        line([AnchorPositions(AnchorCombinations(i,1),1),AnchorPositions(AnchorCombinations(i,2),1)],[AnchorPositions(AnchorCombinations(i,1),2),AnchorPositions(AnchorCombinations(i,2),2)],[AnchorPositions(AnchorCombinations(i,1),3),AnchorPositions(AnchorCombinations(i,2),3)],'Color',[.9412,.9412,.9412],'LineWidth',3);
+    end
+elseif NumberOfAnchors == 6
+    for i = 1:size(AnchorPositions,1)
+        if mod(i,2) == 1
+            line([AnchorPositions(i,1),AnchorPositions(i+1,1)],[AnchorPositions(i,2),AnchorPositions(i+1,2)],[AnchorPositions(i,3),AnchorPositions(i+1,3)],'Color',[.9412,.9412,.9412],'LineWidth',3);
+        end
+    end
 end
 
-for i = 1:size(anchor_pos,1)
-    text(anchor_pos(i,1)+0.1,anchor_pos(i,2)+0.1,anchor_pos(i,3)+0.1,"Anchor "+int2str(i));
+for i = 1:size(AnchorPositions,1)
+    text(AnchorPositions(i,1)+0.1,AnchorPositions(i,2)+0.1,AnchorPositions(i,3)+0.1,"Anchor "+int2str(i));
 end
 
 %% Calling the position estimation executables
@@ -88,30 +84,33 @@ input("Change the module on the Bebop drone into Tag mode and press [ENTER]");
 % delete and re-initialize serial
 fclose(instrfind);
 delete(instrfind);
-delete(serial);
+delete(SerialObject);
 clear serial;
-port = seriallist;
-serial = serial(port);
+PortAddress = seriallist;
+SerialObject = serial(PortAddress);
 
 % using Gauss-Newton for Kalman-Filter initialization 
-range_array = getRangeMeasurement(serial);
-starting_position = TagPositionEstimation(anchor_pos,range_array);
+RangeMean = getRangeMeasurement(SerialObject,NumberOfIterationsForRanging,NumberOfAnchors);
+StartingPosition = TagPositionEstimation(AnchorPositions,RangeMean,NumberOfAnchors);
 
 % initialization of state [p_x,p_y,p_z,v_x,v_y,v_z] and covariance
-x_posterior = [starting_position,normrnd(0,0.1,[1,3])]';
-P_posterior = 0.05*eye(size(x_posterior,1));
-SavedWaypoints(1,1:3) = x_posterior(1:3);
+x_Posterior = [StartingPosition,normrnd(0,0.1,[1,3])]';
+P_Posterior = 0.05*eye(size(x_posterior,1));
+SavedWaypoints(1,1:3) = x_Posterior(1:3);
+
+[h,H] = PreprocessingVanillaEKF(AnchorPositions); % preprocessing
 
 tic; % starting timer
-while index < iterations + 1
-    z = getRangeMeasurement(serial)'/1000; % getting range measurements for single batch
+while IterationIndex < NumberOfIterations + 1
+    z = getRangeMeasurement(SerialObject,1,NumberOfAnchors)'/1000; % getting range measurements for single batch
     
     TimeSinceStart = toc;
-    [x_posterior,P_posterior] = VanillaEKF(anchor_pos,x_posterior,P_posterior,TimeSinceStart-PreviousTime,z); % estimating a posteriori position
-    SavedWaypoints(index+1,1:3) = x_posterior(1:3);
+    DeltaT = TimeSinceStart-PreviousTime;
+    [x_Posterior,P_Posterior] = VanillaEKF(NumberOfAnchors,x_Posterior,P_Posterior,DeltaT,z,h,H); % estimating a posteriori position
+    SavedWaypoints(IterationIndex+1,1:3) = x_Posterior(1:3);
     
     % update
-    index = index + 1;
+    IterationIndex = IterationIndex + 1;
     PreviousTime = TimeSinceStart;
 end
 
@@ -121,7 +120,5 @@ scatter3(SavedWaypoints(:,1),SavedWaypoints(:,2),SavedWaypoints(:,3),5,'r'); % p
     
 % connecting neighboring positions
 for i = 1:(size(SavedWaypoints,1)-1)
-    line([SavedWaypoints(i,1),SavedWaypoints(i+1,1)], ...
-        [SavedWaypoints(i,2),SavedWaypoints(i+1,2)], ...
-        [SavedWaypoints(i,3),SavedWaypoints(i+1,3)],'Color',[1,.6196,.6196]);
+    line([SavedWaypoints(i,1),SavedWaypoints(i+1,1)],[SavedWaypoints(i,2),SavedWaypoints(i+1,2)],[SavedWaypoints(i,3),SavedWaypoints(i+1,3)],'Color',[1,.6196,.6196]);
 end
