@@ -48,10 +48,10 @@ Z_ViconToWorld = -0.225;
 T_ViconToWorld = [1,0,0,X_ViconToWorld;0,1,0,Y_ViconToWorld;0,0,1,Z_ViconToWorld;0,0,0,1];
 
 % read from VICON system, need to be adjusted each experiment
-DroneMarkerBodyFrame = [-20.6485/1000;6.76277/1000;77.7595/1000];
-FirstAnchorBodyFrame = [-1165.03/1000;-1641.83/1000;21.9812/1000];
-SecondAnchorBodyFrame = [2353.66/1000;63.3209/1000;-34.1397/1000];
-ThirdAnchorBodyFrame = [-1188.64/1000;1578.51/1000;12.1585/1000];
+DroneMarkerBodyFrame = [-10.5825/1000;14.8792/1000;77.8074/1000];
+FirstAnchorBodyFrame = [-889.257/1000;-1364.24/1000;8.74586/1000];
+SecondAnchorBodyFrame = [1806.91/1000;-24.7001/1000;-25.8678/1000];
+ThirdAnchorBodyFrame = [-917.654/1000;1388.94/1000;17.1219/1000];
 
 %% Set desired parameters
 
@@ -138,6 +138,8 @@ scatter3(CurrentTagPosition(1),CurrentTagPosition(2),CurrentTagPosition(3),5,'r'
 CurrentDroneRotationGroundTruth = quat2rotm(CurrentDroneQuaternionGroundTruth');
 CurrentDroneMarkerPositionGroundTruth = T_ViconToWorld * [CurrentDroneRotationGroundTruth,CurrentDronePositionGroundTruth;0,0,0,1] * [DroneMarkerBodyFrame;1];
 scatter3(CurrentDroneMarkerPositionGroundTruth(1),CurrentDroneMarkerPositionGroundTruth(2),CurrentDroneMarkerPositionGroundTruth(3),5,'b');
+
+disp("I got this far");
 
 while IterationIndex < NumberOfIterations + 1
     disp("Position number " + IterationIndex + " of " + NumberOfIterations);

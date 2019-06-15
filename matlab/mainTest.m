@@ -15,25 +15,25 @@ ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
 grid on
 
-scatter3(anchor_pos(:,1),anchor_pos(:,2),anchor_pos(:,3),'MarkerEdgeColor','k','MarkerFaceColor',[0,0,0]);
+scatter3(AnchorPositions(:,1),AnchorPositions(:,2),AnchorPositions(:,3),'MarkerEdgeColor','k','MarkerFaceColor',[0,0,0]);
 
 NumberOfAnchors = 6;
 
 if NumberOfAnchors == 8
     AnchorCombinations = [1,5;4,8;2,6;3,7];
     for i = 1:size(AnchorCombinations,1)
-        line([anchor_pos(AnchorCombinations(i,1),1),anchor_pos(AnchorCombinations(i,2),1)],[anchor_pos(AnchorCombinations(i,1),2),anchor_pos(AnchorCombinations(i,2),2)],[anchor_pos(AnchorCombinations(i,1),3),anchor_pos(AnchorCombinations(i,2),3)],'Color',[.9412,.9412,.9412],'LineWidth',3);
+        line([AnchorPositions(AnchorCombinations(i,1),1),AnchorPositions(AnchorCombinations(i,2),1)],[AnchorPositions(AnchorCombinations(i,1),2),AnchorPositions(AnchorCombinations(i,2),2)],[AnchorPositions(AnchorCombinations(i,1),3),AnchorPositions(AnchorCombinations(i,2),3)],'Color',[.9412,.9412,.9412],'LineWidth',3);
     end
 elseif NumberOfAnchors == 6
-    for i = 1:size(anchor_pos,1)
+    for i = 1:size(AnchorPositions,1)
         if mod(i,2) == 1
-            line([anchor_pos(i,1),anchor_pos(i+1,1)],[anchor_pos(i,2),anchor_pos(i+1,2)],[anchor_pos(i,3),anchor_pos(i+1,3)],'Color',[.9412,.9412,.9412],'LineWidth',3);
+            line([AnchorPositions(i,1),AnchorPositions(i+1,1)],[AnchorPositions(i,2),AnchorPositions(i+1,2)],[AnchorPositions(i,3),AnchorPositions(i+1,3)],'Color',[.9412,.9412,.9412],'LineWidth',3);
         end
     end
 end
 
-for i = 1:size(anchor_pos,1)
-    text(anchor_pos(i,1)+0.1,anchor_pos(i,2)+0.1,anchor_pos(i,3)+0.1,"Anchor "+int2str(i));
+for i = 1:size(AnchorPositions,1)
+    text(AnchorPositions(i,1)+0.1,AnchorPositions(i,2)+0.1,AnchorPositions(i,3)+0.1,"Anchor "+int2str(i));
 end
 
 %% Ground-truth
@@ -49,15 +49,13 @@ T_ViconToWorld = [1,0,0,X_ViconToWorld; ...
     0,0,1,Z_ViconToWorld;
     0,0,0,1];
 
-tag_BodyFrame = [-12.6427/1000;12.7169/1000;74.6836/1000];
+tag_BodyFrame = [-10.5825/1000;14.8792/1000;77.8074/1000];
 
-for i = 1:size(gt_array,1)
-    for j = 1:size(gt_array,2)
-        A = quat2rotm(permute(gt_quat_array(i,j,:),[3,1,2])');
-        b = permute(gt_array(i,j,:),[3,1,2]);
-        c(:,index) = T_ViconToWorld * [A,b;0,0,0,1] * [tag_BodyFrame;1];
-        index = index + 1;
-    end
+for i = 1:size(DronePositionGroundTruthArray,2)
+    A = quat2rotm(DroneQuaternionGroundTruthArray(:,i)');
+    b = DronePositionGroundTruthArray(:,i);
+    c(:,index) = T_ViconToWorld * [A,b;0,0,0,1] * [tag_BodyFrame;1];
+    index = index + 1;
 end
 
 scatter3(c(1,:),c(2,:),c(3,:),5,"b");

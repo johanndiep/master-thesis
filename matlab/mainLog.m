@@ -25,6 +25,15 @@ RosTopicDrone = '/vicon/Bebop_Johann/Bebop_Johann';
 ViconDroneSubscriber = rossubscriber(RosTopicDrone); % creating subscriber object for the drone
 pause(5); % time needed for initialization
 
+%% Testing Vicon (only for testing purpose, need to be turned off)
+
+% GroundTruthIterationIndex = 1;
+% 
+% while true
+% [DronePositionGroundTruthArray(1:3,GroundTruthIterationIndex),DroneQuaternionGroundTruthArray(1:4,GroundTruthIterationIndex)] = getGroundTruth(ViconDroneSubscriber); % gather ground-truth data
+% GroundTruthIterationIndex = GroundTruthIterationIndex + 1;
+% end
+
 %% Set desired parameters
 
 NumberOfAnchors = 6;
