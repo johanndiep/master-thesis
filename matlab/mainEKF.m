@@ -77,7 +77,7 @@ end
 %% Calling the position estimation executables
 
 ("******************************************************************************************************");
-disp("Preparing to gather " + iterations + " waypoints");
+disp("Preparing to gather " + NumberOfIterations + " waypoints");
 input("Change the module on the Bebop drone into Tag mode and press [ENTER]");
 ("******************************************************************************************************");
 
@@ -95,7 +95,7 @@ StartingPosition = TagPositionEstimation(AnchorPositions,RangeMean,NumberOfAncho
 
 % initialization of state [p_x,p_y,p_z,v_x,v_y,v_z] and covariance
 x_Posterior = [StartingPosition,normrnd(0,0.1,[1,3])]';
-P_Posterior = 0.05*eye(size(x_posterior,1));
+P_Posterior = 0.05*eye(size(x_Posterior,1));
 SavedWaypoints(1,1:3) = x_Posterior(1:3);
 
 [h,H] = PreprocessingVanillaEKF(AnchorPositions); % preprocessing

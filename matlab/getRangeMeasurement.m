@@ -17,7 +17,7 @@ function RangeMean = getRangeMeasurement(SerialObject,NumberOfIterations,NumberO
     NextIndex = false;
     FirstIteration = true;
     
-    fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
+    fopen(SerialObject); % run sudo chmod 666 /dev/ttyACM* on console first
         
     while IterationIndex < NumberOfIterations + 1
         LineSerial = fgetl(SerialObject);
