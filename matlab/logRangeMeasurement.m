@@ -72,7 +72,7 @@ function [TimeArray,RangeArray,DronePositionGroundTruthArray,DroneQuaternionGrou
                 case "6" % anchor 6
                     TimeArray(6,IterationIndex) = toc;
                     RangeArray(6,IterationIndex) = str2double(LineSerial(24:end));
-                    % differentiate between 6 and 6 anchors network
+                    % differentiate between 6 and 8 anchors network
                     if NumberOfAnchors == 6
                         NextIndex = true;
                     else

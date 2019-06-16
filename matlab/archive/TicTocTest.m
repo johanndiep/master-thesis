@@ -20,28 +20,16 @@ fopen(serial); % run sudo chmod 666 /dev/ttyACM* on console first
 
 tictoc_variable = 1;
 
-tic;
-for i = 1:100
-   if tictoc_variable == 0
-       tic;
-       tictoc_variable = 1;
-   end
-    
-   line = fgetl(serial);
-   line = fgetl(serial);
-   line = fgetl(serial);
-   line = fgetl(serial);
-   line = fgetl(serial);
-   line = fgetl(serial);
-   line = fgetl(serial);
-   line = fgetl(serial);
+tic;  
+line = fgetl(serial);
+line = fgetl(serial);
+line = fgetl(serial);
+line = fgetl(serial);
+line = fgetl(serial);
+line = fgetl(serial);
+time = toc;
    
-   if tictoc_variable == 1
-       time(i) = toc;
-       tictoc_variable = 0;
-   end
-end
-t = mean(time)
+t = mean(time);
 freq = 1/mean(time)
 
 %% GetRangeMeasurement function
