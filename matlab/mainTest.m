@@ -38,27 +38,27 @@ end
 
 %% Ground-truth
 
-index = 1;
-
-X_ViconToWorld = 0.255;
-Y_ViconToWorld = 0.215;
-Z_ViconToWorld = -0.225;
-
-T_ViconToWorld = [1,0,0,X_ViconToWorld; ...
-    0,1,0,Y_ViconToWorld; ...
-    0,0,1,Z_ViconToWorld;
-    0,0,0,1];
-
-tag_BodyFrame = [-9.48983/1000;14.5183/1000;78.7382/1000];
-
-for i = 1:size(DronePositionGroundTruthArray,2)
-    A = quat2rotm(DroneQuaternionGroundTruthArray(:,i)');
-    b = DronePositionGroundTruthArray(:,i);
-    c(:,index) = T_ViconToWorld * [A,b;0,0,0,1] * [tag_BodyFrame;1];
-    index = index + 1;
-end
-
-scatter3(c(1,:),c(2,:),c(3,:),0.5,"b");
+% index = 1;
+% 
+% X_ViconToWorld = 0.255;
+% Y_ViconToWorld = 0.215;
+% Z_ViconToWorld = -0.225;
+% 
+% T_ViconToWorld = [1,0,0,X_ViconToWorld; ...
+%     0,1,0,Y_ViconToWorld; ...
+%     0,0,1,Z_ViconToWorld;
+%     0,0,0,1];
+% 
+% tag_BodyFrame = [-9.48983/1000;14.5183/1000;78.7382/1000];
+% 
+% for i = 1:size(DronePositionGroundTruthArray,2)
+%     A = quat2rotm(DroneQuaternionGroundTruthArray(:,i)');
+%     b = DronePositionGroundTruthArray(:,i);
+%     c(:,index) = T_ViconToWorld * [A,b;0,0,0,1] * [tag_BodyFrame;1];
+%     index = index + 1;
+% end
+% 
+% scatter3(c(1,:),c(2,:),c(3,:),0.5,"b");
 
 %% Estimation Gauss-Newton
 
@@ -74,12 +74,11 @@ P_posterior = 0.05*eye(size(x_posterior,1));
 
 SavedWaypoints(1,1:3) = x_posterior(1:3);
 
-[h,H] = PreprocessingVanillaEKF(AnchorPositions);   
-    
+[h,H] = PreprocessingVanillaEKF(AnchorPositions);
+
 for i = 2:size(RangeArray,2)
    z = RangeArray(:,i)/1000;
    TimeSinceStart = TimeArray(6,i);
-   TimeSinceStart-PreviousTime
    [x_posterior,P_posterior] = VanillaEKF(6,x_posterior,P_posterior,TimeSinceStart-PreviousTime,z,h,H);
    SavedWaypoints(i,1:3) = x_posterior(1:3);
    PreviousTime = TimeSinceStart;

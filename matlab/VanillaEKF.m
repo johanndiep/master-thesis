@@ -30,7 +30,14 @@ function [x_Posterior,P_Posterior] = VanillaEKF(NumberOfAnchors,x_Posterior,P_Po
     Q_3 = DeltaT/2;
     Q = [Q_1,0,0,Q_2,0,0;0,Q_1,0,0,Q_2,0;0,0,Q_1,0,0,Q_2;Q_2,0,0,Q_3,0,0;0,Q_2,0,0,Q_3,0;0,0,Q_2,0,0,Q_3];
     
-    R = eye(NumberOfAnchors)*0.2; % measurement noise covariance
+    % measurement noise covariance, increasing variance for zero measurements
+    R = eye(NumberOfAnchors)*100;
+    if ~all(z)
+       ZeroRows = find(z==0);
+       DiagonalElements = diag(R);
+       DiagonalElements(ZeroRows) = 10e10;
+       R = diag(DiagonalElements);
+    end
         
     x_Prior = A*x_Posterior; % project the state ahead
     P_Prior = A*P_Posterior*A'+Q; % project the error covariance ahead
