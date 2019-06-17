@@ -38,27 +38,27 @@ end
 
 %% Ground-truth
 
-% index = 1;
-% 
-% X_ViconToWorld = 0.255;
-% Y_ViconToWorld = 0.215;
-% Z_ViconToWorld = -0.225;
-% 
-% T_ViconToWorld = [1,0,0,X_ViconToWorld; ...
-%     0,1,0,Y_ViconToWorld; ...
-%     0,0,1,Z_ViconToWorld;
-%     0,0,0,1];
-% 
-% tag_BodyFrame = [-9.48983/1000;14.5183/1000;78.7382/1000];
-% 
-% for i = 1:size(DronePositionGroundTruthArray,2)
-%     A = quat2rotm(DroneQuaternionGroundTruthArray(:,i)');
-%     b = DronePositionGroundTruthArray(:,i);
-%     c(:,index) = T_ViconToWorld * [A,b;0,0,0,1] * [tag_BodyFrame;1];
-%     index = index + 1;
-% end
-% 
-% scatter3(c(1,:),c(2,:),c(3,:),0.5,"b");
+index = 1;
+
+X_ViconToWorld = 0.255;
+Y_ViconToWorld = 0.215;
+Z_ViconToWorld = -0.225;
+
+T_ViconToWorld = [1,0,0,X_ViconToWorld; ...
+    0,1,0,Y_ViconToWorld; ...
+    0,0,1,Z_ViconToWorld;
+    0,0,0,1];
+
+tag_BodyFrame = [-9.48983/1000;14.5183/1000;78.7382/1000];
+
+for i = 1:size(DronePositionGroundTruthArray,2)
+    A = quat2rotm(DroneQuaternionGroundTruthArray(:,i)');
+    b = DronePositionGroundTruthArray(:,i);
+    c(:,index) = T_ViconToWorld * [A,b;0,0,0,1] * [tag_BodyFrame;1];
+    index = index + 1;
+end
+
+scatter3(c(1,:),c(2,:),c(3,:),0.5,"b");
 
 %% Estimation Gauss-Newton
 
