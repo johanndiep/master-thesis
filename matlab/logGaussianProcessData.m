@@ -18,7 +18,6 @@
 
 function [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArray,TimeArray] = logGaussianProcessData(SerialObject,ViconDroneSubscriber,NumberOfIterations)
    IterationIndex = 1;
-   NextIndex = false;
    FirstIteration = true;
    
    fopen(SerialObject); % run sudo chmod 666 /dev/ttyACM* on console first
@@ -26,14 +25,14 @@ function [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArr
    while IterationIndex < NumberOfIterations + 1
        LineSerial = fgetl(SerialObject);
        
-       % starting readout with anchor 7 and avoid pre-information overload
+       % starting readout with anchor 6 and avoid pre-information overload
        if FirstIteration == true
-           while ~strncmpi(LineSerial,"Anchor 7",8)
+           while ~strncmpi(LineSerial,"Anchor 6",8)
                LineSerial = fgetl(SerialObject);
            end
        end
        
-       if strncmpi(LineSerial,"Anchor 7",8)
+       if strncmpi(LineSerial,"Anchor 6",8)
           % starting the timer
           if FirstIteration == true
               TimeArray(IterationIndex) = 0;
@@ -44,9 +43,9 @@ function [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArr
           end
           
           RangeArray(IterationIndex) = str2double(LineSerial(24:end)); % storing range measurement in array
-          [DronePositionGroundTruthArray(IterationIndex),DroneQuaternionGroundTruthArray(IterationIndex)] = getGroundTruth(ViconDroneSubscriber); % gather ground-truth data      
+          [DronePositionGroundTruthArray(1:3,IterationIndex),DroneQuaternionGroundTruthArray(1:4,IterationIndex)] = getGroundTruth(ViconDroneSubscriber); % gather ground-truth data 
+          
+          IterationIndex = IterationIndex + 1 % update
        end
-       
-       IterationIndex = IterationIndex + 1; % update
    end
 end
