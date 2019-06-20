@@ -52,7 +52,7 @@ T_ViconToWorld = [1,0,0,X_ViconToWorld; ...
 tag_BodyFrame = [-9.48983/1000;14.5183/1000;78.7382/1000];
 
 for i = 1:size(DronePositionGroundTruthArray,2)
-    A = quat2rotm([DroneQuaternionGroundTruthArray(4,i),DroneQuaternionGroundTruthArray(1,i),DroneQuaternionGroundTruthArray(2,i),DroneQuaternionGroundTruthArray(3,i)]);
+    A = quat2rotm(DroneQuaternionGroundTruthArray(:,i)');
     b = DronePositionGroundTruthArray(:,i);
     c(:,index) = T_ViconToWorld * [A,b;0,0,0,1] * [tag_BodyFrame;1];
     index = index + 1;

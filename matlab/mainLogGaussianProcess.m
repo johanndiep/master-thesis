@@ -1,11 +1,11 @@
 % Johann Diep (jdiep@student.ethz.ch) - June 2019
 %
-% This script logs data for Gaussian Process evaluation.
+% This script logs data for orientation dependency evaluation.
 
 clear;
 clc;
 
-disp("This script logs data for Gaussian Process evaluation.");
+disp("This script logs data for orientation dependency evaluation.");
 disp("******************************************************************************************************");
 
 %% Setup serial port and ROS communication
@@ -32,7 +32,7 @@ NumberOfIterations = 10000;
 %% Data gathering
 
 [AnchorsPositionGroundTruth,AnchorsQuaternionGroundTruth] = getAnchorsGroundTruth(ViconAnchorsSubscriber); 
-[DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArray,TimeArray] = logGaussianProcessData(SerialObject,ViconDroneSubscriber,NumberOfIterations);
+[DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArray,TimeArray] = logSingleRangeData(SerialObject,ViconDroneSubscriber,NumberOfIterations);
 
 save('GPrangemeasurement.mat','AnchorsPositionGroundTruth','AnchorsQuaternionGroundTruth','DronePositionGroundTruthArray','DroneQuaternionGroundTruthArray','RangeArray','TimeArray'); % saving to workspace
 
@@ -40,14 +40,6 @@ save('GPrangemeasurement.mat','AnchorsPositionGroundTruth','AnchorsQuaternionGro
 
 disp("Finished gathering data, shutting the system down");
 rosshutdown();
-
-%% Hardcoded parameters and coordinate transformations
-
-AnchorMarkerDeviation = 0.035; % measured deviation of anchor markers to anchor
-
-% read from VICON system, need to be adjusted each experiment
-DroneMarkerBodyFrame = [-12.2632/1000;-12.3882/1000;80.8307/1000];
-AnchorBodyFrame = [-169.112/1000;59.2122/1000;661.342/1000];
 
 %% Data postprocessing
 
@@ -69,4 +61,4 @@ for i = 1+30:size(RotationAngles,2)-30
     end 
 end
 
-plot(RotationAngles,ErrorArray,'r.','MarkerSize',5);
+plot(RotationAngles,RangeArray/1000,'r.','MarkerSize',1); % plotting

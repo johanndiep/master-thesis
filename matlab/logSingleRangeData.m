@@ -3,7 +3,7 @@
 % This function logs the range measurements and their timestamps from the
 % Bitcraze Positionin System setup as well as the ground-truth position and
 % orientation from VICON over the ROS network. This function is needed for
-% data analysis with Gaussian Processes.
+% data analysis of orientation dependencies.
 %
 % Input:
 %   - SerialObject: Serial port object
@@ -16,7 +16,7 @@
 %   - RangeArray: Stores the range measurements in format [1, NumberOfIterations]
 %   - TimeArray: Stores the times of the gathered ranges in format [1, NumberOfIterations]
 
-function [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArray,TimeArray] = logGaussianProcessData(SerialObject,ViconDroneSubscriber,NumberOfIterations)
+function [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArray,TimeArray] = logSingleRangeData(SerialObject,ViconDroneSubscriber,NumberOfIterations)
    IterationIndex = 1;
    FirstIteration = true;
    
@@ -45,7 +45,7 @@ function [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArr
           RangeArray(IterationIndex) = str2double(LineSerial(24:end)); % storing range measurement in array
           [DronePositionGroundTruthArray(1:3,IterationIndex),DroneQuaternionGroundTruthArray(1:4,IterationIndex)] = getGroundTruth(ViconDroneSubscriber); % gather ground-truth data 
           
-          IterationIndex = IterationIndex + 1 % update
+          IterationIndex = IterationIndex + 1; % update
        end
    end
 end
