@@ -16,5 +16,5 @@
 function [AnchorsPositionGroundTruth,AnchorsQuaternionGroundTruth] = getAnchorsGroundTruth(ViconAnchorsSubscriber)
         LatestMessage = ViconAnchorsSubscriber.LatestMessage;
         AnchorsPositionGroundTruth = [LatestMessage.Transform.Translation.X;LatestMessage.Transform.Translation.Y;LatestMessage.Transform.Translation.Z];
-        AnchorsQuaternionGroundTruth = [LatestMessage.Transform.Rotation.X;LatestMessage.Transform.Rotation.Y;LatestMessage.Transform.Rotation.Z;LatestMessage.Transform.Rotation.W];
+        AnchorsQuaternionGroundTruth = [LatestMessage.Transform.Rotation.W;LatestMessage.Transform.Rotation.X;LatestMessage.Transform.Rotation.Y;LatestMessage.Transform.Rotation.Z];
 end

@@ -15,5 +15,5 @@
 function [DronePositionGroundTruth,DroneQuaternionGroundTruth] = getGroundTruth(ViconDroneSubscriber)
         LatestMessage = ViconDroneSubscriber.LatestMessage;    
         DronePositionGroundTruth = [LatestMessage.Transform.Translation.X;LatestMessage.Transform.Translation.Y;LatestMessage.Transform.Translation.Z];
-        DroneQuaternionGroundTruth = [LatestMessage.Transform.Rotation.X;LatestMessage.Transform.Rotation.Y;LatestMessage.Transform.Rotation.Z;LatestMessage.Transform.Rotation.W];
+        DroneQuaternionGroundTruth = [LatestMessage.Transform.Rotation.W;LatestMessage.Transform.Rotation.X;LatestMessage.Transform.Rotation.Y;LatestMessage.Transform.Rotation.Z];
 end

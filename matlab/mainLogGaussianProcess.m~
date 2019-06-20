@@ -54,13 +54,13 @@ AnchorBodyFrame = [-169.112/1000;59.2122/1000;661.342/1000];
 ErrorArray = 1-RangeArray/1000; % calculating error offset
 
 % Shifting angles to avoid flip at 120 degree
-RotationAngles = 2 * acos(DroneQuaternionGroundTruthArray(1,:))/(2*pi)*360;
+RotationAngles = 2 * acos(DroneQuaternionGroundTruthArray(4,:))/(2*pi)*360;
 CopyRotationAngles = RotationAngles;
 ShiftAngle = false;
-for i = 1+30:size(RotationAngles,2)-30
+for i = 1+10:size(RotationAngles,2)-10
     if abs(CopyRotationAngles(i) - CopyRotationAngles(i-1)) > 100
         ShiftAngle = true;
-    elseif CopyRotationAngles(i) == min(CopyRotationAngles(i-30:i+30)) && ShiftAngle
+    elseif CopyRotationAngles(i) == min(CopyRotationAngles(i-10:i+10)) && ShiftAngle
         ShiftAngle = false;
     end
     
