@@ -43,7 +43,7 @@ rosshutdown();
 
 %% Data postprocessing
 
-ErrorArray = RangeArray/1000; % calculating error offset
+ErrorArray = 1.5-RangeArray/1000; % calculating error offset
 
 % Shifting angles to avoid flip at 120 degree
 RotationAngles = 2 * acos(DroneQuaternionGroundTruthArray(1,:))/(2*pi)*360;
@@ -61,5 +61,5 @@ for i = 1+30:size(RotationAngles,2)-30
     end 
 end
 
-plot(RotationAngles,ErrorArray,'b.','MarkerSize',3); % plotting
+plot(RotationAngles,ErrorArray,'kx','MarkerSize',3); % plotting
 hold on;

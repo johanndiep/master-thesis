@@ -9,7 +9,7 @@
 %   - MarkerBodyFrame: Position of the marker in the bodyframe of the object in the form (3,1)
 %
 % Output:
-%   - PositionViconFrame: Vicon frame position of the marker in the form (3,1)
+%   - PositionViconFrame: Vicon frame position of the marker in the form (4,1)
 
 function PositionViconFrame = getCoordinateViconFrame(QuaternionGroundTruth,PositionGroundTruth,MarkerBodyFrame)
     RotationGroundTruth = quat2rotm(QuaternionGroundTruth');
