@@ -27,14 +27,12 @@ pause(5); % time needed for initialization
 
 %% Set desired parameters
 
-NumberOfIterations = 10000;
+NumberOfIterations = 3000;
 
 %% Data gathering
 
 [AnchorsPositionGroundTruth,AnchorsQuaternionGroundTruth] = getAnchorsGroundTruth(ViconAnchorsSubscriber); 
 [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArray,TimeArray] = logSingleRangeData(SerialObject,ViconDroneSubscriber,NumberOfIterations);
-
-save('GPrangemeasurement.mat','AnchorsPositionGroundTruth','AnchorsQuaternionGroundTruth','DronePositionGroundTruthArray','DroneQuaternionGroundTruthArray','RangeArray','TimeArray'); % saving to workspace
 
 %% Closing ROS communication
 
@@ -43,23 +41,20 @@ rosshutdown();
 
 %% Data postprocessing
 
-ErrorArray = 1.5-RangeArray/1000; % calculating error offset
+ErrorArray = 2-RangeArray/1000; % calculating error offset
 
-% Shifting angles to avoid flip at 120 degree
-RotationAngles = 2 * acos(DroneQuaternionGroundTruthArray(1,:))/(2*pi)*360;
-CopyRotationAngles = RotationAngles;
-ShiftAngle = false;
-for i = 1+30:size(RotationAngles,2)-30
-    if abs(CopyRotationAngles(i) - CopyRotationAngles(i-1)) > 100
-        ShiftAngle = true;
-    elseif CopyRotationAngles(i) == min(CopyRotationAngles(i-30:i+30)) && ShiftAngle
-        ShiftAngle = false;
-    end
-    
-    if ShiftAngle
-        RotationAngles(i) = 360-CopyRotationAngles(i);
-    end 
+% getting z-rotation and mapping to degree
+for i = 1:size(ErrorArray,2)
+    RotationAngles(i) = atan2(2*(DroneQuaternionGroundTruthArray(1,i)*DroneQuaternionGroundTruthArray(4,i)+DroneQuaternionGroundTruthArray(2,i)*DroneQuaternionGroundTruthArray(3,i)),(1-2*(DroneQuaternionGroundTruthArray(3,i)^2+DroneQuaternionGroundTruthArray(4,i)^2)));
+    RotationAngles(i) = RotationAngles(i)/(2*pi)*360;
 end
 
-plot(RotationAngles,ErrorArray,'kx','MarkerSize',3); % plotting
+AnchorRotationAngle = atan2(2*(AnchorsQuaternionGroundTruth(1)*AnchorsQuaternionGroundTruth(4)+AnchorsQuaternionGroundTruth(2)*AnchorsQuaternionGroundTruth(3)),(1-2*(AnchorsQuaternionGroundTruth(3)^2+AnchorsQuaternionGroundTruth(4)^2)));
+AnchorRotationAngle = AnchorRotationAngle/(2*pi)*360;
+
+plot(RotationAngles,ErrorArray,'bx','MarkerSize',3); % plotting
 hold on;
+
+%% Saving
+
+save('GPrangemeasurement.mat','AnchorsPositionGroundTruth','AnchorsQuaternionGroundTruth','DronePositionGroundTruthArray','DroneQuaternionGroundTruthArray','RangeArray','TimeArray','AnchorRotationAngle'); % saving to workspace
