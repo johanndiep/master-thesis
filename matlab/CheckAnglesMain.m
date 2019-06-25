@@ -1,6 +1,6 @@
 % Johann Diep (jdiep@student.ethz.ch) - June 2019
 
-% This script is for testing the angular readout via VICON.
+% This script is for checking the angular readout via VICON.
 
 rosinit;
 RosTopicDrone = '/vicon/Bebop_Johann/Bebop_Johann';
@@ -15,7 +15,7 @@ while true
    RotationAngles = RotationAngles/(2*pi)*360;
    [Ap,Aq] = getAnchorsGroundTruth(ViconAnchorsSubscriber);   
    AnchorRotationAngles = atan2(2*(Aq(1)*Aq(4)+Aq(2)*Aq(3)),(1-2*(Aq(3)^2+Aq(4)^2)));
-   AnchorRotationAngles = AnchorRotationAngles/(2*pi)*360
+   AnchorRotationAngles = AnchorRotationAngles/(2*pi)*360;
 end
 
 rosshutdown;

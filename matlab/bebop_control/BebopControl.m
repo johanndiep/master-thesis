@@ -6,6 +6,7 @@ classdef BebopControl
     properties
         TakeOffPublisher
         LandPublisher
+        EmergencyPublisher
         FlightPublisher
     end
     
@@ -13,6 +14,7 @@ classdef BebopControl
         function BebopObject = BebopControl()
            BebopObject.TakeOffPublisher = rospublisher('/bebop/takeoff','std_msgs/Empty');
            BebopObject.LandPublisher = rospublisher('/bebop/land','std_msgs/Empty');
+           BebopObject.EmergencyPublisher = rospublisher('/bebop/reset','std_msgs/Empty');
            BebopObject.FlightPublisher = rospublisher('/bebop/cmd_vel','geometry_msgs/Twist');
         end
         
@@ -26,12 +28,18 @@ classdef BebopControl
             send(BebopObject.LandPublisher,LandMessage);
         end
         
+        function EmergencyCommand(BebopObject)
+            EmergencyMessage = rosmessage(BebopObject.EmergencyPublisher);
+            send(BebopObject.EmergencyPublisher,EmergencyMessage);
+        end
+        
         % For basic translational movements in each direction as well as 
         % angular movements around each axis. For more information, check 
         % out https://bebop-autonomy.readthedocs.io/en/latest/.
         %
         % Input:
-        %   - FlightCommand: Array holding the commands for translation and rotation in the form [1,6]    
+        %   - FlightCommand: Array holding the commands for translation and rotation in the form [1,6]
+        
         function MovementCommand(BebopObject,FlightCommand)
             MovementMessage = rosmessage(BebopObject.FlightPublisher);
             MovementMessage.Linear.X = FlightCommand(1);
@@ -41,17 +49,6 @@ classdef BebopControl
             MovementMessage.Angular.Y = FlightCommand(5);
             MovementMessage.Angular.Z = FlightCommand(6);
             send(BebopObject.FlightPublisher,MovementMessage);
-        end
-        
-        % Basic position PID controller.
-        %
-        % Input: 
-        %   - ReferencePosition: Desired position in World-frame in the form [3,1]
-        %   - ActualPosition: Current position in World-frame in the form [3,1]
-        function PController(BebopObject,ReferencePosition,ActualPosition)
-            Error = ReferencePosition - ActualPosition;
-            Error = Error/norm(Error);
-            BebopObject.MovementCommand([Error(1),Error(2),Error(3),0,0,0]);
         end
     end
 end

@@ -52,7 +52,7 @@ end
 AnchorRotationAngle = atan2(2*(AnchorsQuaternionGroundTruth(1)*AnchorsQuaternionGroundTruth(4)+AnchorsQuaternionGroundTruth(2)*AnchorsQuaternionGroundTruth(3)),(1-2*(AnchorsQuaternionGroundTruth(3)^2+AnchorsQuaternionGroundTruth(4)^2)));
 AnchorRotationAngle = AnchorRotationAngle/(2*pi)*360;
 
-plot(RotationAngles,ErrorArray,'bx','MarkerSize',3); % plotting
+plot(RotationAngles,RangeArray,'r.','MarkerSize',10); % plotting
 hold on;
 
 %% Saving

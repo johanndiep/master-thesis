@@ -45,7 +45,8 @@ function [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArr
           RangeArray(IterationIndex) = str2double(LineSerial(24:end)); % storing range measurement in array
           [DronePositionGroundTruthArray(1:3,IterationIndex),DroneQuaternionGroundTruthArray(1:4,IterationIndex)] = getGroundTruth(ViconDroneSubscriber); % gather ground-truth data 
           
-          IterationIndex = IterationIndex + 1 % update
+          IterationIndex = IterationIndex + 1; % update
        end
    end
+   fclose(SerialObject);
 end
