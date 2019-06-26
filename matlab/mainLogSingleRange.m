@@ -10,6 +10,8 @@ disp("**************************************************************************
 
 %% Setup serial port and ROS communication
 
+logVicon = false;
+
 if ~isempty(instrfind)
     fclose(instrfind);
     delete(instrfind);
@@ -18,21 +20,28 @@ end
 PortAddress = seriallist;
 SerialObject = serial(PortAddress);
 
-rosinit;
-RosTopicDrone = '/vicon/Bebop_Johann/Bebop_Johann';
-RosTopicAnchors = '/vicon/Anchors_Johann/Anchors_Johann';
-ViconDroneSubscriber = rossubscriber(RosTopicDrone); % creating subscriber object for the drone
-ViconAnchorsSubscriber = rossubscriber(RosTopicAnchors);  % subscriber object for anchors network
-pause(5); % time needed for initialization
+ViconDroneSubscriber = [];
+ViconAnchorSubscriber = [];
+
+if logVicon == true
+    rosinit;
+    RosTopicDrone = '/vicon/Bebop_Johann/Bebop_Johann';
+    RosTopicAnchors = '/vicon/Anchors_Johann/Anchors_Johann';
+    ViconDroneSubscriber = rossubscriber(RosTopicDrone); % creating subscriber object for the drone
+    ViconAnchorsSubscriber = rossubscriber(RosTopicAnchors);  % subscriber object for anchors network
+    pause(5); % time needed for initialization
+end
 
 %% Set desired parameters
 
-NumberOfIterations = 3000;
+NumberOfIterations = 100;
 
 %% Data gathering
 
-[AnchorsPositionGroundTruth,AnchorsQuaternionGroundTruth] = getAnchorsGroundTruth(ViconAnchorsSubscriber); 
-[DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArray,TimeArray] = logSingleRangeData(SerialObject,ViconDroneSubscriber,NumberOfIterations);
+if logVicon == true
+    [AnchorsPositionGroundTruth,AnchorsQuaternionGroundTruth] = getAnchorsGroundTruth(ViconAnchorsSubscriber); 
+end
+[DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArray,TimeArray] = logSingleRangeData(SerialObject,ViconDroneSubscriber,NumberOfIterations,logVicon);
 
 %% Closing ROS communication
 
@@ -52,8 +61,8 @@ end
 AnchorRotationAngle = atan2(2*(AnchorsQuaternionGroundTruth(1)*AnchorsQuaternionGroundTruth(4)+AnchorsQuaternionGroundTruth(2)*AnchorsQuaternionGroundTruth(3)),(1-2*(AnchorsQuaternionGroundTruth(3)^2+AnchorsQuaternionGroundTruth(4)^2)));
 AnchorRotationAngle = AnchorRotationAngle/(2*pi)*360;
 
-plot(RotationAngles,RangeArray,'r.','MarkerSize',10); % plotting
-hold on;
+plot(RotationAngles,ErrorArray,'b.','MarkerSize',10); % plotting
+hold on
 
 %% Saving
 

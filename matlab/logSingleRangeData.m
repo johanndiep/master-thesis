@@ -16,7 +16,7 @@
 %   - RangeArray: Stores the range measurements in format [1, NumberOfIterations]
 %   - TimeArray: Stores the times of the gathered ranges in format [1, NumberOfIterations]
 
-function [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArray,TimeArray] = logSingleRangeData(SerialObject,ViconDroneSubscriber,NumberOfIterations)
+function [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArray,TimeArray] = logSingleRangeData(SerialObject,ViconDroneSubscriber,NumberOfIterations,logVicon)
    IterationIndex = 1;
    FirstIteration = true;
    
@@ -43,10 +43,18 @@ function [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArr
           end
           
           RangeArray(IterationIndex) = str2double(LineSerial(24:end)); % storing range measurement in array
-          [DronePositionGroundTruthArray(1:3,IterationIndex),DroneQuaternionGroundTruthArray(1:4,IterationIndex)] = getGroundTruth(ViconDroneSubscriber); % gather ground-truth data 
           
-          IterationIndex = IterationIndex + 1; % update
+          if logVicon == true
+              [DronePositionGroundTruthArray(1:3,IterationIndex),DroneQuaternionGroundTruthArray(1:4,IterationIndex)] = getGroundTruth(ViconDroneSubscriber); % gather ground-truth data 
+          end
+          
+          IterationIndex = IterationIndex + 1 % update
        end
    end
    fclose(SerialObject);
+   
+   if logVicon == false
+       DronePositionGroundTruthArray = [];
+       DroneQuaternionGroundTruthArray = [];
+   end
 end
