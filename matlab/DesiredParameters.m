@@ -11,6 +11,6 @@
 function [NumberOfIterations,NumberOfIterationsForRanging,NumberOfIterationsForCalibration,NumberOfAnchors] = DesiredParameters()
     NumberOfAnchors = 6;
     NumberOfIterations = 1000;
-    NumberOfIterationsForCalibration = 100; 
+    NumberOfIterationsForCalibration = 10; 
     NumberOfIterationsForRanging = 10;
 end

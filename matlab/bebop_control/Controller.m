@@ -52,7 +52,7 @@ classdef Controller
             
             DeltaError = CurrentError-ControllerObject.PreviousError(Index);
             
-            ErrorProportional = CurrentError;
+            ErrorProportional = CurrentError
             ControllerObject.ErrorIntegral(Index) = ControllerObject.ErrorIntegral(Index)+CurrentError*DeltaT;
             ErrorDifferential = 0;
             if DeltaT > 0
@@ -61,7 +61,7 @@ classdef Controller
             ControllerObject.PreviousTime(Index) = CurrentTime;
             ControllerObject.PreviousError(Index) = CurrentError;
             
-            CumulativeError = ControllerObject.ProportionalGain*ErrorProportional+ControllerObject.DifferentialGain*ErrorDifferential+ControllerObject.IntegralGain*ControllerObject.ErrorIntegral;
+            CumulativeError = ControllerObject.ProportionalGain*ErrorProportional+ControllerObject.DifferentialGain*ErrorDifferential+ControllerObject.IntegralGain*ControllerObject.ErrorIntegral(Index);
         end
         
         % Position controller, corrects only positional displacement.

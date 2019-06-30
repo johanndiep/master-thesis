@@ -7,6 +7,7 @@ disp("**************************************************************************
 
 %% Setup
 
+rosinit;
 PIDObject = Controller();
 
 IterationIndex = 1;
@@ -21,7 +22,6 @@ disp("**************************************************************************
 disp("Starting anchor self-calibration procedure");
 
 AnchorPositions = getAnchorPositions(SerialObject,NumberOfIterationsForCalibration,NumberOfAnchors);
-AnchorSetupPlot(AnchorPositions,NumberOfAnchors);
 
 %% Estimation and Control
 
@@ -34,7 +34,7 @@ delete(SerialObject);
 SerialObject = SerialPortSetup();
 
 PIDObject.Start;
-TargetPosition = [2;2;2];
+TargetPosition = [2;2;3];
 
 StartingPosition = getGaussNewtonEstimate(SerialObject,NumberOfIterationsForRanging,NumberOfAnchors,AnchorPositions);
 
@@ -50,7 +50,7 @@ while IterationIndex < NumberOfIterations + 1
     TimeSinceStart = toc;
     DeltaT = TimeSinceStart-PreviousTime;
     [x_Posterior,P_Posterior] = VanillaEKF(NumberOfAnchors,x_Posterior,P_Posterior,DeltaT,z,h,H);
-    
+    x_Posterior(1:3)
     PIDObject.NoTurnFlight(x_Posterior(1:3),TargetPosition);
     
     % update
