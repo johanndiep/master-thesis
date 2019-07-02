@@ -23,6 +23,9 @@ SerialObject = serial(PortAddress);
 ViconDroneSubscriber = [];
 ViconAnchorSubscriber = [];
 
+TagMarker = [1;1;1];
+AnchorMarker = [2;2;2];
+
 if logVicon == true
     rosinit;
     RosTopicDrone = '/vicon/Bebop_Johann/Bebop_Johann';
@@ -48,7 +51,26 @@ end
 disp("Finished gathering data, shutting the system down");
 rosshutdown();
 
-%% Data postprocessing
+%% Data postprocessing for translation
+
+for i = 1:size(DronePositionGroundTruthArray,2)
+    TagViconFrame(1:4,i) = getCoordinateViconFrame(DroneQuaternionGroundTruthArray(:,i),DronePositionGroundTruthArray(:,i),TagMarker);
+end
+AnchorViconFrame(1:4,1) = getCoordinateViconFrame(AnchorsQuaternionGroundTruth,AnchorsPositionGroundTruth,AnchorMarker);
+AnchorViconFrame(4) = [];
+
+for i = 1:size(TagViconFrame,1)
+    TagViconFrameMean(i,1) = mean(TagViconFrame(i,:));
+end
+TagViconFrameMean(4) = [];
+
+ActualDistance = norm(TagViconFrameMean-AnchorViconFrame);
+
+figure()
+plot(TimeArray,RangeArray,'b.','MarkerSize',5); % plotting
+hold on
+
+%% Data postprocessing for rotation
 
 ErrorArray = 1.5-RangeArray/1000; % calculating error offset
 

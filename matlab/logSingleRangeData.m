@@ -11,8 +11,8 @@
 %   - NumberOfIterations: Desired amount of batches of range measurement from all anchors
 %
 % Output:
-%   - DronePositionGroundTruthArray: Stores the ground-truth positions in format [1, NumberOfIterations]
-%   - DroneQuaternionGroundTruthArray: Stores the ground-truth quaternions in format [1, NumberOfIterations]
+%   - DronePositionGroundTruthArray: Stores the ground-truth positions in format [3, NumberOfIterations]
+%   - DroneQuaternionGroundTruthArray: Stores the ground-truth quaternions in format [4, NumberOfIterations]
 %   - RangeArray: Stores the range measurements in format [1, NumberOfIterations]
 %   - TimeArray: Stores the times of the gathered ranges in format [1, NumberOfIterations]
 
@@ -25,7 +25,7 @@ function [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArr
    while IterationIndex < NumberOfIterations + 1
        LineSerial = fgetl(SerialObject);
        
-       % starting readout with anchor 5 and avoid pre-information overload
+       % starting readout with anchor 3 and avoid pre-information overload
        if FirstIteration == true
            while ~strncmpi(LineSerial,"Anchor 3",8)
                LineSerial = fgetl(SerialObject);
