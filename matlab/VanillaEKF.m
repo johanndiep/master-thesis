@@ -31,7 +31,7 @@ function [x_Posterior,P_Posterior] = VanillaEKF(NumberOfAnchors,x_Posterior,P_Po
     Q = [Q_1,0,0,Q_2,0,0;0,Q_1,0,0,Q_2,0;0,0,Q_1,0,0,Q_2;Q_2,0,0,Q_3,0,0;0,Q_2,0,0,Q_3,0;0,0,Q_2,0,0,Q_3];
 
     % measurement noise covariance, increasing variance for zero measurements
-    R = eye(NumberOfAnchors)*500;
+    R = eye(NumberOfAnchors)*0.0001;
     if ~all(z)
        ZeroRows = find(z==0);
        DiagonalElements = diag(R);

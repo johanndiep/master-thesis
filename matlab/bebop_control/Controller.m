@@ -10,7 +10,7 @@ classdef Controller
         Bebop
         PreviousTime
         PreviousError
-        Speed
+        Scaler
         ErrorIntegral
         FlightCommand
         ErrorTolerance
@@ -25,7 +25,7 @@ classdef Controller
            ControllerObject.IntegralGain = 0;
            ControllerObject.PreviousTime = [0,0,0];
            ControllerObject.PreviousError = [0,0,0];               
-           ControllerObject.Speed = 1;
+           ControllerObject.Scaler = 1;
            ControllerObject.ErrorIntegral = [0,0,0];
            ControllerObject.FlightCommand = [0,0,0,0,0,0];
            ControllerObject.ErrorTolerance = 0.1;
@@ -52,7 +52,7 @@ classdef Controller
             
             DeltaError = CurrentError-ControllerObject.PreviousError(Index);
             
-            ErrorProportional = CurrentError
+            ErrorProportional = CurrentError;
             ControllerObject.ErrorIntegral(Index) = ControllerObject.ErrorIntegral(Index)+CurrentError*DeltaT;
             ErrorDifferential = 0;
             if DeltaT > 0
@@ -75,9 +75,9 @@ classdef Controller
                 ControllerObject.FlightCommand(i) = ControllerObject.CalculateError(TargetPosition(i)-CurrentPosition(i),i);
             end
             
-            if max(ControllerObject.FlightCommand) > ControllerObject.ErrorTolerance || min(ControllerObject.FlightCommand) < -ControllerObject.ErrorTolerance
-                ControllerObject.Bebop.MovementCommand([ControllerObject.Speed*ControllerObject.FlightCommand(1),ControllerObject.Speed*ControllerObject.FlightCommand(2),ControllerObject.Speed*ControllerObject.FlightCommand(3),0,0,0]);
-            end 
+            %if max(ControllerObject.FlightCommand) > ControllerObject.ErrorTolerance || min(ControllerObject.FlightCommand) < -ControllerObject.ErrorTolerance
+            ControllerObject.Bebop.MovementCommand([ControllerObject.Scaler*ControllerObject.FlightCommand(1),ControllerObject.Scaler*ControllerObject.FlightCommand(2),ControllerObject.Scaler*ControllerObject.FlightCommand(3),0,0,0]);
+            %end 
         end
         
         function Start(ControllerObject)
