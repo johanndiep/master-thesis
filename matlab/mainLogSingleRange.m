@@ -10,7 +10,7 @@ disp("**************************************************************************
 
 %% Setup serial port and ROS communication
 
-logVicon = false;
+logVicon = true;
 
 if ~isempty(instrfind)
     fclose(instrfind);
@@ -34,7 +34,7 @@ end
 
 %% Set desired parameters
 
-NumberOfIterations = 100;
+NumberOfIterations = 3000;
 
 %% Data gathering
 
@@ -50,7 +50,7 @@ rosshutdown();
 
 %% Data postprocessing
 
-ErrorArray = 2-RangeArray/1000; % calculating error offset
+ErrorArray = 1.5-RangeArray/1000; % calculating error offset
 
 % getting z-rotation and mapping to degree
 for i = 1:size(ErrorArray,2)

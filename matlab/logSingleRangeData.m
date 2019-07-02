@@ -27,12 +27,12 @@ function [DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,RangeArr
        
        % starting readout with anchor 5 and avoid pre-information overload
        if FirstIteration == true
-           while ~strncmpi(LineSerial,"Anchor 5",8)
+           while ~strncmpi(LineSerial,"Anchor 3",8)
                LineSerial = fgetl(SerialObject);
            end
        end
        
-       if strncmpi(LineSerial,"Anchor 5",8)
+       if strncmpi(LineSerial,"Anchor 3",8)
           % starting the timer
           if FirstIteration == true
               TimeArray(IterationIndex) = 0;
