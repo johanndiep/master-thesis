@@ -60,12 +60,17 @@ AnchorMarker = [22.6417;3.00382;87.7027]/1000;
 AnchorViconFrame(1:4,1) = getCoordinateViconFrame(AnchorsQuaternionGroundTruth,AnchorsPositionGroundTruth,AnchorMarker);
 AnchorViconFrame(4) = [];
 
+figure()
+hold on
+scatter3(AnchorViconFrame(1),AnchorViconFrame(2),AnchorViconFrame(3),'b');
+
 for i = 1:size(DronePositionGroundTruthArray,2)
     TagViconFrame(1:4,i) = getCoordinateViconFrame(DroneQuaternionGroundTruthArray(:,i),DronePositionGroundTruthArray(:,i),TagMarker);
     ActualDistance(i) = norm(TagViconFrame(1:3,i)-AnchorViconFrame);
     DroneRotationAngle(i) = atan2(2*(DroneQuaternionGroundTruthArray(1,i)*DroneQuaternionGroundTruthArray(4,i)+DroneQuaternionGroundTruthArray(2,i)*DroneQuaternionGroundTruthArray(3,i)),(1-2*(DroneQuaternionGroundTruthArray(3,i)^2+DroneQuaternionGroundTruthArray(4,i)^2)));
     DroneRotationAngle(i) = DroneRotationAngle(i)/(2*pi)*360;
 end
+scatter3(TagViconFrame(1,:)',TagViconFrame(2,:)',TagViconFrame(3,:)','r');
 
 AnchorRotationAngle = atan2(2*(AnchorsQuaternionGroundTruth(1)*AnchorsQuaternionGroundTruth(4)+AnchorsQuaternionGroundTruth(2)*AnchorsQuaternionGroundTruth(3)),(1-2*(AnchorsQuaternionGroundTruth(3)^2+AnchorsQuaternionGroundTruth(4)^2)));
 AnchorRotationAngle = AnchorRotationAngle/(2*pi)*360;
