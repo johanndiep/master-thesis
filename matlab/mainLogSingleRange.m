@@ -20,11 +20,11 @@ end
 PortAddress = seriallist;
 SerialObject = serial(PortAddress);
 
-ViconDroneSubscriber = [];
 ViconAnchorSubscriber = [];
+ViconDroneSubscriber = [];
 
-TagMarker = [1;1;1];
-AnchorMarker = [2;2;2];
+TagMarker = [-20.7756;34.7541;87.6537]/1000;
+AnchorMarker = [22.6417;3.00382;87.7027]/1000;
 
 if logVicon == true
     rosinit;
@@ -32,7 +32,7 @@ if logVicon == true
     RosTopicAnchors = '/vicon/Anchors_Johann/Anchors_Johann';
     ViconDroneSubscriber = rossubscriber(RosTopicDrone); % creating subscriber object for the drone
     ViconAnchorsSubscriber = rossubscriber(RosTopicAnchors);  % subscriber object for anchors network
-    pause(5); % time needed for initialization
+    pause(1); % time needed for initialization
 end
 
 %% Set desired parameters
@@ -66,13 +66,22 @@ TagViconFrameMean(4) = [];
 
 ActualDistance = norm(TagViconFrameMean-AnchorViconFrame);
 
+AnchorRotationAngle = atan2(2*(AnchorsQuaternionGroundTruth(1)*AnchorsQuaternionGroundTruth(4)+AnchorsQuaternionGroundTruth(2)*AnchorsQuaternionGroundTruth(3)),(1-2*(AnchorsQuaternionGroundTruth(3)^2+AnchorsQuaternionGroundTruth(4)^2)));
+AnchorRotationAngle = AnchorRotationAngle/(2*pi)*360;
+
 figure()
 plot(TimeArray,RangeArray,'b.','MarkerSize',5); % plotting
 hold on
 
+mean(RangeArray)
+
+%% Saving
+
+save('Rangemeasurement.mat','AnchorsPositionGroundTruth','AnchorsQuaternionGroundTruth','DronePositionGroundTruthArray','DroneQuaternionGroundTruthArray','RangeArray','TimeArray','AnchorRotationAngle','ActualDistance'); % saving to workspace
+
 %% Data postprocessing for rotation
 
-ErrorArray = 1.5-RangeArray/1000; % calculating error offset
+ErrorArray = 2-RangeArray/1000; % calculating error offset
 
 % getting z-rotation and mapping to degree
 for i = 1:size(ErrorArray,2)
@@ -90,4 +99,4 @@ hold on
 
 %% Saving
 
-save('GPrangemeasurement.mat','AnchorsPositionGroundTruth','AnchorsQuaternionGroundTruth','DronePositionGroundTruthArray','DroneQuaternionGroundTruthArray','RangeArray','TimeArray','AnchorRotationAngle'); % saving to workspace
+save('Rangemeasurement.mat','AnchorsPositionGroundTruth','AnchorsQuaternionGroundTruth','DronePositionGroundTruthArray','DroneQuaternionGroundTruthArray','RangeArray','TimeArray','AnchorRotationAngle'); % saving to workspace
