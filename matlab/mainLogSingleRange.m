@@ -92,10 +92,16 @@ end
 AnchorRotationAngle = atan2(2*(AnchorsQuaternionGroundTruth(1)*AnchorsQuaternionGroundTruth(4)+AnchorsQuaternionGroundTruth(2)*AnchorsQuaternionGroundTruth(3)),(1-2*(AnchorsQuaternionGroundTruth(3)^2+AnchorsQuaternionGroundTruth(4)^2)));
 AnchorRotationAngle = AnchorRotationAngle/(2*pi)*360;
 
-figure()
-plot(RotationAngles,ErrorArray,'b.','MarkerSize',5); % plotting
+plot(RotationAngles,ErrorArray,'ro','MarkerSize',2);
 axis([-180 180 0 0.3])
 hold on
+
+[SinusoidalCoefficients,SinusoidalFunction] = SinusoidalFit(RotationAngles,ErrorArray);
+plot(linspace(-180,180),SinusoidalFunction(SinusoidalCoefficients,linspace(-180,180)),'b--');
+grid on
+
+legend('Raw Range Measurements','Sinusoidal Fit');
+hold off
 
 %% Saving
 
