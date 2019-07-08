@@ -10,7 +10,7 @@ disp("**************************************************************************
 
 %% Setup serial port and ROS communication
 
-logVicon = true;
+logVicon = false;
 
 if ~isempty(instrfind)
     fclose(instrfind);
@@ -37,7 +37,7 @@ end
 
 %% Set desired parameters
 
-NumberOfIterations = 3000;
+NumberOfIterations = 1000;
 
 %% Data gathering
 
