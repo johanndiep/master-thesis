@@ -38,7 +38,8 @@ pause(5); % time needed for initialization
 
 NumberOfAnchors = 6;
 NumberOfIterations = 1000; % amount of range batches to be gathered
-NumberOfIterationsForCalibration = 200; % amount of ranges to be gathered before averaged
+NumberOfIterationsForCalibration = 100; % amount of ranges to be gathered before averaged
+TagMarker = [-40.4669,6.09042,68.6882];
 
 %% Calling anchor calibration executables
 
@@ -67,7 +68,7 @@ PortAddress = seriallist;
 SerialObject = serial(PortAddress);
 
 [TimeArray,RangeArray,DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray] = logRangeMeasurement(SerialObject,ViconDroneSubscriber,NumberOfIterations,NumberOfAnchors); % starting logging time, range and ground-truth measurement
-save('rangemeasurement.mat','AnchorPositions','TimeArray','RangeArray','DronePositionGroundTruthArray','DroneQuaternionGroundTruthArray'); % saving to workspace
+save('rangemeasurement.mat','AnchorPositions','TimeArray','RangeArray','DronePositionGroundTruthArray','DroneQuaternionGroundTruthArray','TagMarker'); % saving to workspace
 
 %% Closing ROS communication
 

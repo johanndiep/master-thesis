@@ -40,16 +40,16 @@ end
 
 index = 1;
 
-X_ViconToWorld = 0.255;
-Y_ViconToWorld = 0.215;
-Z_ViconToWorld = -0.225;
+X_ViconToWorld = 0.23;
+Y_ViconToWorld = 0.245;
+Z_ViconToWorld = -0.23;
 
 T_ViconToWorld = [1,0,0,X_ViconToWorld; ...
     0,1,0,Y_ViconToWorld; ...
     0,0,1,Z_ViconToWorld;
     0,0,0,1];
 
-tag_BodyFrame = [-9.48983/1000;14.5183/1000;78.7382/1000];
+tag_BodyFrame = TagMarker'/1000;
 
 for i = 1:size(DronePositionGroundTruthArray,2)
     A = quat2rotm(DroneQuaternionGroundTruthArray(:,i)');

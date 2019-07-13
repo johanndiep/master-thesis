@@ -28,7 +28,7 @@
 
 function AnchorPositions = AnchorCalibration(AnchorRangeMean,NumberOfAnchors)    
     AnchorRangeMean = AnchorRangeMean/1000; % transform to [m] unit
-    HeightTop = 2.43-0.275; % top anchors heights measured from bottom anchor
+    HeightTop = 2.44-0.28; % top anchors heights measured from bottom anchor
     FunctionIndex = 1; 
 
     for i = 1:NumberOfAnchors
