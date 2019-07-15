@@ -7,11 +7,12 @@
 %
 % Input:
 %   - AnchorPositions: The position coordinates of each anchor in format [NumberofAnchors,3]
+%   - ZeroMeasurements: List the rows of the ranges equal to zero
 % Output:
 %   - h: non-linear measurement prediction model
 %   - H: Jacobian of non-linear measurement prediction model
 
-function [h,H] = PreprocessingVanillaEKF(AnchorPositions)
+function [h,H] = PreprocessingVanillaEKF(AnchorPositions,ZeroMeasurements)
     % position and velocity parameters
     syms p_x p_y p_z
     syms v_x v_y v_z
@@ -25,7 +26,7 @@ function [h,H] = PreprocessingVanillaEKF(AnchorPositions)
     % end
     
     % non-linear measurement prediction model including ellipsoidal offset assumption
-    h = MeasurementModel(x,AnchorPositions);
+    h = MeasurementModel(x,AnchorPositions,ZeroMeasurements);
     
     % measurement matrix
     H = jacobian(h,x);

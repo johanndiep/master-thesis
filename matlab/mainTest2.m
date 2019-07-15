@@ -117,3 +117,6 @@ scatter3(AnchorPositions(:,1),AnchorPositions(:,2),AnchorPositions(:,3),8,"ko");
 
 legend('GT','Estimation','Corrected estimation');
 hold off;
+
+%%
+

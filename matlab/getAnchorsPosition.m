@@ -18,9 +18,9 @@ function AnchorsGroundTruth = getAnchorsPosition(NumberOfAnchors,AnchorsPosition
     
     HeightTop = 2.44-0.284; % top anchors heights measured from bottom anchor
 
-    Deviation = [0,HeightTop,0,HeightTop,0,HeightTop];
+    Deviation = [-0.045,HeightTop-0.045,-0.04,HeightTop-0.04,-0.04,HeightTop-0.04];
     
-    MarkerBodyFrame = [-976.549,-1054.63,17.3756;-976.549,-1054.63,17.3756;1934.5,-1107.24,-52.7711;1934.5,-1107.24,-52.7711;-957.95,2161.86,35.3954;-957.95,2161.86,35.3954]/1000;
+    MarkerBodyFrame = [-1081.13,-1243.85,24.7311;-1081.13,-1243.85,24.7311;2203.3,-1283.79,-62.378;2203.3,-1283.79,-62.378;-1122.16,2527.63,37.647;-1122.16,2527.63,37.647]/1000;
     AnchorRotationGroundTruth = quat2rotm(AnchorsQuaternionGroundTruth');
     
     for i = 1:NumberOfAnchors

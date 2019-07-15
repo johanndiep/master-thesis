@@ -20,7 +20,7 @@
 %   - x_Posterior: A posteriori state estimate
 %   - P_Posterior: A posteriori state covariance
 
-function [x_Posterior,P_Posterior] = VanillaEKF(NumberOfAnchors,x_Posterior,P_Posterior,DeltaT,z,h,H)  
+function [x_Posterior,P_Posterior] = VanillaEKF(NumberOfAnchors,x_Posterior,P_Posterior,DeltaT,z,h,H,AnchorPositions)  
     % system matrix for constant velocity model
     A = [1,0,0,DeltaT,0,0;0,1,0,0,DeltaT,0;0,0,1,0,0,DeltaT;0,0,0,1,0,0;0,0,0,0,1,0;0,0,0,0,0,1];
     
@@ -31,19 +31,19 @@ function [x_Posterior,P_Posterior] = VanillaEKF(NumberOfAnchors,x_Posterior,P_Po
     Q = [Q_1,0,0,Q_2,0,0;0,Q_1,0,0,Q_2,0;0,0,Q_1,0,0,Q_2;Q_2,0,0,Q_3,0,0;0,Q_2,0,0,Q_3,0;0,0,Q_2,0,0,Q_3];
 
     % measurement noise covariance, increasing variance for zero measurements
-    R = eye(NumberOfAnchors)*0.1;
+    R = eye(NumberOfAnchors)*0.1^2;
     if ~all(z)
        ZeroRows = find(z==0);
-       DiagonalElements = diag(R);
-       DiagonalElements(ZeroRows) = 10e10;
-       R = diag(DiagonalElements);
+       [h,H] = PreprocessingVanillaEKF(AnchorPositions,ZeroRows);
+       R = eye(NumberOfAnchors-size(ZeroRows,1))*0.1^2;
+       z(ZeroRows) = [];
     end
         
     x_Prior = A*x_Posterior; % project the state ahead
     P_Prior = A*P_Posterior*A'+Q; % project the error covariance ahead
-            
+    
     K = P_Prior*H(x_Prior(1:3)')'*(H(x_Prior(1:3)')*P_Prior*H(x_Prior(1:3)')'+R)^(-1); % compute the Kalman gain
-        
+    
     x_Posterior = x_Prior+K*(z-h(x_Prior(1:3)')); % update the estimate with measurement z
     P_Posterior = (eye(NumberOfAnchors)-K*H(x_Prior(1:3)'))*P_Prior; % update the error covariance
 end

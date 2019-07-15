@@ -2,9 +2,6 @@
 %
 % This script is for offline parameter tuning and analysis.
 
-disp("This script is for offline parameter tuning and analysis.");
-disp("******************************************************************************************************");
-
 %% Plotting the anchors
 
 figure()
@@ -74,12 +71,12 @@ P_posterior = 0.05*eye(size(x_posterior,1));
 
 SavedWaypoints(1,1:3) = x_posterior(1:3);
 
-[h,H] = PreprocessingVanillaEKF(AnchorPositions);
+[h,H] = PreprocessingVanillaEKF(AnchorPositions,0);
 
 for i = 2:size(RangeArray,2)
    z = RangeArray(:,i)/1000;
    TimeSinceStart = TimeArray(6,i);
-   [x_posterior,P_posterior] = VanillaEKF(6,x_posterior,P_posterior,TimeSinceStart-PreviousTime,z,h,H);
+   [x_posterior,P_posterior] = VanillaEKF(6,x_posterior,P_posterior,TimeSinceStart-PreviousTime,z,h,H,AnchorPositions);
    SavedWaypoints(i,1:3) = x_posterior(1:3);
    PreviousTime = TimeSinceStart;
 end
