@@ -4,15 +4,15 @@
 
 %% Plotting the anchors
 
-figure()
-hold on
-title("Tinamu Labs Flying Machine Arena");
-xlabel("x-Axis [m]");
-ylabel("y-Axis [m]");
-zlabel("z-Axis [m]");
-grid on
+% figure()
+% hold on
+% title("Tinamu Labs Flying Machine Arena");
+% xlabel("x-Axis [m]");
+% ylabel("y-Axis [m]");
+% zlabel("z-Axis [m]");
+% grid on
 
-scatter3(AnchorPositions(:,1),AnchorPositions(:,2),AnchorPositions(:,3),'MarkerEdgeColor','k','MarkerFaceColor',[0,0,0]);
+%scatter3(AnchorPositions(:,1),AnchorPositions(:,2),AnchorPositions(:,3),'MarkerEdgeColor','k','MarkerFaceColor',[0,0,0]);
 
 NumberOfAnchors = 6;
 
@@ -29,9 +29,9 @@ elseif NumberOfAnchors == 6
     end
 end
 
-for i = 1:size(AnchorPositions,1)
-    text(AnchorPositions(i,1)+0.1,AnchorPositions(i,2)+0.1,AnchorPositions(i,3)+0.1,"Anchor "+int2str(i));
-end
+% for i = 1:size(AnchorPositions,1)
+%     text(AnchorPositions(i,1)+0.1,AnchorPositions(i,2)+0.1,AnchorPositions(i,3)+0.1,"Anchor "+int2str(i));
+% end
 
 %% Ground-truth
 
@@ -55,12 +55,12 @@ for i = 1:size(DronePositionGroundTruthArray,2)
     index = index + 1;
 end
 
-scatter3(c(1,:),c(2,:),c(3,:),0.5,"b");
+%scatter3(c(1,:),c(2,:),c(3,:),0.5,"b");
 
 %% Estimation Gauss-Newton
 
 starting_position = TagPositionEstimation(AnchorPositions,RangeArray(:,1),NumberOfAnchors);
-scatter3(starting_position(1),starting_position(2),starting_position(3),5,"r");
+%scatter3(starting_position(1),starting_position(2),starting_position(3),5,"r");
 
 %% Estimation Kalman-Filter
 
@@ -82,4 +82,26 @@ for i = 2:size(RangeArray,2)
 end
 
 %%
-scatter3(SavedWaypoints(:,1),SavedWaypoints(:,2),SavedWaypoints(:,3),5,"r")
+% scatter3(SavedWaypoints(:,1),SavedWaypoints(:,2),SavedWaypoints(:,3),5,"r")
+
+c_truncated = c(:,1:6:end-1);
+
+figure();
+hold on;
+grid on
+for i = 1:1:1000
+    c_truncated(1:3,i) = c_truncated(1:3,i)/norm(c_truncated(1:3,i))*Offset(1,i);
+    scatter3(c_truncated(1,i),c_truncated(2,i),c_truncated(3,i),'bo');
+end
+
+%%
+
+for i = 1:6001
+    for j = 1:6
+       RealRanges(j,i) = sqrt((c(1,i)-AnchorPositions(j,1))^2 + (c(2,i)-AnchorPositions(j,2))^2 + (c(3,i)-AnchorPositions(j,3))^2);
+    end
+end
+
+RealRangesTruncated = RealRanges(:,1:6:end-1);
+
+Offset = RealRangesTruncated - RangeArray/1000;

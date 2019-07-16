@@ -12,6 +12,11 @@
 %   - PositionViconFrame: Vicon frame position of the marker in the form (4,1)
 
 function PositionViconFrame = getCoordinateViconFrame(QuaternionGroundTruth,PositionGroundTruth,MarkerBodyFrame)
+    X_ViconToWorld = 0.229;
+    Y_ViconToWorld = 0.246;
+    Z_ViconToWorld = -0.243;
+    T_ViconToWorld = [1,0,0,X_ViconToWorld;0,1,0,Y_ViconToWorld;0,0,1,Z_ViconToWorld;0,0,0,1];    
+
     RotationGroundTruth = quat2rotm(QuaternionGroundTruth');
-    PositionViconFrame = [RotationGroundTruth,PositionGroundTruth;0,0,0,1] * [MarkerBodyFrame;1];
+    PositionViconFrame = T_ViconToWorld * [RotationGroundTruth,PositionGroundTruth;0,0,0,1] * [MarkerBodyFrame;1];
 end
