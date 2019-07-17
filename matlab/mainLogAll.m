@@ -16,7 +16,7 @@
 % Setup
 SerialObject = SerialPortSetup([]);
 [ViconAnchorSubscriber,ViconDroneSubscriber] = ROSCommunication();
-[NumberOfIterations,~,NumberOfIterationsForCalibration,NumberOfAnchors,AnchorMarkers,TagMarker] = DesiredParameters();
+[NumberOfIterations,~,NumberOfIterationsForCalibration,NumberOfAnchors,AnchorMarkers,TagMarker,~] = DesiredParameters();
 
 % Anchor ranging, calibration and ground-truth
 input("Placing anchors and changing connected module in Sniffer mode.");
@@ -29,7 +29,8 @@ AnchorGroundTruthPositions = getAnchorPosition(NumberOfAnchors,AnchorPositionGro
 input("Placing Bebop drone and prepare for flying.");
 SerialObject = SerialPortSetup(SerialObject);
 [TimeArray,RangeArray,DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray] = logRangeMeasurement(SerialObject,ViconDroneSubscriber,NumberOfIterations,NumberOfAnchors);
+DroneGroundTruthPositions = getDronePositions(DronePositionGroundTruthArray,DroneQuaternionGroundTruthArray,TagMarker);
 
 % Save and closing 
-save('rangemeasurement.mat','AnchorPositions','TimeArray','RangeArray','DronePositionGroundTruthArray','DroneQuaternionGroundTruthArray','TagMarker'); % saving to workspace
+save('rangemeasurement.mat','AnchorRangeMean','AnchorPositions','AnchorPositionGroundTruth','AnchorQuaternionGroundTruth','AnchorGroundTruthPositions','TimeArray','RangeArray','DronePositionGroundTruthArray','DroneQuaternionGroundTruthArray','DroneGroundTruthPositions');
 rosshutdown();

@@ -93,11 +93,11 @@ AnchorRotationAngle = atan2(2*(AnchorsQuaternionGroundTruth(1)*AnchorsQuaternion
 AnchorRotationAngle = AnchorRotationAngle/(2*pi)*360;
 
 figure()
-plot(RotationAngles,RangeArray,'ro','MarkerSize',2);
-%axis([-180 180 0 0.3])
+plot(RotationAngles,ErrorArray,'ro','MarkerSize',2);
+axis([-180 180 0 0.3])
 hold on
 
-[SinusoidalCoefficients,SinusoidalFunction] = SinusoidalFit(RotationAngles,ErrorArray);
+%[SinusoidalCoefficients,SinusoidalFunction] = SinusoidalFit(RotationAngles,ErrorArray);
 %plot(linspace(-180,180),SinusoidalFunction(SinusoidalCoefficients,linspace(-180,180)),'b--','LineWidth',2);
 %grid on
 

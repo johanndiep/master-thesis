@@ -20,9 +20,9 @@ classdef Controller
         function ControllerObject = Controller()
            tic; % starting the timer at the beginning
            
-           ControllerObject.ProportionalGain = 0.05;
-           ControllerObject.DifferentialGain = 0.2;
-           ControllerObject.IntegralGain = 0;
+           ControllerObject.ProportionalGain = 0.02;
+           ControllerObject.DifferentialGain = 0.15;
+           ControllerObject.IntegralGain = 0.15;
            ControllerObject.PreviousTime = [0,0,0];
            ControllerObject.PreviousError = [0,0,0];               
            ControllerObject.Scaler = 1;

@@ -13,6 +13,6 @@ function [ViconAnchorSubscriber,ViconDroneSubscriber] = ROSCommunication()
     RostopicAnchor = '/vicon/Anchors_Johann/Anchors_Johann';
     RostopicDrone = '/vicon/Bebop_Johann/Bebop_Johann';
     
-    ViconAnchorsSubscriber = rossubscriber(RostopicAnchor);
+    ViconAnchorSubscriber = rossubscriber(RostopicAnchor);
     ViconDroneSubscriber = rossubscriber(RostopicDrone); 
 end

@@ -90,7 +90,7 @@ function [TimeArray,RangeArray,DronePositionGroundTruthArray,DroneQuaternionGrou
         end
         
         if NextIndex % gather measurement for all anchors before updating index
-            IterationIndex = IterationIndex + 1;
+            IterationIndex = IterationIndex + 1
             NextIndex = false;
         end
     end
