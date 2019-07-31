@@ -1,0 +1,20 @@
+% Johann Diep (jdiep@student.ethz.ch) - July 2019
+%
+% This function calculates the periodic kernel matrix.
+%
+% Input:
+%   - X: 1 x nx data matrix
+%   - Y: 1 x ny data matrix
+%   - s0/s1: kernel parameters
+%
+% Output:
+%   - K: nx x ny kernel matrix
+
+function K = PeriodicKernel(X,Y,s0,s1)
+    if nargin < 3
+        [s0,s1] = deal(1); % default parameters
+    end
+    
+    K = s0*exp(-0.5*(sin(0.5*bsxfun(@minus,X',Y))/s1)^2);
+    
+end
