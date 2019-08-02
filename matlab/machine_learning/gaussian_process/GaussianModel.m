@@ -6,6 +6,7 @@
 %   - X: Data parameter in form (1 x n)
 %   - Y: Response parameter in form (1 x n)
 %   - NoiseVariance: Noise variance
+%   - s0/s1: Scalar kernel parameters
 %
 % Output:
 %   - Model: Trained model structure with all necessary variables
@@ -15,13 +16,16 @@ function Model = GaussianModel(X,Y,NoiseVariance,s0,s1)
         [s0,s1] = deal(1); % default parameters
     end
     
+    if NoiseVariance == 0
+       NoiseVariance = 1e-8; % small deviation to diagonal to avoid singularity 
+    end
+    
     K = PeriodicKernel(X,X,s0,s1);
     U = chol(K+NoiseVariance*eye(size(X,2)));
     a = U\(U'\Y');
     
     Model.X = X;
     Model.Y = Y;
-    Model.K = K;
     Model.U = U;
     Model.a = a;
     Model.s0 = s0;

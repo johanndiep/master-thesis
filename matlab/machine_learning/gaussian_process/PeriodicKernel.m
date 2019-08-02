@@ -3,9 +3,9 @@
 % This function calculates the periodic kernel matrix.
 %
 % Input:
-%   - X1: data matrix in form (1 x nx)
-%   - X2: data matrix in form (1 x ny)
-%   - s0/s1: scalar kernel parameters
+%   - X1: Data matrix in form (1 x nx)
+%   - X2: Data matrix in form (1 x ny)
+%   - s0/s1: Scalar kernel parameters
 %
 % Output:
 %   - K: covariance matrix in the form (nx x ny)

@@ -9,18 +9,21 @@
 % Output:
 %   - Mean: Predicted value
 %   - Covariance: Uncertainty of the predicted value
+%   - NegLogLikelihood: Returns the negative log of p(Y|X)
 
-function [Mean,Covariance] = GaussianPrediction(Model,Xt)
+function [Mean,Covariance,NegLogLikelihood] = GaussianPrediction(Model,Xt)
     X = Model.X;
+    Y = Model.Y;
     s0 = Model.s0;
     s1 = Model.s1;
     U = Model.U;
     a = Model.a;
     
     Kt = PeriodicKernel(X,Xt,s0,s1);
-    Ktt = PeriodicKernel(Xt,Xt,s0,s1);
+    Ktt = PeriodicKernel(Xt,Xt,s0,s1)+1e-8*eye(size(Xt,2));
     b = U'\Kt;
     
     Mean = a'*Kt;
     Covariance = Ktt-b'*b;
+    NegLogLikelihood = -1*(-0.5*Y*a-sum(log(diag(U)))-0.5*size(X,2)*log(2*pi));
 end
