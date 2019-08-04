@@ -17,7 +17,7 @@ function Model = GaussianModel(X,Y,NoiseVariance,s0,s1)
     end
     
     if NoiseVariance == 0
-       NoiseVariance = 1e-8; % small deviation to diagonal to avoid singularity 
+       NoiseVariance = 1e-4; % small deviation to diagonal to avoid singularity 
     end
     
     K = PeriodicKernel(X,X,s0,s1);
@@ -30,4 +30,5 @@ function Model = GaussianModel(X,Y,NoiseVariance,s0,s1)
     Model.a = a;
     Model.s0 = s0;
     Model.s1 = s1;
+    Model.NoiseVariance = NoiseVariance;
 end

@@ -1,6 +1,6 @@
 % Johann Diep (jdiep@student.ethz.ch)- August 2019
 %
-% Calculates only the negative log marginal likelihood.
+% Calculates the negative log marginal likelihood.
 %
 % Input:
 %   - X: Data parameter in form (1 x n)

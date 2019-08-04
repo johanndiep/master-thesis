@@ -9,7 +9,7 @@ clc;
 
 f = @(x) sin(x.^2); % ground-truth underlying function
 s0 = 1; s1 = 1; % kernel parameters
-NoiseStd = 0.5; % standard deviation for noise
+NoiseStd = 0.1; % standard deviation for noise
 a = -pi; b = pi; % interval of training data [a,b]
 X = a + (b-a).*rand(1,200); % training data
 Y = f(X)+normrnd(0,NoiseStd,[1,size(X,2)]); % response data
@@ -20,11 +20,12 @@ Xt = linspace(-pi,pi,2000); % testing data
 NegLogLikelihood = @(p) getLogLikelihood(X,Y,p(1),p(2),p(3)); % negative log marginal likelihood as objective function
 
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
-s = fmincon(NegLogLikelihood,[NoiseStd,s0,s1],[],[],[],[],[0,0,0],[],[],options);
+s = fmincon(NegLogLikelihood,[NoiseStd,s0,s1],[],[],[],[],[0,0,0],[100,100,100],[],options);
 
 %% Gaussian Process
 
 [Mean,Covariance,NegLogLikelihood] = GaussianProcess(X,Y,Xt,s(1),s(2),s(3)); % training and prediction
+disp("Final negative log marginal likelihood: " + NegLogLikelihood);
 
 %% Plotting
 
