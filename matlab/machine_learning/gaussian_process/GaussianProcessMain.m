@@ -7,20 +7,20 @@ clc;
 
 %% Parameters
 
-f = @(x) sin(x.^2); % ground-truth underlying function
+f = @(x) sin(x); % ground-truth underlying function
 s0 = 1; s1 = 1; % kernel parameters
 NoiseStd = 0.1; % standard deviation for noise
-a = -pi; b = pi; % interval of training data [a,b]
-X = a + (b-a).*rand(1,200); % training data
+a = 0; b = 2*pi; % interval of training data [a,b]
+X = a + (b-a).*rand(1,2000); % training data
 Y = f(X)+normrnd(0,NoiseStd,[1,size(X,2)]); % response data
-Xt = linspace(-pi,pi,2000); % testing data
+Xt = linspace(0,2*pi,2000); % testing data
 
 %% Optimization
 
 NegLogLikelihood = @(p) getLogLikelihood(X,Y,p(1),p(2),p(3)); % negative log marginal likelihood as objective function
 
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
-s = fmincon(NegLogLikelihood,[NoiseStd,s0,s1],[],[],[],[],[0,0,0],[100,100,100],[],options);
+s = fmincon(NegLogLikelihood,[1,s0,s1],[],[],[],[],[0,0,0],[100,100,100],[],options);
 
 %% Gaussian Process
 
@@ -29,7 +29,7 @@ disp("Final negative log marginal likelihood: " + NegLogLikelihood);
 
 %% Plotting
 
-plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
+plotCurveBar(Xt,Mean,cov2corr(Covariance));
 hold on;
 plot(Xt,f(Xt),'b--');
 plot(X,Y,'ko','MarkerSize',3);

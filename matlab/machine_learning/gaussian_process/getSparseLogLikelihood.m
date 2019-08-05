@@ -11,22 +11,20 @@
 % Output:
 %   - NegLogLikelihood: Returns the negative log of p(Y|X)
 
-function NegSparseLogLikelihood = getSparseLogLikelihood(X,Y,p,m)
-    X_ind = p(1:m);
-    NoiseStd = p(m+1);
-    s0 = p(m+2); s1 = p(m+3);
-
-    Knm = PeriodicKernel(X,X_ind,s0,s1);
-    Kmm = PeriodicKernel(X_ind,X_ind,s0,s1)+1e-6*eye(size(X_ind,2));
-    Knn = PeriodicKernel(X,X,s0,s1);
+function NegLogLikelihood = getSparseLogLikelihood(X,Y,p,m)
+    Xi = p(1:m); NoiseStd = p(m+1); s0 = p(m+2); s1 = p(m+3);
     
-    U = chol(Kmm);
-    a = U\(U'\Knm');
-    lambda = diag(diag(Knn-Knm*a));
+    Kmm = PeriodicKernel(Xi,Xi,s0,s1)+1e-4*eye(m);
+    TKmm = chol(Kmm);
     
-    A = Knm*a+lambda+NoiseStd^2*eye(size(X,2));
-    V = chol(A);
-    b = V\(V'\Y');
+    Knm = PeriodicKernel(X,Xi,s0,s1);
     
-    NegSparseLogLikelihood = -1*(-0.5*Y*b-sum(log(diag(V)))-0.5*size(X,2)*log(2*pi));
+    lambda = diag(diag(s0*eye(size(X,2))-Knm*(TKmm\(TKmm'\Knm'))));
+    A = lambda+NoiseStd^2*eye(size(X,2));
+    
+    B = Knm*(TKmm\(TKmm'\Knm'))+A;
+    TB = chol(B);    
+    b = TB\(TB'\Y');
+    
+    NegLogLikelihood = -1*(-0.5*Y*b-sum(log(diag(TB)))-0.5*size(X,2)*log(2*pi));  
 end

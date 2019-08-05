@@ -16,10 +16,6 @@ function Model = GaussianModel(X,Y,NoiseVariance,s0,s1)
         [s0,s1] = deal(1); % default parameters
     end
     
-    if NoiseVariance == 0
-       NoiseVariance = 1e-4; % small deviation to diagonal to avoid singularity 
-    end
-    
     K = PeriodicKernel(X,X,s0,s1);
     U = chol(K+NoiseVariance*eye(size(X,2)));
     a = U\(U'\Y');

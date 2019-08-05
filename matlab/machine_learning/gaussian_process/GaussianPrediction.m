@@ -21,7 +21,7 @@ function [Mean,Covariance,NegLogLikelihood] = GaussianPrediction(Model,Xt)
     NoiseVariance = Model.NoiseVariance;
     
     Kt = PeriodicKernel(X,Xt,s0,s1);
-    Ktt = PeriodicKernel(Xt,Xt,s0,s1);%+1e-4*eye(size(Xt,2));
+    Ktt = PeriodicKernel(Xt,Xt,s0,s1);
     b = U'\Kt;
     
     Mean = a'*Kt;
