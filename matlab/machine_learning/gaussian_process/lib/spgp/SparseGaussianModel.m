@@ -5,39 +5,37 @@
 % Input:
 %   - X: Data parameter in form (1 x n)
 %   - Y: Response parameter in form (1 x n)
+%   - Kernel: Corresponding kernel function handle
 %   - Xi: Pseudo-input data in form (1 x n)
 %   - NoiseVariance: Noise variance
-%   - s0/s1: Scalar kernel parameters
+%   - s0/s1/s2: Scalar kernel parameters
 %
 % Output:
 %   - Model: Trained model structure with all necessary variables
 
-function Model = SparseGaussianModel(X,Y,Xi,NoiseVariance,s0,s1)
-    Kmm = PeriodicKernel(Xi,Xi,s0,s1)+1e-4*eye(size(Xi,2));
-    TKmm = chol(Kmm);
+function Model = SparseGaussianModel(X,Y,Kernel,Xi,NoiseVariance,s0,s1,s2)
+    if nargin == 7
+        s2 = 1; % not used
+    end    
     
-    Knm = PeriodicKernel(X,Xi,s0,s1);
+    Kmm = Kernel(Xi,Xi,s0,s1,s2);    
+    Knm = Kernel(X,Xi,s0,s1,s2);
     
-    lambda = diag(diag(s0*eye(size(X,2))-Knm*(TKmm\(TKmm'\Knm'))));
-    
+    lambda = diag(s0*ones(1,size(X,2)))-diag(sum(Knm'.*(Kmm\Knm')));
     A = lambda+NoiseVariance*eye(size(X,2));
+    B = Knm*(Kmm\Knm')+A;
+    Q = Kmm+Knm'*(A\Knm);
+    C = Q\(Knm'*(A\Y'));
     
-    B = Knm*(TKmm\(TKmm'\Knm'))+A;
-    
-    Qm = Kmm+Knm'*inv(A)*Knm;
-    TQm = chol(Qm);
-    
-    C = Knm'*inv(A)*Y';
-    D = TQm\(TQm'\C);
-    
+    Model.X = X;
+    Model.Y = Y;
     Model.Xi = Xi;
     Model.Kmm = Kmm;
     Model.B = B;
-    Model.Qm = Qm;
-    Model.D = D;
+    Model.Q = Q;
+    Model.C = C;
     Model.NoiseVariance = NoiseVariance;
     Model.s0 = s0;
     Model.s1 = s1;
-    Model.Y = Y;
-    Model.X = X;
+    Model.s2 = s2;
 end
