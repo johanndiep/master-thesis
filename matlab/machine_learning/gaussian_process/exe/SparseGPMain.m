@@ -9,7 +9,7 @@ clc;
 
 %% Parameters
 
-f = @(x) sin(x).*cos(x); % ground-truth underlying function
+f = @(x) sin(x); % ground-truth underlying function
 s0 = 1; s1 = 1; % kernel parameters initialization
 NoiseStd = 0.5; % standard deviation for noise
 a = 0; b = 2*pi; % interval of training data [a,b]
@@ -35,18 +35,16 @@ options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 s = fmincon(LogLikelihood,[Xi,1,s0,s1],[],[],[],[], ...
     [a*ones(1,m),0,0,0],[b*ones(1,m),100,100,100],[],options);
 time = toc;
-disp("Training time: " + time + " seconds");
 
 %% Gaussian Process
 
 if size(s,2) == m+3
-    s(m+4) = 1; % not used
+    s(m+4) = 1;
 end
 
 % prediction at testing data
 [Mean,Covariance,LogLikelihood] = SparseGaussianProcess(X,Y,Xt,Kernel, ...
     s(1:m),s(m+1),s(m+2),s(m+3),s(m+4));
-disp("Final negative log marginal likelihood: " + LogLikelihood);
 
 %% Plotting
 
@@ -55,7 +53,11 @@ hold on;
 plot(Xt,f(Xt),'b--');
 plot(X,Y,'ko','MarkerSize',3);
 plot(s(1:m),-1*ones(1,m),'rx','MarkerSize',10);
-legend('Standard Deviation','Prediction','Ground-Truth: y=exp(sin(x))',...
+legend('Standard Deviation','Prediction','Ground-Truth: y=sin(x)',...
     'Training Data','Pseudo-input locations','Location','northeast');
+txt = {"Kernel: PeriodicKernel","Training time: " + time + " seconds", ...
+    "Final negative log marginal likelihood: " + LogLikelihood, ...
+    "Number of training points: " + t};
+text(0.1,-1,txt)
 grid on;
 hold off;

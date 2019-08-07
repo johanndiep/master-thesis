@@ -17,7 +17,7 @@
 
 function [Mean,Covariance,NegLogLikelihood] = GaussianProcess(X,Y,Xt,Kernel,NoiseStd,s0,s1,s2)
     if nargin == 7
-        s2 = 1; % not used
+        s2 = 1;
     end    
 
     Model = GaussianModel(X,Y,Kernel,NoiseStd^2,s0,s1,s2);

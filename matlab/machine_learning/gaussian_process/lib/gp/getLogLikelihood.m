@@ -14,7 +14,7 @@
 
 function LogLikelihood = getLogLikelihood(X,Y,Kernel,NoiseStd,s0,s1,s2)
     if nargin == 6
-        s2 = 1; % not used
+        s2 = 1;
     end
 
     K = Kernel(X,X,s0,s1,s2);

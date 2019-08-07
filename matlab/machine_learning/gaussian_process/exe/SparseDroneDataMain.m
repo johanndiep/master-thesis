@@ -26,28 +26,40 @@ s0 = 1; s1 = 1; NoiseStd = 1; % kernel and noise parameters initialization
 Xt = linspace(-pi,pi,2000); % testing data
 Kernel = @PeriodicKernel; % options: PeriodicKernel/PoseKernel
 
+% generate pseudo-inputs
+m = 9;
+[~,I] = sort(rand(1,size(X,2)));
+I = I(1:m);
+Xi = X(1,I);
+
 %% Optimization
 
 % negative log marginal likelihood as objective function
-LogLikelihood = @(p) getLogLikelihood(X,Y,Kernel,p(1),p(2),p(3)); 
+LogLikelihood = @(p) getSparseLogLikelihood(X,Y,Kernel,p,m); 
 
 tic;
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
-s = fmincon(LogLikelihood,[NoiseStd,s0,s1],[],[],[],[],[0,0,0],[],[],options);
+s = fmincon(LogLikelihood,[Xi,NoiseStd,s0,s1],[],[],[],[],[-pi*ones(1,m),0,0,0],[pi*ones(1,m),100,100,100],[],options);
 time = toc;
 
 %% Gaussian Process
 
+if size(s,2) == m+3
+    s(m+4) = 1;
+end
+
 % prediction at testing data
-[Mean,Covariance,LogLikelihood] = GaussianProcess(X,Y,Xt,Kernel,s(1),s(2),s(3));
+[Mean,Covariance,LogLikelihood] = SparseGaussianProcess(X,Y,Xt,Kernel, ...
+    s(1:m),s(m+1),s(m+2),s(m+3),s(m+4));
 
 %% Plotting
 
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
 hold on;
 plot(X,Y,'ko','MarkerSize',3);
+plot(s(1:m),-1*ones(1,m),'rx','MarkerSize',10);
 legend('Double Standard Deviations','Mean Prediction','Training Data', ...
-    'Location','northeast');
+    'Pseudo-input locations','Location','northeast');
 txt = {"Kernel: PeriodicKernel","Training time: " + time + " seconds", ...
     "Final negative log marginal likelihood: " + LogLikelihood, ...
     "Number of training points: " + size(X,2)};

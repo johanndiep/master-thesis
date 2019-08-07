@@ -15,7 +15,7 @@
 
 function Model = SparseGaussianModel(X,Y,Kernel,Xi,NoiseVariance,s0,s1,s2)
     if nargin == 7
-        s2 = 1; % not used
+        s2 = 1;
     end    
     
     Kmm = Kernel(Xi,Xi,s0,s1,s2);    

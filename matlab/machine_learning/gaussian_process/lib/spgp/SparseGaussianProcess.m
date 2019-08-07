@@ -18,7 +18,7 @@
 
 function [Mean,Covariance,LogLikelihood] = SparseGaussianProcess(X,Y,Xt,Kernel,Xi,NoiseStd,s0,s1,s2)
     if nargin == 8
-        s2 = 1; % not used
+        s2 = 1;
     end    
 
     Model = SparseGaussianModel(X,Y,Kernel,Xi,NoiseStd^2,s0,s1,s2);

@@ -26,13 +26,11 @@ tic;
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 s = fmincon(LogLikelihood,[1,s0,s1],[],[],[],[],[0,0,0],[],[],options);
 time = toc;
-disp("Training time: " + time + " seconds");
 
 %% Gaussian Process
 
 % prediction at testing data
 [Mean,Covariance,LogLikelihood] = GaussianProcess(X,Y,Xt,Kernel,s(1),s(2),s(3));
-disp("Final negative log marginal likelihood: " + LogLikelihood);
 
 %% Plotting
 
@@ -42,5 +40,9 @@ plot(Xt,f(Xt),'b');
 plot(X,Y,'ko','MarkerSize',3);
 legend('Double Standard Deviations','Mean Prediction','Ground-Truth: y=sin(x)', ...
     'Training Data','Location','northeast');
+txt = {"Kernel: PeriodicKernel","Training time: " + time + " seconds", ...
+    "Final negative log marginal likelihood: " + LogLikelihood, ...
+    "Number of training points: " + t};
+text(0.1,-1,txt)
 grid on;
 hold off;
