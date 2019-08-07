@@ -6,17 +6,15 @@
 %   - X: Data parameter in form (1 x n)
 %   - Y: Response parameter in form (1 x n)
 %   - Kernel: Corresponding kernel function handle
-%   - p: Induced pseudo-inputs in form (1 x n), noise standard deviation and 
-%        scalar kernel parameters
-%   - m: Number of pseudo-input data
+%   - Xi: Pseudo-input data in form (1 x n)
+%   - NoiseVariance: Noise variance
+%   - s0/s1/s2: Scalar kernel parameters
 %
 % Output:
 %   - LogLikelihood: Returns the negative log of p(Y|X,Xi,hyperparameters)
 
-function LogLikelihood = getSparseLogLikelihood(X,Y,Kernel,p,m)
-    Xi = p(1:m); NoiseStd = p(m+1); s0 = p(m+2); s1 = p(m+3);
-    
-    if size(p,2) == m+3
+function LogLikelihood = getSparseLogLikelihood(X,Y,Kernel,Xi,NoiseStd,s0,s1,s2)
+    if nargin == 7
         s2 = 1;
     end
     

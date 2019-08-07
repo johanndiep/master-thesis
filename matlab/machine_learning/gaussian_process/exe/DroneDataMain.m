@@ -3,6 +3,8 @@
 % This script executes the standard Gaussian Process prediction for the 
 % rotational dataset.
 
+warning off;
+
 clear;
 clc;
 
@@ -19,6 +21,10 @@ for i = 1:size(ErrorArray,2)
         DroneQuaternionGroundTruthArray(2,i)*DroneQuaternionGroundTruthArray(3,i)), ...
         (1-2*(DroneQuaternionGroundTruthArray(3,i)^2+DroneQuaternionGroundTruthArray(4,i)^2)));
 end
+
+% downsampling
+Y = Y(1:3:end);
+X = X(1:3:end);
 
 %% Parameters
 
@@ -43,14 +49,16 @@ time = toc;
 
 %% Plotting
 
+figure();
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
 hold on;
 plot(X,Y,'ko','MarkerSize',3);
 legend('Double Standard Deviations','Mean Prediction','Training Data', ...
     'Location','northeast');
-txt = {"Kernel: PeriodicKernel","Training time: " + time + " seconds", ...
-    "Final negative log marginal likelihood: " + LogLikelihood, ...
-    "Number of training points: " + size(X,2)};
-text(-2.9,0,txt)
 grid on;
 hold off;
+
+disp("Kernel: PeriodicKernel")
+disp("Training time: " + time + " seconds");
+disp("Final negative sparse log marginal likelihood: " + LogLikelihood);
+disp("Number of training points: " + size(X,2));

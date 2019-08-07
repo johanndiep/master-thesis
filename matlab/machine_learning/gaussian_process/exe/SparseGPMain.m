@@ -4,6 +4,8 @@
 % "Sparse Gaussian Processes using Pseudo-inputs" by Edward Snelson and 
 % Zoubin Ghahramani.
 
+warning off;
+
 clear;
 clc;
 
@@ -20,44 +22,53 @@ Xt = linspace(0,2*pi,2000); % testing data
 Kernel = @PeriodicKernel; % options: PeriodicKernel/PoseKernel
 
 % generate pseudo-inputs
-m = 9;
+m = 15;
 [~,I] = sort(rand(1,size(X,2)));
 I = I(1:m);
 Xi = X(1,I);
 
 %% Optimization
 
-% negative log marginal likelihood as objective function
-LogLikelihood = @(p) getSparseLogLikelihood(X,Y,Kernel,p,m);
-
 tic;
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
-s = fmincon(LogLikelihood,[Xi,1,s0,s1],[],[],[],[], ...
-    [a*ones(1,m),0,0,0],[b*ones(1,m),100,100,100],[],options);
+
+% pre-computing the noise and kernel parameters
+PreLogLikelihood = @(t) getLogLikelihood(X,Y,Kernel,t(1),t(2),t(3));
+u = fmincon(PreLogLikelihood,[1,s0,s1],[],[],[],[],[0,0,0],[],[],options);
+
+% negative log marginal likelihood as objective function
+LogLikelihood = @(p) getSparseLogLikelihood(X,Y,Kernel,p,u(1),u(2),u(3));
+
+s = fmincon(LogLikelihood,Xi,[],[],[],[],a*ones(1,m),b*ones(1,m),[],options);
 time = toc;
 
 %% Gaussian Process
 
-if size(s,2) == m+3
-    s(m+4) = 1;
+if size(u,2) == 3
+    u(4) = 1;
 end
 
 % prediction at testing data
 [Mean,Covariance,LogLikelihood] = SparseGaussianProcess(X,Y,Xt,Kernel, ...
-    s(1:m),s(m+1),s(m+2),s(m+3),s(m+4));
+    s,u(1),u(2),u(3),u(4));
 
 %% Plotting
 
+figure();
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
 hold on;
 plot(Xt,f(Xt),'b--');
 plot(X,Y,'ko','MarkerSize',3);
-plot(s(1:m),-1*ones(1,m),'rx','MarkerSize',10);
+for i = 1:m
+   xline(s(i),':r','LineWidth',0.5);
+end
 legend('Standard Deviation','Prediction','Ground-Truth: y=sin(x)',...
     'Training Data','Pseudo-input locations','Location','northeast');
-txt = {"Kernel: PeriodicKernel","Training time: " + time + " seconds", ...
-    "Final negative log marginal likelihood: " + LogLikelihood, ...
-    "Number of training points: " + t};
-text(0.1,-1,txt)
 grid on;
 hold off;
+
+disp("Kernel: PeriodicKernel")
+disp("Training time: " + time + " seconds");
+disp("Final negative sparse log marginal likelihood: " + LogLikelihood);
+disp("Number of training points: " + t);
+disp("Number of pseudo-input points: " + m);

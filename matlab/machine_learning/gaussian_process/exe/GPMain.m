@@ -2,6 +2,8 @@
 %
 % This script executes the standard Gaussian Process prediction.
 
+warning off;
+
 clear;
 clc;
 
@@ -19,11 +21,12 @@ Kernel = @PeriodicKernel; % options: PeriodicKernel/PoseKernel
 
 %% Optimization
 
+tic;
+options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
+
 % negative log marginal likelihood as objective function
 LogLikelihood = @(p) getLogLikelihood(X,Y,Kernel,p(1),p(2),p(3));
 
-tic;
-options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 s = fmincon(LogLikelihood,[1,s0,s1],[],[],[],[],[0,0,0],[],[],options);
 time = toc;
 
@@ -34,15 +37,17 @@ time = toc;
 
 %% Plotting
 
+figure();
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
 hold on;
 plot(Xt,f(Xt),'b');
 plot(X,Y,'ko','MarkerSize',3);
 legend('Double Standard Deviations','Mean Prediction','Ground-Truth: y=sin(x)', ...
     'Training Data','Location','northeast');
-txt = {"Kernel: PeriodicKernel","Training time: " + time + " seconds", ...
-    "Final negative log marginal likelihood: " + LogLikelihood, ...
-    "Number of training points: " + t};
-text(0.1,-1,txt)
 grid on;
 hold off;
+
+disp("Kernel: PeriodicKernel")
+disp("Training time: " + time + " seconds");
+disp("Final negative sparse log marginal likelihood: " + LogLikelihood);
+disp("Number of training points: " + t);
