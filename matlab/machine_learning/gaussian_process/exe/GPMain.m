@@ -1,6 +1,9 @@
 % Johann Diep (jdiep@student.ethz.ch) - July 2019
 %
-% This script executes the standard Gaussian Process prediction.
+% This script executes the standard Gaussian Process prediction. An
+% arbitrary function is defined as a function handle. Data then can be
+% generated which can include a noise term. The underlying function is then
+% approximated with a mean and variance for each testing input given the data. 
 
 warning off;
 
@@ -11,13 +14,13 @@ clc;
 
 f = @(x) sin(x); % ground-truth underlying function
 s0 = 1; s1 = 1; % kernel parameters initialization
-NoiseStd = 0.1; % standard deviation for noise
-a = 0; b = 2*pi; % interval of training data [a,b]
+NoiseStd = 0.2; % standard deviation for noise
+a = -pi; b = pi; % interval of training data [a,b]
 t = 1000; % number of training data
 X = a + (b-a)*rand(1,t); % training data
 Y = f(X)+normrnd(0,NoiseStd,[1,size(X,2)]); % response data
-Xt = linspace(0,2*pi,2000); % testing data
-Kernel = @PeriodicKernel; % options: PeriodicKernel/PoseKernel
+Xt = linspace(a,b,2000); % testing data
+Kernel = @PeriodicKernel;
 
 %% Optimization
 
@@ -27,7 +30,7 @@ options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 % negative log marginal likelihood as objective function
 LogLikelihood = @(p) getLogLikelihood(X,Y,Kernel,p(1),p(2),p(3));
 
-s = fmincon(LogLikelihood,[1,s0,s1],[],[],[],[],[0,0,0],[],[],options);
+s = fmincon(LogLikelihood,[1,s0,s1],[],[],[],[],[0,0,0],[Inf,Inf,Inf],[],options);
 time = toc;
 
 %% Gaussian Process
@@ -35,7 +38,7 @@ time = toc;
 % prediction at testing data
 [Mean,Covariance,LogLikelihood] = GaussianProcess(X,Y,Xt,Kernel,s(1),s(2),s(3));
 
-%% Plotting
+%% Plotting and Results
 
 figure();
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
@@ -48,6 +51,8 @@ grid on;
 hold off;
 
 disp("Kernel: PeriodicKernel")
-disp("Training time: " + time + " seconds");
-disp("Final negative sparse log marginal likelihood: " + LogLikelihood);
-disp("Number of training points: " + t);
+disp("Training time: "+time+" seconds");
+disp("Final negative sparse log marginal likelihood: "+LogLikelihood);
+disp("Number of training points: "+t);
+disp("Estimated noise standard deviation: "+s(1));
+disp("Kernel hyperparameters: "+s(2)+"/"+s(3));

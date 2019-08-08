@@ -3,18 +3,18 @@
 % Executes Sparse Gaussian Process prediction.
 %
 % Input:
-%   - X: Data parameter in form (1 x n)
+%   - X: Data parameter in form (d x n)
 %   - Y: Response parameter in form (1 x n)
-%   - Xt: Testing data in form (1 x n)
+%   - Xt: Testing data in form (d x n)
 %   - Kernel: Corresponding kernel function handle
-%   - Xi: Pseudo-input data in form (1 x n)
+%   - Xi: Pseudo-input data in form (d x n)
 %   - NoiseStd: Noise standard deviation
 %   - s0/s1/s2: Scalar kernel parameters
 %
 % Output:
 %   - Mean: Predicted value
 %   - Covariance: Uncertainty of the predicted value
-%   - LogLikelihood: Returns the negative log of p(Y|X,Xi,NoiseStd,s0,s1)
+%   - LogLikelihood: Returns the negative log of p(Y|X,Xi,hyperparameters)
 
 function [Mean,Covariance,LogLikelihood] = SparseGaussianProcess(X,Y,Xt,Kernel,Xi,NoiseStd,s0,s1,s2)
     if nargin == 8

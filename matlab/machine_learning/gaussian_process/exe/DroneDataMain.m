@@ -1,7 +1,8 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
 % This script executes the standard Gaussian Process prediction for the 
-% rotational dataset.
+% rotational dataset. The underlying function is approximated with a 
+% mean and variance for each testing input given the data. 
 
 warning off;
 
@@ -22,24 +23,21 @@ for i = 1:size(ErrorArray,2)
         (1-2*(DroneQuaternionGroundTruthArray(3,i)^2+DroneQuaternionGroundTruthArray(4,i)^2)));
 end
 
-% downsampling
-Y = Y(1:3:end);
-X = X(1:3:end);
-
 %% Parameters
 
-s0 = 1; s1 = 1; NoiseStd = 1; % kernel and noise parameters initialization
+s0 = 1; s1 = 1; NoiseStd = 1; % kernel parameters initialization
 Xt = linspace(-pi,pi,2000); % testing data
-Kernel = @PeriodicKernel; % options: PeriodicKernel/PoseKernel
+Kernel = @PeriodicKernel;
 
 %% Optimization
+
+tic;
+options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
 % negative log marginal likelihood as objective function
 LogLikelihood = @(p) getLogLikelihood(X,Y,Kernel,p(1),p(2),p(3)); 
 
-tic;
-options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
-s = fmincon(LogLikelihood,[NoiseStd,s0,s1],[],[],[],[],[0,0,0],[],[],options);
+s = fmincon(LogLikelihood,[NoiseStd,s0,s1],[],[],[],[],[0,0,0],[Inf,Inf,Inf],[],options);
 time = toc;
 
 %% Gaussian Process
@@ -47,7 +45,7 @@ time = toc;
 % prediction at testing data
 [Mean,Covariance,LogLikelihood] = GaussianProcess(X,Y,Xt,Kernel,s(1),s(2),s(3));
 
-%% Plotting
+%% Plotting and Results
 
 figure();
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
@@ -59,6 +57,8 @@ grid on;
 hold off;
 
 disp("Kernel: PeriodicKernel")
-disp("Training time: " + time + " seconds");
-disp("Final negative sparse log marginal likelihood: " + LogLikelihood);
-disp("Number of training points: " + size(X,2));
+disp("Training time: "+time+" seconds");
+disp("Final negative sparse log marginal likelihood: "+LogLikelihood);
+disp("Number of training points: "+size(X,2));
+disp("Estimated noise standard deviation: "+s(1));
+disp("Kernel hyperparameters: "+s(2)+"/"+s(3));

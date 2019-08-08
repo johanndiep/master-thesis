@@ -3,10 +3,10 @@
 % Calculates the negative log marginal likelihood for the sparse approximation.
 %
 % Input:
-%   - X: Data parameter in form (1 x n)
+%   - X: Data parameter in form (d x n)
 %   - Y: Response parameter in form (1 x n)
 %   - Kernel: Corresponding kernel function handle
-%   - Xi: Pseudo-input data in form (1 x n)
+%   - Xi: Pseudo-input data in form (d x n)
 %   - NoiseVariance: Noise variance
 %   - s0/s1/s2: Scalar kernel parameters
 %
@@ -21,9 +21,8 @@ function LogLikelihood = getSparseLogLikelihood(X,Y,Kernel,Xi,NoiseStd,s0,s1,s2)
     Kmm = Kernel(Xi,Xi,s0,s1,s2);    
     Knm = Kernel(X,Xi,s0,s1,s2);
     
-    lambda = diag(s0*ones(1,size(X,2)))-diag(sum(Knm'.*(Kmm\Knm')));
-    A = lambda+NoiseStd^2*eye(size(X,2));
-    
+    lambda = diag(s0*ones(1,size(X,2))-sum(Knm'.*(Kmm\Knm')));
+    A = lambda+NoiseStd^2*eye(size(X,2));  
     B = Knm*(Kmm\Knm')+A;
     cB = chol(B);
     

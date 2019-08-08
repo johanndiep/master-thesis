@@ -3,7 +3,7 @@
 % Returns all the necessary model parameter for Gaussian Process regression.
 %
 % Input:
-%   - X: Data parameter in form (1 x n)
+%   - X: Data parameter in form (d x n)
 %   - Y: Response parameter in form (1 x n)
 %   - Kernel: Corresponding kernel function handle
 %   - NoiseVariance: Noise variance
@@ -14,8 +14,9 @@
 
 function Model = GaussianModel(X,Y,Kernel,NoiseVariance,s0,s1,s2)    
     K = Kernel(X,X,s0,s1,s2);
-    cK = chol(K+NoiseVariance*eye(size(X,2)));
-    a = cK\(cK'\Y');
+    Kn = K+NoiseVariance*eye(size(X,2));
+    cKn = chol(Kn);
+    a = Kn\Y';
     
     Model.X = X;
     Model.Y = Y;
@@ -23,6 +24,6 @@ function Model = GaussianModel(X,Y,Kernel,NoiseVariance,s0,s1,s2)
     Model.s0 = s0;
     Model.s1 = s1;
     Model.s2 = s2;
-    Model.cK = cK;
+    Model.cKn = cKn;
     Model.a = a;
 end

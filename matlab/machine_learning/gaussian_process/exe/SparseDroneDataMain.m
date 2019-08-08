@@ -1,9 +1,11 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% This script executes the standard Gaussian Process prediction for the 
-% rotational dataset.
+% This script executes the sparse Gaussian Process prediction described in
+% "Sparse Gaussian Processes using Pseudo-inputs" by Edward Snelson and 
+% Zoubin Ghahramani for the rotational dataset. The underlying function is 
+% approximated with a mean and variance for each testing input given the data. 
 
-warning off;
+%warning off;
 
 clear;
 clc;
@@ -22,15 +24,11 @@ for i = 1:size(ErrorArray,2)
         (1-2*(DroneQuaternionGroundTruthArray(3,i)^2+DroneQuaternionGroundTruthArray(4,i)^2)));
 end
 
-% downsampling
-Y = Y(1:3:end);
-X = X(1:3:end);
-
 %% Parameters
 
 s0 = 1; s1 = 1; NoiseStd = 1; % kernel and noise parameters initialization
 Xt = linspace(-pi,pi,2000); % testing data
-Kernel = @PeriodicKernel; % options: PeriodicKernel/PoseKernel
+Kernel = @PeriodicKernel;
 
 % generate pseudo-inputs
 m = 20;
@@ -38,32 +36,34 @@ m = 20;
 I = I(1:m);
 Xi = X(1,I);
 
-%% Optimization
+%% Optimization 1
 
 tic;
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
 % pre-computing the noise and kernel parameters
 PreLogLikelihood = @(t) getLogLikelihood(X,Y,Kernel,t(1),t(2),t(3));
-u = fmincon(PreLogLikelihood,[NoiseStd,s0,s1],[],[],[],[],[0,0,0],[],[],options);
+u = fmincon(PreLogLikelihood,[NoiseStd,s0,s1],[],[],[],[],[0,0,0],[Inf,Inf,Inf],[],options);
+
+%% Optimization 2
+
+% downsampling
+Yd = Y(1:3:end);
+Xd = X(1:3:end);
 
 % negative log marginal likelihood as objective function
-LogLikelihood = @(p) getSparseLogLikelihood(X,Y,Kernel,p,u(1),u(2),u(3)); 
+LogLikelihood = @(p) getSparseLogLikelihood(Xd,Yd,Kernel,p,u(1),u(2),u(3)); 
 
 s = fmincon(LogLikelihood,Xi,[],[],[],[],-pi*ones(1,m),pi*ones(1,m),[],options);
 time = toc;
 
 %% Gaussian Process
 
-if size(u,2) == 3
-    u(4) = 1;
-end
-
 % prediction at testing data
 [Mean,Covariance,LogLikelihood] = SparseGaussianProcess(X,Y,Xt,Kernel, ...
-    s,u(1),u(2),u(3),u(4));
+    s,u(1),u(2),u(3),1);
 
-%% Plotting
+%% Plotting and Results
 
 figure();
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
@@ -78,7 +78,9 @@ grid on;
 hold off;
 
 disp("Kernel: PeriodicKernel")
-disp("Training time: " + time + " seconds");
-disp("Final negative sparse log marginal likelihood: " + LogLikelihood);
-disp("Number of training points: " + size(X,2));
-disp("Number of pseudo-input points: " + m);
+disp("Training time: "+time+" seconds");
+disp("Final negative sparse log marginal likelihood: "+LogLikelihood);
+disp("Number of training points: "+size(X,2));
+disp("Number of pseudo-input points: "+m);
+disp("Estimated noise standard deviation: "+u(1));
+disp("Kernel hyperparameters: "+u(2)+"/"+u(3));

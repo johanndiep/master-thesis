@@ -2,7 +2,10 @@
 %
 % This script executes the sparse Gaussian Process prediction described in
 % "Sparse Gaussian Processes using Pseudo-inputs" by Edward Snelson and 
-% Zoubin Ghahramani.
+% Zoubin Ghahramani. An arbitrary function is defined as a function handle. 
+% Data then can be generated which can include a noise term. The underlying 
+% function is then approximated with a mean and variance for each testing 
+% input given the data. 
 
 warning off;
 
@@ -14,11 +17,11 @@ clc;
 f = @(x) sin(x); % ground-truth underlying function
 s0 = 1; s1 = 1; % kernel parameters initialization
 NoiseStd = 0.5; % standard deviation for noise
-a = 0; b = 2*pi; % interval of training data [a,b]
+a = -pi; b = pi; % interval of training data [a,b]
 t = 1000; % number of training data
 X = a + (b-a).*rand(1,t); % training data
 Y = f(X)+normrnd(0,NoiseStd,[1,size(X,2)]); % response data
-Xt = linspace(0,2*pi,2000); % testing data
+Xt = linspace(a,b,2000); % testing data
 Kernel = @PeriodicKernel; % options: PeriodicKernel/PoseKernel
 
 % generate pseudo-inputs
@@ -32,9 +35,9 @@ Xi = X(1,I);
 tic;
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
-% pre-computing the noise and kernel parameters
+% pre-optimizing the noise and kernel parameters
 PreLogLikelihood = @(t) getLogLikelihood(X,Y,Kernel,t(1),t(2),t(3));
-u = fmincon(PreLogLikelihood,[1,s0,s1],[],[],[],[],[0,0,0],[],[],options);
+u = fmincon(PreLogLikelihood,[1,s0,s1],[],[],[],[],[0,0,0],[Inf,Inf,Inf],[],options);
 
 % negative log marginal likelihood as objective function
 LogLikelihood = @(p) getSparseLogLikelihood(X,Y,Kernel,p,u(1),u(2),u(3));
@@ -44,15 +47,11 @@ time = toc;
 
 %% Gaussian Process
 
-if size(u,2) == 3
-    u(4) = 1;
-end
-
 % prediction at testing data
 [Mean,Covariance,LogLikelihood] = SparseGaussianProcess(X,Y,Xt,Kernel, ...
-    s,u(1),u(2),u(3),u(4));
+    s,u(1),u(2),u(3));
 
-%% Plotting
+%% Plotting and Results
 
 figure();
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
@@ -68,7 +67,9 @@ grid on;
 hold off;
 
 disp("Kernel: PeriodicKernel")
-disp("Training time: " + time + " seconds");
-disp("Final negative sparse log marginal likelihood: " + LogLikelihood);
-disp("Number of training points: " + t);
-disp("Number of pseudo-input points: " + m);
+disp("Training time: "+time+" seconds");
+disp("Final negative sparse log marginal likelihood: "+LogLikelihood);
+disp("Number of training points: "+t);
+disp("Number of pseudo-input points: "+m);
+disp("Estimated noise standard deviation: "+u(1));
+disp("Kernel hyperparameters: "+u(2)+"/"+u(3));

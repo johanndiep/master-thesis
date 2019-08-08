@@ -3,10 +3,10 @@
 % Returns all the necessary model parameter for Sparse Gaussian Process regression.
 %
 % Input:
-%   - X: Data parameter in form (1 x n)
+%   - X: Data parameter in form (d x n)
 %   - Y: Response parameter in form (1 x n)
 %   - Kernel: Corresponding kernel function handle
-%   - Xi: Pseudo-input data in form (1 x n)
+%   - Xi: Pseudo-input data in form (d x n)
 %   - NoiseVariance: Noise variance
 %   - s0/s1/s2: Scalar kernel parameters
 %
