@@ -1,91 +1,70 @@
 % Johann Diep (jdiep@student.ethz.ch) - June 2019
 %
-% Basic position PID controller.
+% Basic position PD controller for the Bebop drone.
 
 classdef Controller
     properties
-        ProportionalGain
-        DifferentialGain
-        IntegralGain
-        Bebop
-        PreviousTime
-        PreviousError
-        Scaler
-        ErrorIntegral
-        FlightCommand
-        ErrorTolerance
+        P
+        D
+        TreshRot
+        Publisher
     end
     
     methods
-        function ControllerObject = Controller()
-           tic; % starting the timer at the beginning
-           
-           ControllerObject.ProportionalGain = 0.02;
-           ControllerObject.DifferentialGain = 0.15;
-           ControllerObject.IntegralGain = 0.15;
-           ControllerObject.PreviousTime = [0,0,0];
-           ControllerObject.PreviousError = [0,0,0];               
-           ControllerObject.Scaler = 1;
-           ControllerObject.ErrorIntegral = [0,0,0];
-           ControllerObject.FlightCommand = [0,0,0,0,0,0];
-           ControllerObject.ErrorTolerance = 0.1;
-           
-           ControllerObject.Bebop = BebopControl();
+        % Initialize the parameter object with the chosen gains and the
+        % publisher object for messaging. 
+        function Parameters = Controller()
+           Parameters.P = 0.02;
+           Parameters.D = 0;
+           Parameters.TreshRot = 0.05;
+           Parameters.Publisher = BebopControl();
         end
         
-        % Calculating the proportional, integral and differential error.
-        %
-        % Input:
-        %   - CurrentError: Current error of the desired variable
-        %   - Index: Index of the desired variable
-        %
-        % Output:
-        %   - CumulativeError: Cummulative and scaled error       
-        
-        function CumulativeError = CalculateError(ControllerObject,CurrentError,Index)
-            CurrentTime = toc;
+        % Calculating the cummulative proportional and differential error.
+        %   - Parameters: Parameter object defined by the constructor
+        %   - PosErr: Position error
+        %   - VelErr: Velocity Error
+        %   - CurYaw: Current yaw orientation
+        function CumulativeError = CalculateError(Parameters,PosErr,VelErr,CurYaw)           
+            Pd = Parameters.P * PosErr;
+            Dd = Parameters.D * VelErr;
             
-            DeltaT = 0;
-            if ControllerObject.PreviousTime(Index) ~= 0
-               DeltaT = CurrentTime-ControllerObject.PreviousTime(Index); 
+            CumulativeError = [Pd + Dd,0,0,-1*CurYaw];
+        end
+        
+        % Position controller which corrects for positional displacement from 
+        % goal position. Thereby, the yaw angle is fixed.
+        %   - CurPos: Current position of the drone in form (3 x 1)
+        %   - GoalPos: Goal position of the drone in form (3 x 1)
+        %   - CurVel: Current velocity of the drone in form (3 x 1)
+        %   - GoalVel: Goal velocity of the drone in form (3 x 1)
+        %   - CurYaw: Current yaw orientation 
+        function NoTurnFlight(Parameters,CurPos,GoalPos,CurVel,GoalVel,CurYaw)
+            CumulativeError = Parameters.CalculateError(GoalPos-CurPos,GoalVel-CurVel,CurYaw);
+            
+            if CurYaw > Parameters.TreshRot
+                Parameters.Publisher.MovementCommand([0,0,0,0,0,CumulativeError(6)]);
+            else
+                Parameters.Publisher.MovementCommand([CumulativeError(1:3),0,0,0]);
             end
-            
-            DeltaError = CurrentError-ControllerObject.PreviousError(Index);
-            
-            ErrorProportional = CurrentError;
-            ControllerObject.ErrorIntegral(Index) = ControllerObject.ErrorIntegral(Index)+CurrentError*DeltaT;
-            ErrorDifferential = 0;
-            if DeltaT > 0
-                ErrorDifferential = DeltaError/DeltaT;
-            end
-            ControllerObject.PreviousTime(Index) = CurrentTime;
-            ControllerObject.PreviousError(Index) = CurrentError;
-            
-            CumulativeError = ControllerObject.ProportionalGain*ErrorProportional+ControllerObject.DifferentialGain*ErrorDifferential+ControllerObject.IntegralGain*ControllerObject.ErrorIntegral(Index);
+        end
+    
+        % Starting takeoff by increasing motor speeds.
+        %   - Publisher: Publisher object defined by the constructor
+        function Start(Parameters)
+            Parameters.Publisher.TakeOffCommand;
         end
         
-        % Position controller, corrects only positional displacement.
-        %
-        % Input:
-        %   - CurrentPosition: Current position of the drone
-        %   - TargetPosition: Goal position of the drone
-        
-        function NoTurnFlight(ControllerObject,CurrentPosition,TargetPosition)
-            for i = 1:size(CurrentPosition,1)
-                ControllerObject.FlightCommand(i) = ControllerObject.CalculateError(TargetPosition(i)-CurrentPosition(i),i);
-            end
-            
-            %if max(ControllerObject.FlightCommand) > ControllerObject.ErrorTolerance || min(ControllerObject.FlightCommand) < -ControllerObject.ErrorTolerance
-            ControllerObject.Bebop.MovementCommand([ControllerObject.Scaler*ControllerObject.FlightCommand(1),ControllerObject.Scaler*ControllerObject.FlightCommand(2),ControllerObject.Scaler*ControllerObject.FlightCommand(3),0,0,0]);
-            %end 
+        % Save landing by decreasing motor speeds.
+        %   - Parameters: Parameter object defined by the constructor
+        function End(Parameters)
+            Parameters.Publisher.LandCommand;
         end
-        
-        function Start(ControllerObject)
-            ControllerObject.Bebop.TakeOffCommand;
-        end
-        
-        function End(ControllerObject)
-            ControllerObject.Bebop.LandCommand;
+
+        % Immediately shutting down all motors.
+        %   - Parameters: Parameter object defined by the constructor
+        function Emergency(Parameters)
+            Parameters.Publisher.EmergencyCommand;
         end
     end
 end

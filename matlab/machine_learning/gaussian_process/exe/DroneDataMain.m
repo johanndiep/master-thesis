@@ -18,10 +18,10 @@ Y = ErrorArray;
 
 % quaternion to euler angle mapping
 for i = 1:size(ErrorArray,2)
-    X(i) = atan2(2*(DroneQuaternionGroundTruthArray(1,i)*DroneQuaternionGroundTruthArray(4,i)+ ...
-        DroneQuaternionGroundTruthArray(2,i)*DroneQuaternionGroundTruthArray(3,i)), ...
-        (1-2*(DroneQuaternionGroundTruthArray(3,i)^2+DroneQuaternionGroundTruthArray(4,i)^2)));
+    X = quat2eul(DroneQuaternionGroundTruthArray');
 end
+X(:,2:3) = [];
+X = X';
 
 %% Parameters
 
