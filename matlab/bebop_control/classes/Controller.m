@@ -7,6 +7,7 @@ classdef Controller
         P
         D
         TreshRot
+        TreshTran
         Publisher
     end
     
@@ -14,22 +15,30 @@ classdef Controller
         % Initialize the parameter object with the chosen gains and the
         % publisher object for messaging. 
         function Parameters = Controller()
-           Parameters.P = 0.02;
-           Parameters.D = 0;
-           Parameters.TreshRot = 0.05;
+           Parameters.P = [0.2,0.2,0.2];
+           Parameters.D = [0,0,0];
+           Parameters.TreshRot = 0.05; % roughly 3 degree deviation
            Parameters.Publisher = BebopControl();
         end
         
         % Calculating the cummulative proportional and differential error.
         %   - Parameters: Parameter object defined by the constructor
-        %   - PosErr: Position error
-        %   - VelErr: Velocity Error
-        %   - CurYaw: Current yaw orientation
-        function CumulativeError = CalculateError(Parameters,PosErr,VelErr,CurYaw)           
-            Pd = Parameters.P * PosErr;
-            Dd = Parameters.D * VelErr;
+        %   - CurPos: Current position of the drone in form (3 x 1)
+        %   - GoalPos: Goal position of the drone in form (3 x 1)
+        %   - CurVel: Current velocity of the drone in form (3 x 1)
+        %   - GoalVel: Goal velocity of the drone in form (3 x 1)
+        %   - CurQuat: Current orientation in quaternion form (4 x 1)
+
+        function CumulativeError = CalculateError(Parameters,CurPos,GoalPos,CurVel,GoalVel,CurQuat)
             
-            CumulativeError = [Pd + Dd,0,0,-1*CurYaw];
+            CurRot = quat2rotm(CurQuat)';
+            PosErr = CurRot*(GoalPos-CurPos);
+            VelErr = CurRot*(GoalVel-CurVel);
+            
+            Pd = Parameters.P.*PosErr';
+            Dd = Parameters.D.*VelErr';
+            
+            CumulativeError = Pd+Dd;
         end
         
         % Position controller which corrects for positional displacement from 
@@ -38,14 +47,16 @@ classdef Controller
         %   - GoalPos: Goal position of the drone in form (3 x 1)
         %   - CurVel: Current velocity of the drone in form (3 x 1)
         %   - GoalVel: Goal velocity of the drone in form (3 x 1)
-        %   - CurYaw: Current yaw orientation 
-        function NoTurnFlight(Parameters,CurPos,GoalPos,CurVel,GoalVel,CurYaw)
-            CumulativeError = Parameters.CalculateError(GoalPos-CurPos,GoalVel-CurVel,CurYaw);
+        %   - CurQuat: Current orientation in quaternion form (4 x 1)
+        function NoTurnFlight(Parameters,CurPos,GoalPos,CurVel,GoalVel,CurQuat)
+            CurOrient = quat2eul(CurQuat');
+            CurYaw = CurOrient(1);
             
-            if CurYaw > Parameters.TreshRot
-                Parameters.Publisher.MovementCommand([0,0,0,0,0,CumulativeError(6)]);
+            if abs(CurYaw) > Parameters.TreshRot
+                Parameters.Publisher.AngularCommand(-1*CurYaw);
             else
-                Parameters.Publisher.MovementCommand([CumulativeError(1:3),0,0,0]);
+                CumulativeError = Parameters.CalculateError(GoalPos,CurPos,GoalPos,CurVel,GoalVel,CurQuat);
+                Parameters.Publisher.LinearCommand(CumulativeError);
             end
         end
     
