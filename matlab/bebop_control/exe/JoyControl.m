@@ -15,6 +15,7 @@ JoySubscriber = rossubscriber('/spacenav/joy');
 BebopPublisher = BebopControl();
 
 FlyState = 0;
+DominantFlight = 1;
 
 while true
     JoyMessage = JoySubscriber.LatestMessage;
@@ -29,9 +30,25 @@ while true
     end
     
     if FlyState == 1
-        FlightCommand = JoyMessage.Axes';
-        FlightCommand(4:5) = [];
-        BebopPublisher.MovementCommand(FlightCommand);
+        JoyCommand = JoyMessage.Axes';
+        JoyCommand(4:5) = [];
+        
+        if DominantFlight == 1
+            [MaxValue,MaxIndex] = max(JoyCommand);
+            [MinValue,MinIndex] = min(JoyCommand);
+            FlightCommand = zeros(1,4);
+            
+            if abs(MaxValue) > abs(MinValue)
+                FlightCommand(MaxIndex) = MaxValue;
+                BebopPublisher.MovementCommand(FlightCommand);
+            else
+                FlightCommand(MinIndex) = MinValue;
+                BebopPublisher.MovementCommand(FlightCommand);
+            end
+        else
+            FlightCommand = JoyCommand;
+            BebopPublisher.MovementCommand(FlightCommand);
+        end
     end 
 end
 
