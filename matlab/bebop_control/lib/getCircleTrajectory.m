@@ -11,10 +11,17 @@
 %        gathered
 %
 % Output:
-%   - CircleTrajectory: Desired circular trajectory waypoint
+%   - DesPos: Desired waypoint
+%   - DesVel: Corresponding desired velocity
 
-function CircleTrajectory = getCircleTrajectory(MidPoint,Height,Radius,f,t)
-    CircleTrajectory(1) = MidPoint(1)+Radius*sin(2*pi*f*t);
-    CircleTrajectory(2) = MidPoint(2)-Radius*cos(2*pi*f*t);
-    CircleTrajectory(3) = Height;
+function [DesPos,DesVel] = getCircleTrajectory(MidPoint,Height,Radius,f,t)
+    AbsVel = 0.1;
+
+    DesPos(1) = MidPoint(1)+Radius*sin(2*pi*f*t);
+    DesPos(2) = MidPoint(2)-Radius*cos(2*pi*f*t);
+    DesPos(3) = Height;
+    
+    DesVel(1) = AbsVel*cos(2*pi*f*t);
+    DesVel(2) = AbsVel*sin(2*pi*f*t);
+    DesVel(3) = 0;
 end

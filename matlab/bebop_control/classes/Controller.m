@@ -12,13 +12,14 @@ classdef Controller
     end
     
     methods
-        % Initialize the parameter object with the chosen gains and the
+        % Initialize the control object with the chosen gains and the
         % publisher object for messaging. 
-        function Parameters = Controller()
-           Parameters.P = [0.2,0.2,0.2];
-           Parameters.D = [0,0,0];
-           Parameters.TreshRot = 0.05; % roughly 3 degree deviation
-           Parameters.Publisher = BebopControl();
+        %   - P/D: PD gains in scalar form
+        function ControlObject = Controller()
+           ControlObject.P = 0.05;
+           ControlObject.D = 0;
+           ControlObject.TreshRot = 0.05; % roughly 3 degree deviation
+           ControlObject.Publisher = BebopControl();
         end
         
         % Calculating the cummulative proportional and differential error.
@@ -28,15 +29,15 @@ classdef Controller
         %   - CurVel: Current velocity of the drone in form (3 x 1)
         %   - GoalVel: Goal velocity of the drone in form (3 x 1)
         %   - CurQuat: Current orientation in quaternion form (4 x 1)
-
-        function CumulativeError = CalculateError(Parameters,CurPos,GoalPos,CurVel,GoalVel,CurQuat)
+        function CumulativeError = CalculateError(ControlObject,CurPos,GoalPos,CurVel, ...
+                GoalVel,CurQuat)
             
-            CurRot = quat2rotm(CurQuat)';
+            CurRot = quat2rotm(CurQuat')';
             PosErr = CurRot*(GoalPos-CurPos);
             VelErr = CurRot*(GoalVel-CurVel);
             
-            Pd = Parameters.P.*PosErr';
-            Dd = Parameters.D.*VelErr';
+            Pd = ControlObject.P*PosErr';
+            Dd = ControlObject.D*VelErr';
             
             CumulativeError = Pd+Dd;
         end
@@ -48,34 +49,35 @@ classdef Controller
         %   - CurVel: Current velocity of the drone in form (3 x 1)
         %   - GoalVel: Goal velocity of the drone in form (3 x 1)
         %   - CurQuat: Current orientation in quaternion form (4 x 1)
-        function NoTurnFlight(Parameters,CurPos,GoalPos,CurVel,GoalVel,CurQuat)
+        function NoTurnFlight(ControlObject,CurPos,GoalPos,CurVel,GoalVel,CurQuat)
             CurOrient = quat2eul(CurQuat');
             CurYaw = CurOrient(1);
             
-            if abs(CurYaw) > Parameters.TreshRot
-                Parameters.Publisher.AngularCommand(-1*CurYaw);
+            if abs(CurYaw) > ControlObject.TreshRot
+                ControlObject.Publisher.AngularCommand(-1*CurYaw);
             else
-                CumulativeError = Parameters.CalculateError(GoalPos,CurPos,GoalPos,CurVel,GoalVel,CurQuat);
-                Parameters.Publisher.LinearCommand(CumulativeError);
+                CumulativeError = ControlObject.CalculateError(GoalPos,CurPos,GoalPos,CurVel, ...
+                    GoalVel,CurQuat);
+                ControlObject.Publisher.LinearCommand(CumulativeError);
             end
         end
     
         % Starting takeoff by increasing motor speeds.
         %   - Publisher: Publisher object defined by the constructor
-        function Start(Parameters)
-            Parameters.Publisher.TakeOffCommand;
+        function Start(ControlObject)
+            ControlObject.Publisher.TakeOffCommand;
         end
         
         % Save landing by decreasing motor speeds.
         %   - Parameters: Parameter object defined by the constructor
-        function End(Parameters)
-            Parameters.Publisher.LandCommand;
+        function End(ControlObject)
+            ControlObject.Publisher.LandCommand;
         end
 
         % Immediately shutting down all motors.
         %   - Parameters: Parameter object defined by the constructor
-        function Emergency(Parameters)
-            Parameters.Publisher.EmergencyCommand;
+        function Emergency(ControlObject)
+            ControlObject.Publisher.EmergencyCommand;
         end
     end
 end
