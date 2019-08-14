@@ -18,7 +18,7 @@ classdef Controller
         function ControlObject = Controller()
            ControlObject.P = 0.05;
            ControlObject.D = 0;
-           ControlObject.TreshRot = 0.05; % roughly 3 degree deviation
+           ControlObject.TreshRot = 0.1; % roughly 6 degree deviation
            ControlObject.Publisher = BebopControl();
         end
         

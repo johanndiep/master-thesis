@@ -46,7 +46,7 @@ classdef ConstantVelocityEKF < handle
         % EKF measurement update equations
         %   - Model: Model object defined by the constructor
         %   - Z: Measurement from VICON system in form (3 x 1)
-        function [Pos,Vel] = UpdateMeasurement(Model,Z)
+        function [CurPos,CurVel] = UpdateMeasurement(Model,Z)
             H = Model.H;
             P = Model.P;
             R = Model.R;
@@ -59,8 +59,8 @@ classdef ConstantVelocityEKF < handle
             Model.P = (eye(6)-K*H)*P;
             
             Xp = Model.X;
-            Pos = Xp(1:2:end);
-            Vel = Xp(2:2:end);
+            CurPos = Xp(1:2:end);
+            CurVel = Xp(2:2:end);
         end
     end
 end
