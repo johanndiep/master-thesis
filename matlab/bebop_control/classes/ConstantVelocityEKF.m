@@ -4,7 +4,6 @@
 
 classdef ConstantVelocityEKF < handle
     properties
-        A
         H
         Q
         R
@@ -16,28 +15,28 @@ classdef ConstantVelocityEKF < handle
         
         % Initialize the EKF with the corresponding matrices for the
         % process and measurement model
-        %   - dT: Time interval between each EKF iteration
-        function Model = ConstantVelocityEKF(dT)
-            a = [1,dT;0,1];
+        function Model = ConstantVelocityEKF()
             q = [0,0;0,1];
             
-            Model.A = blkdiag(a,a,a);
             Model.H = [1,0,0,0,0,0;0,0,1,0,0,0;0,0,0,0,1,0];
             
             Model.Q = blkdiag(q,q,q);
             Model.R = diag([0.01,0.01,0.01]);
 
-            Model.X = zeros(6,1);
+            Model.X = zeros(6,1); % (px,vx,py,vy,pz,vz)
             Model.P = 10*eye(6);
         end
         
         % EKF prior update equations 
         %   - Model: Model object defined by the constructor
-        function UpdatePrior(Model)
-            A = Model.A;
+        %   - dT: Time interval between each EKF iteration
+        function UpdatePrior(Model,dT)
             X = Model.X;
             P = Model.P;
             Q = Model.Q;
+            
+            a = [1,dT;0,1];
+            A = blkdiag(a,a,a);
             
             Model.X = A*X;
             Model.P = A*P*A'+Q;

@@ -1,17 +1,34 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% This script controls the position of the drone towards a desired goal position.
-% It takes the feedback from the VICON positioning system, pass it through
-% a constant velocity modeled EKF in order to estimate the velocity and
-% uses a PD controller to move the drone towards the goal position. In
-% order to optimize the performance, the following parameters need to be
-% tuned:
+% This script controls the state of the Bebop towards a desired goal 
+% position and velocity. It takes the feedback from the VICON 
+% positioning system, pass it through a constant velocity modeled EKF 
+% in order to estimate the velocity and uses a PD controller to move 
+% the drone towards the goal state. In order to optimize the performance, 
+% the following parameters need to be tuned:
 %   - P/D-gain in "Controller.m"
 %   - Threshold for maximal rotation in "Controller.m"
 %   - Time interval between each EKF iteration
 %   - x/P-initialization in "ConstantVelocityEKF.m"
 %   - R/Q-covariance in "ConstantVelocityEKF.m"
-%   - Furthermore, the yaw correction method could be optimized.
+%
+% Furthermore, the following points need to be investigated:
+%   - The yaw correction method could be optimized.
+%   - Are the buttons of the Spacemouse fast enough to react?
+%
+% Step-by-Step:
+%   1. Calibrate the VICON system and place the origin in the room with the
+%      T-link
+%   2. Attach VICON markers on the Bebop, group the markers on the VICON
+%      machine to an object and name it "Bebop_Johann"
+%   3. Place the drone such that the body-fixed frame (x-forward,y-left,z-ascend)
+%      is aligned with the VICON frame
+%   4. Connect the computer with the VICON machine via Ethernet
+%   5. Turn on the Bebop and connect the laptop with it over Wi-Fi
+%   6. Start the ROS driver for the Spacemouse
+%   7. Start the ROS VICON bridge node
+%   8. Start the ROS driver for the Bebop
+%   9. Run the following script
 
 clear;
 clc;
@@ -20,18 +37,20 @@ rosinit;
 
 %% Parameters
 
-GoalPos = [2;2;2]; % desired goal position
-GoalVel = [0;0;0]; % zero velocity at goal position
-dT = 0.1; % time interval between each EKF iteration
+% define goal position and velocity
+TrajObj = TrajectoryGenerator([2,2],2,0);
+[GoalPos,GoalVel] = TrajObj.getStaticPosition;
+
+FirstIteration = 1; % helper variable to estimate dT
 
 %% Preliminary
 
 % ROS subscribers for Spacemouse and VICON positioning system
-JoySubscriber = rossubscriber('/spacenav/joy'); 
-ViconDroneSubscriber = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
+JoySub = rossubscriber('/spacenav/joy'); 
+VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 
 % initializing a controller object
-ControlObject = Controller();
+ControlObj = Controller();
 
 % pre-allocation
 SaveViconPos = zeros(3,10000);
@@ -42,44 +61,50 @@ SaveCurVel = zeros(3,10000);
 %% PID
 
 % starting the drone after the left button on the Spacemouse is pushed
-JoyMessage = JoySubscriber.LatestMessage;
+JoyMessage = JoySub.LatestMessage;
 while JoyMessage.Buttons(1) == 0
-   JoyMessage = JoySubscriber.LatestMessage; 
+   JoyMessage = JoySub.LatestMessage; 
 end
 
-ControlObject.Start; % starting the drone
+ControlObj.Start; % starting the drone
+pause(3);
 
-% initializing the constant velocity modeled EKF w
-Model = ConstantVelocityEKF(dT);
+% initializing the constant velocity modeled EKF
+Model = ConstantVelocityEKF();
+tic;
 
 i = 1;
 while true
     % stopping estimation when the right button on the Spacemouse is pushed
-    JoyMessage = JoySubscriber.LatestMessage;
+    JoyMessage = JoySub.LatestMessage;
     if JoyMessage.Buttons(2) == 1
         break;
     end
     
     % Vicon ground-truth position and quaternion of the drone
-    [ViconPos,ViconQuat] = getGroundTruth(ViconDroneSubscriber);
+    [ViconPos,ViconQuat] = getGroundTruth(VicDroneSub);
     
     % prior and posterior update with process and measurement model
-    Model.UpdatePrior;
+    dT = toc;
+    Model.UpdatePrior(dT);
     [CurPos,CurVel] = Model.UpdateMeasurement(ViconPos);
+    tic;
     
     % moving the drone towards the desired goal position while 
     % keeping the orientation fixed
-    ControlObject.NoTurnFlight(CurPos,GoalPos,CurVel,GoalVel,ViconQuat);
+    ControlObj.NoTurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat);
     
+    % saving to array
     SaveViconPos(:,i) = ViconPos;
     SaveViconQuat(:,i) = ViconQuat;
     SaveCurPos(:,i) = CurPos;
     SaveCurVel(:,i) = CurVel;
+    i = i+1;
 end
 
-ControlObject.End; % landing the drone
+ControlObj.End; % landing the drone
+pause(3);
 
-pause(2);
 rosshutdown;
 
 %% Plotting and Results
@@ -92,7 +117,7 @@ SaveCurVel(:,CuttingIndex:end) = [];
 
 figure();
 hold on;
-title("Tinamu Flying Machine Arena");
+title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
@@ -106,4 +131,5 @@ legend('Start Position','Goal Position','Vicon Measurement', ...
     'Constant Velocity EKF Estimation');
 hold off;
 
-save('VicPosConData.mat','SaveViconPos','SaveViconQuat','SaveCurPos','SaveCurVel');
+save('VicPosConData.mat','SaveViconPos','SaveViconQuat', ...
+    'SaveCurPos','SaveCurVel');

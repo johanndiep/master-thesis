@@ -20,14 +20,14 @@ classdef BebopControl
            Publisher.Flight = rospublisher('/bebop/cmd_vel','geometry_msgs/Twist');
         end
         
-        % Starting takeoff by increasing motor speeds.
+        % Starting takeoff by slowly increasing motor speeds.
         %   - Publisher: Publisher object defined by the constructor
         function TakeOffCommand(Publisher)
             TakeOffMessage = rosmessage(Publisher.TakeOff);
             send(Publisher.TakeOff,TakeOffMessage);
         end
         
-        % Save landing by decreasing motor speeds.
+        % Save landing by slowly decreasing motor speeds.
         %   - Publisher: Publisher object defined by the constructor
         function LandCommand(Publisher)
             LandMessage = rosmessage(Publisher.Land);
@@ -42,7 +42,7 @@ classdef BebopControl
         end
         
         % For basic translational movements in each direction as well as 
-        % yaw angular movements.
+        % yaw angular rotations.
         %   - Publisher: Publisher object defined by the constructor
         %   - FlightCommand: Array holding the commands for translation and rotation 
         %     in the form (1 x 4)
@@ -74,7 +74,7 @@ classdef BebopControl
         
         % For yaw angular movements only.
         %   - Publisher: Publisher object defined by the constructor
-        %   - AngularCommand: Array holding the commands for yaw angular movement
+        %   - AngularCommand: Array holding the commands for yaw angular rotation
         function AngularCommand(Publisher,AngularCommand)
             AngularMessage = rosmessage(Publisher.Flight);
             AngularMessage.Linear.X = 0;

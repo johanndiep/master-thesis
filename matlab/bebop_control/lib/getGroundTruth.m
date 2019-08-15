@@ -17,12 +17,15 @@
 function [ViconPos,ViconQuat] = getGroundTruth(ViconDroneSubscriber)
         Message = ViconDroneSubscriber.LatestMessage;
         
-        ViconPos = [Message.Transform.Translation.X; ...
-            Message.Transform.Translation.Y; ...
-            Message.Transform.Translation.Z];
+        x = Message.Transform.Translation.X;
+        y = Message.Transform.Translation.Y;
+        z = Message.Transform.Translation.Z;
         
-        ViconQuat = [Message.Transform.Rotation.W; ...
-            Message.Transform.Rotation.X; ...
-            Message.Transform.Rotation.Y; ...
-            Message.Transform.Rotation.Z];
+        qw = Message.Transform.Rotation.W;
+        qx = Message.Transform.Rotation.X;
+        qy = Message.Transform.Rotation.Y;
+        qz = Message.Transform.Rotation.Z;
+        
+        ViconPos = [x;y;z];
+        ViconQuat = [qw;qx;qy;qz];
 end
