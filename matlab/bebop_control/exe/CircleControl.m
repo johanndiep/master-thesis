@@ -48,9 +48,9 @@ rosshutdown; rosinit;
 % initialize the trajectory object
 MidPoint = [0,0];
 Height = 1;
-AbsVel = 0.1;
-Radius = 0.75;
-Frequency = 0.0083; % 120 seconds for full circle
+AbsVel = 0.2;
+Radius = 1;
+Frequency = 0.01;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
@@ -79,7 +79,7 @@ while JoyMessage.Buttons(1) == 0
 end
 
 ControlObj.Start; % starting the drone
-pause(10);
+pause(5);
 
 % initializing the constant velocity modeled EKF
 Model = ConstantVelocityEKF();
@@ -114,6 +114,7 @@ while true
     SaveViconQuat(:,i) = ViconQuat;
     SaveCurPos(:,i) = CurPos;
     SaveCurVel(:,i) = CurVel;
+    SaveGoalPos(:,i) = GoalPos';
     i = i+1;
 end
 
@@ -127,9 +128,10 @@ SaveViconPos(:,CuttingIndex:end) = [];
 SaveViconQuat(:,CuttingIndex:end) = [];
 SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
+SaveGoalPos(:,CuttingIndex:end) = [];
 
 save('VicCircConData.mat','SaveViconPos','SaveViconQuat', ...
-    'SaveCurPos','SaveCurVel','GoalPos');
+    'SaveCurPos','SaveCurVel','SaveGoalPos');
 
 clear; clc;
 
@@ -137,8 +139,9 @@ clear; clc;
 
 load('VicCircConData.mat');
 
-SaveCurPos = SaveCurPos(:,1:70:end);
-SaveCurVel = SaveCurVel(:,1:70:end);
+SaveCurPos = SaveCurPos(:,1:300:end);
+SaveCurVel = SaveCurVel(:,1:300:end);
+SaveGoalPos = SavelGoalPos(:,1:300:end);
 
 figure();
 hold on;
@@ -146,15 +149,15 @@ title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([-1,3]);
-ylim([-1,3]);
+xlim([-3,3]);
+ylim([-3,3]);
 zlim([0,2.5]);
 grid on;
 scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),200,'ro');
-scatter3(GoalPos(1),GoalPos(2),GoalPos(3),200,'bo');
+scatter3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),50,'b.');
 scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),10,'ko');
 quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.25,'r');
-legend('Start Position','Goal Position','EKF Position Estimation', ...
+    SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.5,'r');
+legend('Start Position','Goal Trajectory','EKF Position Estimation', ...
     'EKF Velocity Estimation');
 hold off;

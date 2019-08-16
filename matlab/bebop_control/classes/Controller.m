@@ -20,7 +20,7 @@ classdef Controller
         function ControlObject = Controller()
            ControlObject.P = 0.05;
            ControlObject.Ph = 0.3;
-           ControlObject.Py = 10;
+           ControlObject.Py = 2;
            ControlObject.D = 0.1;
            ControlObject.Dh = 0;
            
