@@ -1,20 +1,25 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
 % This script controls the state of the Bebop towards a desired goal 
-% position and velocity. It takes the feedback from the VICON 
-% positioning system, pass it through a constant velocity modeled EKF 
-% in order to estimate the velocity and uses a PD controller to move 
-% the drone towards the goal state. In order to optimize the performance, 
-% the following parameters need to be tuned:
+% position and velocity. Thereby, the goal position is changing per
+% iteration in a circular manner, resulting in the drone following 
+% a circular trajectory. Similiar to "PositionControl.m", it takes the 
+% feedback from the VICON positioning system, pass it through a 
+% constant velocity modeled EKF in order to estimate the velocity 
+% and uses a PD controller to move the drone towards the goal state.
+% In order to optimize the performance, the following parameters 
+% need to be tuned:
 %   - P/D-gains in "Controller.m"
 %   - Threshold for maximal rotation in "Controller.m"
 %   - Time interval between each EKF iteration
 %   - x/P-initialization in "ConstantVelocityEKF.m"
 %   - R/Q-covariance in "ConstantVelocityEKF.m"
+%   - Changing rate f in "TrajectoryGenerator.m"
 %
 % Furthermore, the following points need to be investigated:
 %   - The yaw correction method could be optimized.
 %   - Are the buttons of the Spacemouse fast enough to react?
+%   - Is the changing rate too fast for the drone to follow?
 %
 % Step-by-Step:
 %   1. Calibrate the VICON system and place the origin in the room with the
@@ -37,14 +42,16 @@ rosshutdown; rosinit;
 
 %% Parameters
 
-% define goal position and velocity
-MidPoint = [2,2];
+% initialize the trajectory object
+MidPoint = [1.5,1.5];
 Height = 1;
-AbsVel = 0;
-TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel);
-[GoalPos,GoalVel] = TrajObj.getStaticPosition;
+AbsVel = 0.1;
+Radius = 0.5;
+Frequency = 0.05;
+TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 FirstIteration = 1; % helper variable to estimate dT
+Time = 0; % helper variable to estimate the time-variant goal state
 
 %% Preliminary
 
@@ -88,10 +95,13 @@ while true
     [ViconPos,ViconQuat] = getGroundTruth(VicDroneSub);
     
     % prior and posterior update with process and measurement model
-    dT = toc;
+    dT = toc; Time = Time + dT;
     Model.UpdatePrior(dT);
     [CurPos,CurVel] = Model.UpdateMeasurement(ViconPos);
     tic;
+    
+    % time-variant goal position and velocity
+    [GoalPos,GoalVel] = TrajObj.getCircleTrajectory(Time);
     
     % moving the drone towards the desired goal position while 
     % keeping the orientation fixed

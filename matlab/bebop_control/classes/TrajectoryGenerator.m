@@ -7,6 +7,8 @@ classdef TrajectoryGenerator < handle
         m
         h
         v
+        r
+        f
     end
     
     methods
@@ -15,26 +17,35 @@ classdef TrajectoryGenerator < handle
         %     for static hovering the midpoint defines the desired goal position 
         %   - Height: Constant height of the trajectory in scalar form
         %   - AbsVel: Constant velocity in scalar form
-        function TrajectoryObject = TrajectoryGenerator(MidPoint,Height,AbsVel)
+        %   - Radius: Radius of circle
+        %   - Frequency: Rate for the change of waypoints
+        function TrajectoryObject = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency)
+            if nargin == 3
+               Radius = 0;
+               Frequency = 0;
+            end
+            
             TrajectoryObject.m = MidPoint;
             TrajectoryObject.h = Height;
             TrajectoryObject.v = AbsVel;
+            TrajectoryObject.r = Radius;
+            TrajectoryObject.f = Frequency;
         end
         
         % This function calculates the dynamic position and the corresponding 
         % velocity for a circular flight.
         %   - TrajectoryObject: Trajectory object defined by the constructor
-        %   - Radius: Radius of circle
-        %   - f: Rate for the change of waypoints
         %   - t: Timestep at which the the corresponding waypoint should be
         %        gathered
-        function [GoalPos,GoalVel] = getCircleTrajectory(TrajectoryObject,Radius,f,t)
+        function [GoalPos,GoalVel] = getCircleTrajectory(TrajectoryObject,t)
             m = TrajectoryObject.m;
             h = TrajectoryObject.h;
             v = TrajectoryObject.v;
+            r = TrajectoryObject.r;
+            f = TrajectoryObject.f;
             
-            GoalPos(1) = m(1)+Radius*sin(2*pi*f*t);
-            GoalPos(2) = m(2)-Radius*cos(2*pi*f*t);
+            GoalPos(1) = m(1)+r*sin(2*pi*f*t);
+            GoalPos(2) = m(2)-r*cos(2*pi*f*t);
             GoalPos(3) = h;
     
             GoalVel(1) = v*cos(2*pi*f*t);
