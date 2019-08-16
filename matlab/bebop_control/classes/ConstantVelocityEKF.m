@@ -46,10 +46,10 @@ classdef ConstantVelocityEKF < handle
         %   - Model: Model object defined by the constructor
         %   - Z: Measurement from VICON system in form (3 x 1)
         function [CurPos,CurVel] = UpdateMeasurement(Model,Z)
-            H = Model.H;
+            X = Model.X;            
             P = Model.P;
+            H = Model.H;            
             R = Model.R;
-            X = Model.X;
             
             S = H*P*H'+R;
             K = P*H'/S;

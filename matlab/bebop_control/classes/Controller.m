@@ -5,9 +5,11 @@
 classdef Controller
     properties
         P
+        Ph
+        Py
         D
-        TreshRot
-        TreshTran
+        Dh
+        TreshYaw
         Publisher
     end
     
@@ -17,9 +19,12 @@ classdef Controller
         %   - P/D: PD gains in scalar form
         function ControlObject = Controller()
            ControlObject.P = 0.05;
-           ControlObject.D = 0;
+           ControlObject.Ph = 0.3;
+           ControlObject.Py = 10;
+           ControlObject.D = 0.1;
+           ControlObject.Dh = 0;
            
-           ControlObject.TreshRot = 3/180*pi; % roughly 3 degree deviation
+           ControlObject.TreshYaw = 1/180*pi; % roughly 3 degree deviation
            
            ControlObject.Publisher = BebopControl();
         end
@@ -31,25 +36,31 @@ classdef Controller
         %   - CurVel: Current velocity of the drone in form (3 x 1)
         %   - GoalVel: Goal velocity of the drone in form (3 x 1)
         %   - CurQuat: Current orientation in quaternion form (4 x 1)
-        function TransError = CalcTransError(ControlObject,CurPos,GoalPos,CurVel, ...
-                GoalVel,CurQuat)
+        function TransError = CalcTransError(ControlObject,CurPos,GoalPos,CurVel,GoalVel,CurQuat)      
+            P = ControlObject.P;
+            Ph = ControlObject.Ph;
+            D = ControlObject.D;
+            Dh = ControlObject.Dh;
             
             CurRot = quat2rotm(CurQuat')';
             PosErr = CurRot*(GoalPos-CurPos);
             VelErr = CurRot*(GoalVel-CurVel);
             
-            Pd = ControlObject.P*PosErr';
-            Dd = ControlObject.D*VelErr';
+            Pc = [P,P,Ph].*PosErr';
+            Dc = [D,D,Dh].*VelErr';
             
-            TransError = Pd+Dd;
+            TransError = Pc+Dc;
         end
         
         % Calculating the rotational proportional error
         %   - ControlObject: Controller object defined by the constructor
         %   - CurYaw: Current yaw angle in scalar form
         function YawError = CalcYawError(ControlObject,CurYaw)
-            Pd = -ControlObject.P*CurYaw;
-            YawError = Pd;
+            Py = ControlObject.Py;
+            
+            Pc = -Py*CurYaw;
+            
+            YawError = Pc;
         end
         
         % Position controller which corrects for positional displacement from 
@@ -67,7 +78,7 @@ classdef Controller
             TransError = ControlObject.CalcTransError(CurPos,GoalPos,CurVel, ...
                 GoalVel,CurQuat);
             
-            if abs(CurYaw) > ControlObject.TreshRot
+            if abs(CurYaw) > ControlObject.TreshYaw
                 YawError = ControlObject.CalcYawError(CurYaw);
                 ControlObject.Publisher.AngularCommand(YawError);
                 ControlObject.Publisher.LinearCommand(TransError);

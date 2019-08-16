@@ -2,12 +2,15 @@
 %
 % This script allows the control of the Bebop drone with the 3D connexion
 % joystick. Before starting this script, run the following command in
-% terminal: "roslaunch spacenav_node classic.launch"
+% terminal: 
+%   1. Start the ROS driver for the Spacemouse
+%   2. Start the ROS driver for the Bebop
+%   3. Run the following script
 
 clear;
 clc;
 
-rosinit;
+rosshutdown; rosinit;
 
 %% Joystick Control
 
@@ -15,7 +18,7 @@ JoySubscriber = rossubscriber('/spacenav/joy');
 BebopPublisher = BebopControl();
 
 FlyState = 0;
-DominantFlight = 1;
+DominantFlight = 1; % only fly in the main direction/rotation
 
 while true
     JoyMessage = JoySubscriber.LatestMessage;
@@ -52,7 +55,7 @@ while true
             BebopPublisher.MovementCommand(FlightCommand);
             % disp(FlightCommand);
         end
-    end 
+    end  
 end
 
 rosshutdown;

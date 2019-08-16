@@ -6,7 +6,7 @@
 % in order to estimate the velocity and uses a PD controller to move 
 % the drone towards the goal state. In order to optimize the performance, 
 % the following parameters need to be tuned:
-%   - P/D-gain in "Controller.m"
+%   - P/D-gains in "Controller.m"
 %   - Threshold for maximal rotation in "Controller.m"
 %   - Time interval between each EKF iteration
 %   - x/P-initialization in "ConstantVelocityEKF.m"
@@ -20,7 +20,7 @@
 %   1. Calibrate the VICON system and place the origin in the room with the
 %      T-link
 %   2. Attach VICON markers on the Bebop, group the markers on the VICON
-%      machine to an object and name it "Bebop_Johann"
+%      Tracker to an object and name it "Bebop_Johann"
 %   3. Place the drone such that the body-fixed frame (x-forward,y-left,z-ascend)
 %      is aligned with the VICON frame
 %   4. Connect the computer with the VICON machine via Ethernet
@@ -33,12 +33,12 @@
 clear;
 clc;
 
-rosinit;
+rosshutdown; rosinit;
 
 %% Parameters
 
 % define goal position and velocity
-TrajObj = TrajectoryGenerator([2,2],2,0);
+TrajObj = TrajectoryGenerator([2,2],1,0);
 [GoalPos,GoalVel] = TrajObj.getStaticPosition;
 
 FirstIteration = 1; % helper variable to estimate dT
@@ -53,10 +53,10 @@ VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 ControlObj = Controller();
 
 % pre-allocation
-SaveViconPos = zeros(3,10000);
-SaveViconQuat = zeros(4,10000);
-SaveCurPos = zeros(3,10000);
-SaveCurVel = zeros(3,10000);
+SaveViconPos = zeros(3,100000);
+SaveViconQuat = zeros(4,100000);
+SaveCurPos = zeros(3,100000);
+SaveCurVel = zeros(3,100000);
 
 %% PID
 
@@ -67,7 +67,7 @@ while JoyMessage.Buttons(1) == 0
 end
 
 ControlObj.Start; % starting the drone
-pause(3);
+pause(10);
 
 % initializing the constant velocity modeled EKF
 Model = ConstantVelocityEKF();
@@ -103,11 +103,9 @@ while true
 end
 
 ControlObj.End; % landing the drone
-pause(3);
+pause(5);
 
 rosshutdown;
-
-%% Plotting and Results
 
 CuttingIndex = find(SaveViconPos(1,:),1,'last')+1;
 SaveViconPos(:,CuttingIndex:end) = [];
@@ -115,21 +113,32 @@ SaveViconQuat(:,CuttingIndex:end) = [];
 SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 
+save('VicPosConData.mat','SaveViconPos','SaveViconQuat', ...
+    'SaveCurPos','SaveCurVel','GoalPos');
+
+clear; clc;
+
+%% Plotting and Results
+
+load('VicPosConData.mat');
+
+SaveCurPos = SaveCurPos(:,1:70:end);
+SaveCurVel = SaveCurVel(:,1:70:end);
+
 figure();
 hold on;
 title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
+xlim([-1,3]);
+ylim([-1,3]);
+zlim([0,2.5]);
 grid on;
-
-scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),'ko');
-scatter3(GoalPos(1),GoalPos(2),GoalPos(3),'ro');
-scatter3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:),'k.');
-scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),'b.');
-legend('Start Position','Goal Position','Vicon Measurement', ...
-    'Constant Velocity EKF Estimation');
+scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),50,'kx');
+scatter3(GoalPos(1),GoalPos(2),GoalPos(3),50,'bx');
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.25,'r');
+legend('Start Position','Goal Position','EKF Position and Velocity Estimation', ...
+    'Location','northwest');
 hold off;
-
-save('VicPosConData.mat','SaveViconPos','SaveViconQuat', ...
-    'SaveCurPos','SaveCurVel');
