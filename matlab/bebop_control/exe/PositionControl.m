@@ -25,10 +25,11 @@
 %      is aligned with the VICON frame
 %   4. Connect the computer with the VICON machine via Ethernet
 %   5. Turn on the Bebop and connect the laptop with it over Wi-Fi
-%   6. Start the ROS driver for the Spacemouse
+%   6. Start the ROS driver for the Spacemouse and turn it on
 %   7. Start the ROS VICON bridge node
 %   8. Start the ROS driver for the Bebop
-%   9. Run the following script
+%   9. Set the desired goal state
+%   10. Run the following script
 
 clear;
 clc;
@@ -43,8 +44,6 @@ Height = 1;
 AbsVel = 0;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel);
 [GoalPos,GoalVel] = TrajObj.getStaticPosition;
-
-FirstIteration = 1; % helper variable to estimate dT
 
 %% Preliminary
 
@@ -138,10 +137,11 @@ xlim([-1,3]);
 ylim([-1,3]);
 zlim([0,2.5]);
 grid on;
-scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),50,'kx');
-scatter3(GoalPos(1),GoalPos(2),GoalPos(3),50,'bx');
+scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),200,'ro');
+scatter3(GoalPos(1),GoalPos(2),GoalPos(3),200,'bo');
+scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),10,'ko');
 quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
     SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.25,'r');
-legend('Start Position','Goal Position','EKF Position and Velocity Estimation', ...
-    'Location','northwest');
+legend('Start Position','Goal Position','EKF Position Estimation', ...
+    'EKF Velocity Estimation');
 hold off;

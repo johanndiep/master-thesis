@@ -14,26 +14,29 @@
 %   - Time interval between each EKF iteration
 %   - x/P-initialization in "ConstantVelocityEKF.m"
 %   - R/Q-covariance in "ConstantVelocityEKF.m"
-%   - Changing rate f in "TrajectoryGenerator.m"
+%   - Goal state changing rate f in "TrajectoryGenerator.m"
+%   - Absolute goal velocity in "TrajectoryGenerator.m"
 %
 % Furthermore, the following points need to be investigated:
 %   - The yaw correction method could be optimized.
 %   - Are the buttons of the Spacemouse fast enough to react?
-%   - Is the changing rate too fast for the drone to follow?
+%   - Tune the time-variant goal velocities and goal state rate 
+%     such that the flight is smooth.
 %
 % Step-by-Step:
 %   1. Calibrate the VICON system and place the origin in the room with the
-%      T-link
+%      T-link, here the T-link should be placed in the middle of the room
 %   2. Attach VICON markers on the Bebop, group the markers on the VICON
 %      Tracker to an object and name it "Bebop_Johann"
 %   3. Place the drone such that the body-fixed frame (x-forward,y-left,z-ascend)
 %      is aligned with the VICON frame
 %   4. Connect the computer with the VICON machine via Ethernet
 %   5. Turn on the Bebop and connect the laptop with it over Wi-Fi
-%   6. Start the ROS driver for the Spacemouse
+%   6. Start the ROS driver for the Spacemouse and turn it on
 %   7. Start the ROS VICON bridge node
 %   8. Start the ROS driver for the Bebop
-%   9. Run the following script
+%   9. Set the desired circle parameters
+%   10. Run the following script
 
 clear;
 clc;
@@ -43,14 +46,13 @@ rosshutdown; rosinit;
 %% Parameters
 
 % initialize the trajectory object
-MidPoint = [1.5,1.5];
+MidPoint = [0,0];
 Height = 1;
 AbsVel = 0.1;
-Radius = 0.5;
-Frequency = 0.05;
+Radius = 0.75;
+Frequency = 0.0083; % 120 seconds for full circle
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
-FirstIteration = 1; % helper variable to estimate dT
 Time = 0; % helper variable to estimate the time-variant goal state
 
 %% Preliminary
@@ -126,14 +128,14 @@ SaveViconQuat(:,CuttingIndex:end) = [];
 SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 
-save('VicPosConData.mat','SaveViconPos','SaveViconQuat', ...
+save('VicCircConData.mat','SaveViconPos','SaveViconQuat', ...
     'SaveCurPos','SaveCurVel','GoalPos');
 
 clear; clc;
 
 %% Plotting and Results
 
-load('VicPosConData.mat');
+load('VicCircConData.mat');
 
 SaveCurPos = SaveCurPos(:,1:70:end);
 SaveCurVel = SaveCurVel(:,1:70:end);
@@ -148,10 +150,11 @@ xlim([-1,3]);
 ylim([-1,3]);
 zlim([0,2.5]);
 grid on;
-scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),50,'kx');
-scatter3(GoalPos(1),GoalPos(2),GoalPos(3),50,'bx');
+scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),200,'ro');
+scatter3(GoalPos(1),GoalPos(2),GoalPos(3),200,'bo');
+scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),10,'ko');
 quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
     SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.25,'r');
-legend('Start Position','Goal Position','EKF Position and Velocity Estimation', ...
-    'Location','northwest');
+legend('Start Position','Goal Position','EKF Position Estimation', ...
+    'EKF Velocity Estimation');
 hold off;

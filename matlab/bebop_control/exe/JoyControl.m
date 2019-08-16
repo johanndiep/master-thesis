@@ -3,9 +3,15 @@
 % This script allows the control of the Bebop drone with the 3D connexion
 % joystick. Before starting this script, run the following command in
 % terminal: 
-%   1. Start the ROS driver for the Spacemouse
+%
+% Step-by-Step:
+%   1. Start the ROS driver for the Spacemouse and turn it on
 %   2. Start the ROS driver for the Bebop
-%   3. Run the following script
+%   3. Adjust the variable "DominantFlight" to either 1 or 0, with dominant
+%      flight mode set to 1, the drone only moves in the direction with the largest
+%      offset
+%   4. Run the following script
+%   5. Control the drone by steering the joystick
 
 clear;
 clc;

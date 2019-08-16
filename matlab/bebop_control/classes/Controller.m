@@ -24,7 +24,7 @@ classdef Controller
            ControlObject.D = 0.1;
            ControlObject.Dh = 0;
            
-           ControlObject.TreshYaw = 1/180*pi; % roughly 3 degree deviation
+           ControlObject.TreshYaw = 1/180*pi; % roughly 1 degree deviation
            
            ControlObject.Publisher = BebopControl();
         end
@@ -80,8 +80,8 @@ classdef Controller
             
             if abs(CurYaw) > ControlObject.TreshYaw
                 YawError = ControlObject.CalcYawError(CurYaw);
-                ControlObject.Publisher.AngularCommand(YawError);
                 ControlObject.Publisher.LinearCommand(TransError);
+                ControlObject.Publisher.AngularCommand(YawError);
             else
                 ControlObject.Publisher.LinearCommand(TransError);
             end
