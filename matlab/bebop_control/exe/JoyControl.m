@@ -13,8 +13,7 @@
 %   4. Run the following script
 %   5. Control the drone by steering the joystick
 
-clear;
-clc;
+clear; clc;
 
 rosshutdown; rosinit;
 
@@ -50,16 +49,16 @@ while true
             if abs(MaxValue) > abs(MinValue)
                 FlightCommand(MaxIndex) = MaxValue;
                 BebopPublisher.MovementCommand(FlightCommand);
-                % disp(FlightCommand);
+                disp(FlightCommand);
             else
                 FlightCommand(MinIndex) = MinValue;
                 BebopPublisher.MovementCommand(FlightCommand);
-                % disp(FlightCommand);
+                disp(FlightCommand);
             end
         else
             FlightCommand = JoyCommand;
             BebopPublisher.MovementCommand(FlightCommand);
-            % disp(FlightCommand);
+            disp(FlightCommand);
         end
     end  
 end

@@ -6,8 +6,7 @@
 
 warning off;
 
-clear;
-clc;
+clear; clc;
 
 load('RotationalMeasurements.mat'); % sample measurements
 
@@ -17,9 +16,7 @@ ErrorArray = 2-RangeArray/1000; % calculating error offset
 Y = ErrorArray;
 
 % quaternion to euler angle mapping
-for i = 1:size(ErrorArray,2)
-    X = quat2eul(DroneQuaternionGroundTruthArray');
-end
+X = quat2eul(DroneQuaternionGroundTruthArray');
 X(:,2:3) = [];
 X = X';
 

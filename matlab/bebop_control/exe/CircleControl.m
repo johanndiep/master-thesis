@@ -32,14 +32,13 @@
 %      is aligned with the VICON frame
 %   4. Connect the computer with the VICON machine via Ethernet
 %   5. Turn on the Bebop and connect the laptop with it over Wi-Fi
-%   6. Start the ROS driver for the Spacemouse and turn it on
+%   6. Start the ROS driver for the Spacemouse, turn it on
 %   7. Start the ROS VICON bridge node
 %   8. Start the ROS driver for the Bebop
 %   9. Set the desired circle parameters
 %   10. Run the following script
 
-clear;
-clc;
+clear; clc;
 
 rosshutdown; rosinit;
 
@@ -167,9 +166,9 @@ set(0,'DefaultLegendAutoUpdate','off')
 legend('Start Position','Desired Trajectory','EKF Position Estimation', ...
     'EKF Velocity Estimation');
 
-quiver3(0,0,0,1,0,0,0.5,'r');
-quiver3(0,0,0,0,1,0,0.5,'g');
-quiver3(0,0,0,0,0,1,0.5,'b');
+quiver3(0,0,0,1,0,0,0.5,'r','LineWidth',2);
+quiver3(0,0,0,0,1,0,0.5,'g','LineWidth',2);
+quiver3(0,0,0,0,0,1,0.5,'b','LineWidth',2);
 
 RotMats = quat2rotm(SaveViconQuat');
 Xb = permute(RotMats(:,1,:),[1,3,2]);

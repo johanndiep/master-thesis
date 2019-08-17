@@ -7,8 +7,7 @@
 
 warning off;
 
-clear;
-clc;
+clear; clc;
 
 %% Parameters
 
