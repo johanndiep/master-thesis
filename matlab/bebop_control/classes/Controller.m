@@ -24,7 +24,7 @@ classdef Controller
            ControlObject.D = 0.1;
            ControlObject.Dh = 0;
            
-           ControlObject.TreshYaw = 1/180*pi; % roughly 1 degree deviation
+           ControlObject.TreshYaw = 1/180*pi;
            
            ControlObject.Publisher = BebopControl();
         end

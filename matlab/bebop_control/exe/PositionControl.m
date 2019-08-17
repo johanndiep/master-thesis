@@ -126,9 +126,11 @@ load('VicPosConData.mat');
 
 SaveCurPos = SaveCurPos(:,1:70:end);
 SaveCurVel = SaveCurVel(:,1:70:end);
+SaveViconQuat = SaveViconQuat(:,1:70:end);
 
 figure();
 hold on;
+
 title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
@@ -137,11 +139,30 @@ xlim([-1,3]);
 ylim([-1,3]);
 zlim([0,2.5]);
 grid on;
+
 scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),200,'ro');
 scatter3(GoalPos(1),GoalPos(2),GoalPos(3),200,'bo');
 scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),10,'ko');
 quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.25,'r');
+    SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.25,'k');
+
+set(0,'DefaultLegendAutoUpdate','off')
 legend('Start Position','Goal Position','EKF Position Estimation', ...
-    'EKF Velocity Estimation');
+    'EKF Velocity Estimation','Location','northwest');
+
+quiver3(0,0,0,1,0,0,0.5,'r');
+quiver3(0,0,0,0,1,0,0.5,'g');
+quiver3(0,0,0,0,0,1,0.5,'b');
+
+RotMats = quat2rotm(SaveViconQuat');
+Xb = permute(RotMats(:,1,:),[1,3,2]);
+Yb = permute(RotMats(:,2,:),[1,3,2]);
+Zb = permute(RotMats(:,3,:),[1,3,2]);
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    Xb(1,:),Xb(2,:),Xb(3,:),0.2,'r');
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    Yb(1,:),Yb(2,:),Yb(3,:),0.2,'g');
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    Zb(1,:),Zb(2,:),Zb(3,:),0.2,'b');
+
 hold off;

@@ -65,10 +65,11 @@ VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 ControlObj = Controller();
 
 % pre-allocation
-SaveViconPos = zeros(3,100000);
-SaveViconQuat = zeros(4,100000);
-SaveCurPos = zeros(3,100000);
-SaveCurVel = zeros(3,100000);
+SaveViconPos = zeros(3,50000);
+SaveViconQuat = zeros(4,50000);
+SaveCurPos = zeros(3,50000);
+SaveCurVel = zeros(3,50000);
+SaveGoalPos = zeros(3,50000);
 
 %% PID
 
@@ -142,22 +143,43 @@ load('VicCircConData.mat');
 SaveCurPos = SaveCurPos(:,1:300:end);
 SaveCurVel = SaveCurVel(:,1:300:end);
 SaveGoalPos = SavelGoalPos(:,1:300:end);
+SaveViconQuat = SaveViconQuat(:,1:300:end);
 
 figure();
 hold on;
+
 title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([-3,3]);
-ylim([-3,3]);
+xlim([-2,2]);
+ylim([-2,2]);
 zlim([0,2.5]);
 grid on;
+
 scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),200,'ro');
 scatter3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),50,'b.');
 scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),10,'ko');
 quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.5,'r');
-legend('Start Position','Goal Trajectory','EKF Position Estimation', ...
+    SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.5,'k');
+
+set(0,'DefaultLegendAutoUpdate','off')
+legend('Start Position','Desired Trajectory','EKF Position Estimation', ...
     'EKF Velocity Estimation');
+
+quiver3(0,0,0,1,0,0,0.5,'r');
+quiver3(0,0,0,0,1,0,0.5,'g');
+quiver3(0,0,0,0,0,1,0.5,'b');
+
+RotMats = quat2rotm(SaveViconQuat');
+Xb = permute(RotMats(:,1,:),[1,3,2]);
+Yb = permute(RotMats(:,2,:),[1,3,2]);
+Zb = permute(RotMats(:,3,:),[1,3,2]);
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    Xb(1,:),Xb(2,:),Xb(3,:),0.2,'r');
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    Yb(1,:),Yb(2,:),Yb(3,:),0.2,'g');
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    Zb(1,:),Zb(2,:),Zb(3,:),0.2,'b');
+
 hold off;
