@@ -13,13 +13,13 @@ load('RotationalMeasurements.mat'); % sample measurements
 
 %% Data Preprocessing
 
-ErrorArray = 2-RangeArray/1000; % calculating error offset
-Y = ErrorArray;
+DataPrepObj = DataPrep(RangeArray);
+[X,Y] = DataPrepObj.ConstDistanceYaw(DroneQuaternionGroundTruthArray,2);
 
-% quaternion to euler angle mapping
-X = quat2eul(DroneQuaternionGroundTruthArray');
-X(:,2:3) = [];
+save('Dataset.mat','X','Y');
+
 X = X';
+Y = Y';
 
 %% Parameters
 

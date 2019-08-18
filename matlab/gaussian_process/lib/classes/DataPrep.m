@@ -2,6 +2,8 @@
 %
 % This class contains methods which convert the gathered data from the
 % Ultra-Wideband system into the desired format for Gaussian Process analysis.
+% This is especially useful for exporting data to Python for parameter
+% learning.
 
 classdef DataPrep < handle
     properties
@@ -10,9 +12,10 @@ classdef DataPrep < handle
     
     methods
         % Initializing the data preprocessing object with the UWB range 
-        % measurements between tag and anchor
+        % measurements between tag and anchor(s).
+        %   - RangeArray: Range measurements in form (m x n)
         function DataPrepObj = DataPrep(RangeArray)
-            DataPrepObj.RangeArray = RangeArray;
+            DataPrepObj.RangeArray = RangeArray/1000;
         end
         
         % Returns the dataset for the tag-yaw-at-constant-distance
@@ -23,7 +26,7 @@ classdef DataPrep < handle
         function [X,Y] = ConstDistanceYaw(DataPrepObj,ViconQuat,ActualDistance)
             RangeArray = DataPrepObj.RangeArray;
             
-            ErrorArray = ActualDistance-RangeArray/1000;
+            ErrorArray = ActualDistance-RangeArray;
             Y = ErrorArray';
             
             X = quat2eul(ViconQuat');

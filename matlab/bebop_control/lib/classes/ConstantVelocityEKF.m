@@ -13,7 +13,7 @@ classdef ConstantVelocityEKF < handle
     
     methods
         % Initialize the EKF with the corresponding matrices for the
-        % process and measurement model
+        % process and measurement model.
         function Model = ConstantVelocityEKF()
             q = [0,0;0,1];
             
