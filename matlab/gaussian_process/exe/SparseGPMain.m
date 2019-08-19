@@ -1,15 +1,16 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% This script executes the sparse Gaussian Process prediction described in
-% "Sparse Gaussian Processes using Pseudo-inputs" by Edward Snelson and 
-% Zoubin Ghahramani. An arbitrary function is defined as a function handle. 
+% Standard Gaussian Process is prohibitive for large data sets. This script
+% executes the sparse Gaussian Process prediction described in "Sparse 
+% Gaussian Processes using Pseudo-inputs" by Edward Snelson and Zoubin 
+% Ghahramani. An arbitrary function is defined as a function handle. 
 % Data then can be generated which can include a noise term. The underlying 
 % function is then approximated with a mean and variance for each testing 
 % input given the data. 
 
-warning off;
-
 clear; clc;
+
+warning off;
 
 %% Parameters
 
@@ -53,6 +54,7 @@ time = toc;
 %% Plotting and Results
 
 figure();
+
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
 hold on;
 plot(Xt,f(Xt),'b--');
@@ -60,8 +62,10 @@ plot(X,Y,'ko','MarkerSize',3);
 for i = 1:m
    xline(s(i),':r','LineWidth',0.5);
 end
+
 legend('Standard Deviation','Prediction','Ground-Truth: y=sin(x)',...
     'Training Data','Pseudo-input locations','Location','northeast');
+
 grid on;
 hold off;
 

@@ -8,7 +8,7 @@
 %   - Kernel: Corresponding kernel function handle
 %
 % Output:
-%   - Mean: Predicted value
+%   - Mean: Predicted values
 %   - Covariance: Uncertainty of the predicted value
 %   - LogLikelihood: Returns the negative log of p(Y|X,hyperparameters)
 

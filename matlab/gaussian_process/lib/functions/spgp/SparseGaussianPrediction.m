@@ -4,13 +4,13 @@
 %
 % Input:
 %   - Model: Trained model structure
-%   - Xt: Testing data in form (1 x n)
+%   - Xt: Testing data in form (d x n)
 %   - Kernel: Corresponding kernel function handle
 %
 % Output:
 %   - Mean: Predicted value
 %   - Covariance: Uncertainty of the predicted value
-%   - LogLikelihood: Returns the negative log of p(Y|X,Xi,NoiseStd,s0,s1)
+%   - LogLikelihood: Returns the negative log of p(Y|X,Xi,hyperparameters)
 
 function [Mean,Covariance,LogLikelihood] = SparseGaussianPrediction(Model,Xt,Kernel)
     X = Model.X;

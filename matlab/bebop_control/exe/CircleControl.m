@@ -154,7 +154,7 @@ zlabel("z-Axis [m]");
 xlim([-2,2]);
 ylim([-2,2]);
 zlim([0,2.5]);
-grid on;
+hold on;
 
 scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),200,'ro');
 scatter3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),50,'b.');
@@ -181,4 +181,5 @@ quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
 quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
     Zb(1,:),Zb(2,:),Zb(3,:),0.2,'b');
 
+grid on;
 hold off;

@@ -1,4 +1,5 @@
 % Johann Diep (jdiep@student.ethz.ch) - July 2019
+% Mo Chen (sth4nth@gmail.com)
 %
 % Plot 1d curve and variance.
 %
@@ -6,8 +7,6 @@
 %   - X: Testing data in form (1 x n) 
 %   - Y: Prediction data in form (1 x n) 
 %   - Std: Standard deviation (1 x n)
-%
-% Written by Mo Chen (sth4nth@gmail.com).
 
 function plotCurveBar(X,Y,Std)    
     color = [255,228,225]/255;

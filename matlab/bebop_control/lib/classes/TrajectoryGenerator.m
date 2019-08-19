@@ -1,6 +1,6 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% This class offers multiple methods for flying specific trajectories.
+% This class offers multiple methods for generating specific trajectories.
 
 classdef TrajectoryGenerator < handle
     properties

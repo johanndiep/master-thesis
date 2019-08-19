@@ -1,11 +1,11 @@
 % Johann Diep (jdiep@student.ethz.ch) - July 2019
 %
-% This script executes the standard Gaussian Process prediction. An
-% arbitrary function is defined as a function handle. Data then can be
-% generated which can include a noise term. The underlying function is then
-% approximated with a mean and variance for each testing input given the data. 
-
-warning off;
+% This script executes the standard Gaussian Process prediction as explained
+% in "Gaussian Process for Machine Learning" by Carl Rasmussen and Christopher 
+% Williams. An arbitrary function is defined as a function handle. Data then 
+% can be generated which can include a noise term. The underlying function is 
+% then approximated with a mean and variance for each testing input given the 
+% data. 
 
 clear; clc;
 
@@ -40,12 +40,15 @@ time = toc;
 %% Plotting and Results
 
 figure();
+
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
 hold on;
 plot(Xt,f(Xt),'b');
 plot(X,Y,'ko','MarkerSize',3);
+
 legend('Double Standard Deviations','Mean Prediction','Ground-Truth: y=sin(x)', ...
     'Training Data','Location','northeast');
+
 grid on;
 hold off;
 

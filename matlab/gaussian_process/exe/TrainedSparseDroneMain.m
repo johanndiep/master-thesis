@@ -1,11 +1,13 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
+% Standard Gaussian Process is prohibitive for large data sets.
 % This script executes the sparse Gaussian Process prediction described in
 % "Sparse Gaussian Processes using Pseudo-inputs" by Edward Snelson and 
-% Zoubin Ghahramani for the rotational dataset. The underlying function is 
-% approximated with a mean and variance for each testing input given the data. 
-% The hyperparameters are pre-trained with the GPy Gaussian Process
-% framework.
+% Zoubin Ghahramani for the tag-yaw-at-constant-distance experiment dataset. 
+% The underlying function is approximated with a mean and variance for each 
+% testing input given the data. The hyperparameters are pre-trained with 
+% the GPy Gaussian Process framework. For more informations, check out 
+% https://github.com/SheffieldML/GPy.
 
 warning off;
 
@@ -19,7 +21,7 @@ load('Hyperparameters.mat'); % pre-trained hyperparameters
 DataPrepObj = DataPrep(RangeArray);
 [X,Y] = DataPrepObj.ConstDistanceYaw(DroneQuaternionGroundTruthArray,2);
 
-save('Dataset.mat','X','Y');
+% save('Dataset.mat','X','Y');
 
 X = X';
 Y = Y';
@@ -38,14 +40,17 @@ Kernel = @PeriodicKernel;
 %% Plotting and Results
 
 figure();
+
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
 hold on;
 plot(X,Y,'ko','MarkerSize',3);
 for i = 1:size(Xi,2)
    xline(Xi(i),':r','LineWidth',0.5);
 end
+
 legend('Double Standard Deviations','Mean Prediction','Training Data', ...
     'Pseudo-input locations','Location','northeast');
+
 grid on;
 hold off;
 

@@ -128,7 +128,6 @@ SaveCurVel = SaveCurVel(:,1:70:end);
 SaveViconQuat = SaveViconQuat(:,1:70:end);
 
 figure();
-hold on;
 
 title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
@@ -137,7 +136,7 @@ zlabel("z-Axis [m]");
 xlim([-1,3]);
 ylim([-1,3]);
 zlim([0,2.5]);
-grid on;
+hold on;
 
 scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),200,'ro');
 scatter3(GoalPos(1),GoalPos(2),GoalPos(3),200,'bo');
@@ -164,4 +163,5 @@ quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
 quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
     Zb(1,:),Zb(2,:),Zb(3,:),0.2,'b');
 
+grid on;
 hold off;

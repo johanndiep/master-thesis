@@ -14,19 +14,18 @@ classdef Controller
     end
     
     methods
-        % Initialize the control object with the chosen gains and the
-        % publisher object for messaging. 
-        %   - P/D: PD gains in scalar form
+        % Initialize the control object with the publisher object 
+        % for messaging, the chosen gains and the threshold for yaw-rotations. 
         function ControlObject = Controller()
-           ControlObject.P = 0.05;
-           ControlObject.Ph = 0.3;
-           ControlObject.Py = 2;
-           ControlObject.D = 0.1;
-           ControlObject.Dh = 0;
+           ControlObject.Publisher = BebopControl();
+ 
+           ControlObject.P = 0.05; % forward/backward, left/right
+           ControlObject.Ph = 0.3; % ascend/descend
+           ControlObject.Py = 2; % yaw-rotation
+           ControlObject.D = 0.1; % forward/backward, left/right
+           ControlObject.Dh = 0; % ascend/descend
            
            ControlObject.TreshYaw = 1/180*pi;
-           
-           ControlObject.Publisher = BebopControl();
         end
         
         % Calculating the translative proportional and differential error.
@@ -70,7 +69,7 @@ classdef Controller
         %   - GoalPos: Goal position of the drone in form (3 x 1)
         %   - CurVel: Current velocity of the drone in form (3 x 1)
         %   - GoalVel: Goal velocity of the drone in form (3 x 1)
-        %   - CurQuat: Current orientation in quaternion form (4 x 1)
+        %   - CurQuat: Current orientation in quaternion (qw,wx,qy,qz) form (4 x 1)
         function NoTurnFlight(ControlObject,CurPos,GoalPos,CurVel,GoalVel,CurQuat)
             CurOrient = quat2eul(CurQuat');
             CurYaw = CurOrient(1);
@@ -80,6 +79,8 @@ classdef Controller
             
             if abs(CurYaw) > ControlObject.TreshYaw
                 YawError = ControlObject.CalcYawError(CurYaw);
+                
+                % first correct translational error, then rotational error
                 ControlObject.Publisher.LinearCommand(TransError);
                 ControlObject.Publisher.AngularCommand(YawError);
             else

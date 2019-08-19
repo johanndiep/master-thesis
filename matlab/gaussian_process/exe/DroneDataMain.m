@@ -1,10 +1,10 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% This script executes the standard Gaussian Process prediction for the 
-% rotational dataset. The underlying function is approximated with a 
-% mean and variance for each testing input given the data. 
-
-warning off;
+% This script executes the standard Gaussian Process prediction as explained
+% in "Gaussian Process for Machine Learning" by Carl Rasmussen and Christopher 
+% Williams for the tag-yaw-at-constant-distance experiment dataset. The 
+% underlying function is approximated with a  mean and variance for each 
+% testing input given the data. 
 
 clear; clc;
 
@@ -15,7 +15,7 @@ load('RotationalMeasurements.mat'); % sample measurements
 DataPrepObj = DataPrep(RangeArray);
 [X,Y] = DataPrepObj.ConstDistanceYaw(DroneQuaternionGroundTruthArray,2);
 
-save('Dataset.mat','X','Y');
+% save('Dataset.mat','X','Y');
 
 X = X';
 Y = Y';
@@ -45,11 +45,14 @@ time = toc;
 %% Plotting and Results
 
 figure();
+
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
 hold on;
 plot(X,Y,'ko','MarkerSize',3);
+
 legend('Double Standard Deviations','Mean Prediction','Training Data', ...
     'Location','northeast');
+
 grid on;
 hold off;
 

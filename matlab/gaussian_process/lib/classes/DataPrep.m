@@ -31,8 +31,6 @@ classdef DataPrep < handle
             
             X = quat2eul(ViconQuat');
             X(:,2:3) = [];
-            
-            save('Dataset.mat','X','Y');
         end
     end
 end
