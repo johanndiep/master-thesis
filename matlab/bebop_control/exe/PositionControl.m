@@ -38,7 +38,7 @@ rosshutdown; rosinit;
 %% Parameters
 
 % define goal position and velocity
-MidPoint = [2,2];
+MidPoint = [0,0];
 Height = 1;
 AbsVel = 0;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel);
@@ -54,10 +54,10 @@ VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 ControlObj = Controller();
 
 % pre-allocation
-SaveViconPos = zeros(3,100000);
-SaveViconQuat = zeros(4,100000);
-SaveCurPos = zeros(3,100000);
-SaveCurVel = zeros(3,100000);
+SaveViconPos = zeros(3,10000);
+SaveViconQuat = zeros(4,10000);
+SaveCurPos = zeros(3,10000);
+SaveCurVel = zeros(3,10000);
 
 %% PID
 
@@ -68,7 +68,7 @@ while JoyMessage.Buttons(1) == 0
 end
 
 ControlObj.Start; % starting the drone
-pause(10);
+pause(5);
 
 % initializing the constant velocity modeled EKF
 Model = ConstantVelocityEKF();
@@ -133,8 +133,8 @@ title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([-1,3]);
-ylim([-1,3]);
+xlim([-3,3]);
+ylim([-3,3]);
 zlim([0,2.5]);
 hold on;
 

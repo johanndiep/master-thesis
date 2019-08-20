@@ -141,7 +141,7 @@ load('VicCircConData.mat');
 
 SaveCurPos = SaveCurPos(:,1:300:end);
 SaveCurVel = SaveCurVel(:,1:300:end);
-SaveGoalPos = SavelGoalPos(:,1:300:end);
+SaveGoalPos = SaveGoalPos(:,1:300:end);
 SaveViconQuat = SaveViconQuat(:,1:300:end);
 
 figure();
