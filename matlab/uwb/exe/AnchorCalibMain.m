@@ -1,9 +1,9 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
 % This program implements the method of anchor position calibration
-% described in the paper "Iterative approach for anchor configuration of
-% positioning systems" by Mathias Pelka, Grigori Goronzy and Horst
-% Hellbrueck.
+% similiar as described in the paper "Iterative approach for anchor 
+% configuration of positioning systems" by Mathias Pelka, Grigori Goronzy 
+% and Horst Hellbrueck.
 %
 % Placement of the anchors with the following assumptions:
 %   - Anchor 1 is set to be the origin of the coordinate system
@@ -20,8 +20,24 @@
 %   - Pole 3: Anchor 5 (0,p3,0), Anchor 6 (0,p3,h)
 %
 % Furthermore, the following points need to be investigated:
-%   - How to deal with ranging offset resulting in positioning
-%     inaccuracy?
+%   - How to deal with ranging offset resulting in positioning inaccuracy?
+%   - Are the assumptions too inaccurate?
+%   - Test out multiple placements of the poles.
+%   - Relevance of the variable NrIterAv, empirically set to 100, since
+%     larger values does not result in an increase of accuracy but in a
+%     higher computational effort.
+%
+% Step-by-Step:
+%   1. Power up each anchor, the modules should be in Anchor mode already.
+%      This can also be tested in Terminal using the picocom command and 
+%      an computer-attached Sniffer module: sudo picocom /dev/ttyACM*
+%   1. Place pole 1 and pole 3 such that the corresponding anchors have 
+%      the same orientation.
+%   2. Place pole 2 such that its anchors are opposite directed compared to 
+%      the anchors from pole 1/3 and have positive x/y-coordinates.
+%   3. Connect the Sniffer node to the computer and run the following
+%      command in terminal: sudo chmod 666 /dev/ttyACM*
+%   4. Run the following script
 
 clear; clc;
 
@@ -36,7 +52,7 @@ save('AnchorRangeMean.mat','AnchorRangeMean');
 %% Parameters
 
 h = 2.156; % distance between the top and bottom anchor
-pi = zeros(1,3); % initialization
+s = zeros(1,3); % initialization of parameter p1/p2/p3
 
 %% Optimization
 
@@ -45,7 +61,7 @@ options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 % objective function
 ObjNorm = @(p) getObjectiveNorm(AnchorRangeMean,h,p(1),p(2),p(3));
 
-p = fmincon(ObjNorm,pi,[],[],[],[],[0,0,0],[5,5,5],[],options);
+p = fmincon(ObjNorm,s,[],[],[],[],[0,0,0],[6,6,6],[],options);
 
 %% Plotting and Results
 
