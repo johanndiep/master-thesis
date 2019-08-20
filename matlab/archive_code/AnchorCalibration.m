@@ -12,7 +12,7 @@
 %   - Anchor 6 is assumed to be on the same axis with anchor 1 without loss of generality
 %   - Top anchors are assumed to have same x/y-coordinates as bottom anchors
 %
-% Plement of the anchors for 6 anchors network with the following assumptions:
+% Placement of the anchors for 6 anchors network with the following assumptions:
 %   - Anchor 1 is set to be the origin of the coordinate system
 %   - Anchor 3 and 5 are fixed on the same height as anchor 1
 %   - Anchor 2, 4 and 6 are fixed at a known constant height

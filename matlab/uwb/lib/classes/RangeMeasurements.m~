@@ -17,12 +17,16 @@ classdef RangeMeasurements < handle
             clear serial;
             if isempty(instrfind) == 0
                 fclose(instrfind);
-                delete(instrfind);
+                delete(instrfind); 
             end
             PortAddress = seriallist;
             
             RangeMeasObj.SerialObject = serial(PortAddress);
             RangeMeasObj.NrAnchors = 6;
+        end
+        
+        function SerialSetup(RangeMeasObj)
+            
         end
         
         % This function reads the distances between the anchors themself. The module
@@ -60,7 +64,7 @@ classdef RangeMeasurements < handle
                     
                     % re-interrogating in case of wrong tag number
                     while Line(17) ~= int2str(i)
-                        Line = fgetl(SerialObject);
+                        Line = fgetl(SerialObject); 
                     end
                     
                     % start reading with anchor 1/2
@@ -86,16 +90,16 @@ classdef RangeMeasurements < handle
                             case "4", RangeArr(i,4,Iterdex) = str2double(Line(24:end));
                             case "5", RangeArr(i,5,Iterdex) = str2double(Line(24:end));
                                 if i == NrAnchors
-                                    Nextdex = 1;
+                                    Nextdex = 1; 
                                 end
                             case "6", RangeArr(i,6,Iterdex) = str2double(Line(24:end));
                                 Nextdex = 1;
                         end
                     end
                     
-                    if Nextdex == 1
-                        Iterdex = Iterdex+1;
-                        Nextdex = 0;
+                    if Nextdex == 1 
+                        Iterdex = Iterdex+1; 
+                        Nextdex = 0; 
                     end
                     
                     disp("Progress [%]: "+Iterdex/NrIterAv*100)
@@ -118,14 +122,6 @@ classdef RangeMeasurements < handle
                         RangeArr(Row,Column,:),[1,3,2])));
                 end
             end
-            
-            % averaging row/column permutation
-            for Row = 1:NrAnchors
-                for Column = 1:NrAnchors
-                    AnchorRangeMean(Row,Column) = 0.5*(AnchorRangeMean(Row,Column)+...
-                        AnchorRangeMean(Column,Row));
-                end
-            end
         end
         
         % This function reads the distances between the drone-mounted tag and
@@ -136,7 +132,7 @@ classdef RangeMeasurements < handle
         %   - How often does zero range measurements occur? How about other
         %     kind of outliers?
         %   - Right now, measurement starts at anchor 1 and ends at anchor
-        %     6. Maybe one can speed up the frequency by considering the
+        %     6. Maybe one can speed up the frequency by considering the 
         %     current available range measurement instead.
         function RangeArr = TagAnchorRanging(RangeMeasObj)
             SerialObject = RangeMeasObj.SerialObject;
@@ -175,8 +171,8 @@ classdef RangeMeasurements < handle
             
             fclose(SerialObject);
         end
-        
-        % This function reads the distance measurement between the drone-mounted
+
+        % This function reads the distance measurement between the drone-mounted 
         % tag and one single pole-mounted anchor. It also reports the
         % specific timestamps as well.
         %   - RangeMeasObj: Measurement object defined by the constructor
@@ -210,16 +206,16 @@ classdef RangeMeasurements < handle
                 
                 % storing range measurement and timestamps in an array
                 if strncmpi(Line,"Anchor",6)
-                    SingleRangeArr(1,Iterdex) = str2double(Line(24:end));
-                    
-                    if FirstIter == 1
-                        TimeArr(1,Iterdex) = 0; tic;
-                        FirstIter = 0;
-                    else
-                        TimeArr(1,Iterdex) = toc;
-                    end
-                    
-                    Iterdex = Iterdex + 1;
+                   SingleRangeArr(1,Iterdex) = str2double(Line(24:end));
+                   
+                   if FirstIter == 1 
+                       TimeArr(1,Iterdex) = 0; tic; 
+                       FirstIter = 0;
+                   else
+                       TimeArr(1,Iterdex) = toc;
+                   end
+                   
+                   Iterdex = Iterdex + 1;
                 end
             end
             

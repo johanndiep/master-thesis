@@ -1,0 +1,77 @@
+% Johann Diep (jdiep@student.ethz.ch) - August 2019
+%
+% This program implements the method of anchor position calibration
+% described in the paper "Iterative approach for anchor configuration of
+% positioning systems" by Mathias Pelka, Grigori Goronzy and Horst
+% Hellbrueck.
+%
+% Placement of the anchors with the following assumptions:
+%   - Anchor 1 is set to be the origin of the coordinate system
+%   - Anchor 3 and 5 are fixed on the same height as anchor 1
+%   - Anchor 2, 4 and 6 are fixed at a known constant height
+%   - Anchor 5 is assumed to be on the same axis with anchor 1 
+%     without loss of generality
+%   - Top anchors are assumed to have same x/y-coordinates as 
+%     bottom anchors
+% 
+% The anchors are distributed as follows:
+%   - Pole 1: Anchor 1 (0,0,0), Anchor 2 (0,0,h)
+%   - Pole 2: Anchor 3 (p1,p2,0), Anchor 4 (p1,p2,h)
+%   - Pole 3: Anchor 5 (0,p3,0), Anchor 6 (0,p3,h)
+%
+% Furthermore, the following points need to be investigated:
+%   - How to deal with ranging offset resulting in positioning
+%     inaccuracy?
+
+clear; clc;
+
+%% Data acquisition
+
+NrIterAv = 100;
+RangeMeasObj = RangeMeasurements();
+AnchorRangeMean = RangeMeasObj.AnchorSelfRanging(NrIterAv)/1000;
+
+save('AnchorRangeMean.mat','AnchorRangeMean');
+
+%% Parameters
+
+h = 2.156; % distance between the top and bottom anchor
+pi = zeros(1,3); % initialization
+
+%% Optimization
+
+options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
+
+% objective function
+ObjNorm = @(p) getObjectiveNorm(AnchorRangeMean,h,p(1),p(2),p(3));
+
+p = fmincon(ObjNorm,pi,[],[],[],[],[0,0,0],[5,5,5],[],options);
+
+%% Plotting and Results
+
+AnchorPos = [0,0,0;0,0,h;p(1),p(2),0;p(1),p(2),h;0,p(3),0;0,p(3),h];
+
+figure()
+
+title("Bebop Flying Machine Arena");
+xlabel("x-Axis [m]");
+ylabel("y-Axis [m]");
+zlabel("z-Axis [m]");
+xlim([-0.5,4]);
+ylim([-0.5,4]);
+zlim([0,2.5]);
+hold on;
+
+scatter3(AnchorPos(:,1),AnchorPos(:,2),AnchorPos(:,3),10,'ko');
+
+for i = 1:size(AnchorPos,1)
+    text(AnchorPos(i,1)+0.1,AnchorPos(i,2)+0.1,AnchorPos(i,3)+0.1, ...
+        "Anchor "+int2str(i));
+end
+
+quiver3(0,0,0,1,0,0,0.5,'r','LineWidth',2);
+quiver3(0,0,0,0,1,0,0.5,'g','LineWidth',2);
+quiver3(0,0,0,0,0,1,0.5,'b','LineWidth',2);
+
+grid on;
+hold off;

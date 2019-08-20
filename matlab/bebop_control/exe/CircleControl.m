@@ -145,7 +145,6 @@ SaveGoalPos = SavelGoalPos(:,1:300:end);
 SaveViconQuat = SaveViconQuat(:,1:300:end);
 
 figure();
-hold on;
 
 title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
