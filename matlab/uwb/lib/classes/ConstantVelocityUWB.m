@@ -44,6 +44,15 @@ classdef ConstantVelocityUWB < handle
             H = [V(:,1),Z,V(:,2),Z,V(:,3),Z];   
         end
 
+        % Error corrected measurement model and its linearization about
+        % current state
+        %   - Model: Model object defined by the constructor
+        %   - Xp: Prior state estimate in form (6 x 1)
+        function [h,H] = ErrLinMeasModel(Model,Xp)
+            h = [];
+            H = [];
+        end
+        
         % EKF prior update equations 
         %   - Model: Model object defined by the constructor
         %   - dT: Time interval between each EKF iteration        

@@ -51,7 +51,7 @@ save('AnchorRangeMean.mat','AnchorRangeMean');
 
 %% Parameters
 
-load('AnchorRangeMean.mat');
+%load('AnchorRangeMean.mat');
 
 h = 2.156; % distance between the top and bottom anchor
 s = zeros(1,3); % initialization of parameter p1/p2/p3

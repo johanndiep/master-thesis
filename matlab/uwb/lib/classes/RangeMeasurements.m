@@ -59,12 +59,6 @@ classdef RangeMeasurements < handle
                 while Iterdex < NrIterAv+1
                     Line = fgetl(SerialObject);
                     
-                    % re-interrogating in case of wrong tag number
-                    while Line(17) ~= int2str(i)
-                        disp("Re-interrogating due to wrong tag number.");
-                        Line = fgetl(SerialObject);
-                    end
-                    
                     % start reading with anchor 1/2
                     if FirstIter == 1
                         if i == 1
@@ -81,9 +75,15 @@ classdef RangeMeasurements < handle
                         FirstIter = 0;
                     end
                     
+                    % re-interrogating in case of wrong tag number
+                    while Line(17) ~= int2str(i)
+                        disp("Re-interrogating due to wrong tag number.");
+                        Line = fgetl(SerialObject);
+                    end
+                    
                     % storing range measurement in an array
                     if strncmpi(Line,"Anchor",6)
-                        switch LinearSerial(8)
+                        switch Line(8)
                             case "1", RangeArr(i,1,Iterdex) = str2double(Line(24:end));
                             case "2", RangeArr(i,2,Iterdex) = str2double(Line(24:end));
                             case "3", RangeArr(i,3,Iterdex) = str2double(Line(24:end));
@@ -102,7 +102,7 @@ classdef RangeMeasurements < handle
                         Nextdex = 0;
                     end
                     
-                    disp("Progress: "+Iterdex/NrIterAv*100+"%")
+                    disp("Progress: "+Iterdex/(NrIterAv-1)*100+"%")
                 end
                 
                 Iterdex = 1;
@@ -169,7 +169,7 @@ classdef RangeMeasurements < handle
                 
                 % storing range measurement in an array
                 if strncmpi(Line,"Anchor",6)
-                    switch LinearSerial(8)
+                    switch Line(8)
                         case "1", RangeArr(1,1) = str2double(Line(24:end));
                         case "2", RangeArr(2,1) = str2double(Line(24:end));
                         case "3", RangeArr(3,1) = str2double(Line(24:end));
