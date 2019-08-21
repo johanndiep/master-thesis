@@ -12,7 +12,7 @@
 function h = MeasurementModel(x,AnchorPositions,ZeroMeasurements)
     IterationIndex = 1;
 
-    OffsetValue = [0.1,0.1,0.1,0.1,0.1,0.1];    
+    OffsetValue = [0,0,0,0,0,0];    
     % non-linear measurement prediction model including ellipsoidal offset assumption
     h = sym(zeros(size(AnchorPositions,1)-size(ZeroMeasurements,1),1));
     for i = 1:size(AnchorPositions,1)

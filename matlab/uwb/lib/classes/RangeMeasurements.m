@@ -12,9 +12,8 @@ classdef RangeMeasurements < handle
     end
     
     methods
-        % Initializing the range measurement object with the corresponding parameters.
+        % Initializing the measurement object with the corresponding parameters.
         function RangeMeasObj = RangeMeasurements()
-            clear serial;
             if isempty(instrfind) == 0
                 fclose(instrfind);
                 delete(instrfind);
@@ -29,16 +28,18 @@ classdef RangeMeasurements < handle
         % which is connected to the computer should be changed into the modified
         % Sniffer mode. The sniffer sequentially turns each single anchor into a tag,
         % which then starts ranging with its neighboring anchors. With the resulting
-        % distances from the anchor setup, determination of an estimate the individual
-        % anchor positions can be obtained in a later step.
+        % distances from the anchor setup, estimation of the individual anchor positions 
+        % can be obtained in a later step.
         %   - RangeMeasObj: Measurement object defined by the constructor
         %   - NrIterAv: Amount of ranges to be gathered before averaged
-        %     for anchor setup determination
+        %     for anchor setup estimation
         %
         % Furthermore, the following points need to be investigated:
         %   - Can one be sure, that after re-interrogating in case of a wrong tag number,
         %     no wrong tag number will follow?
-        %   - Any delays introduced due to long reading processing?
+        %   - Any delays introduced due to reading processing?
+        %   - Closing procedure right?
+        %   - Check under which condition outliers are removed.
         function AnchorRangeMean = AnchorSelfRanging(RangeMeasObj,NrIterAv)
             SerialObject = RangeMeasObj.SerialObject;
             NrAnchors = RangeMeasObj.NrAnchors;
@@ -53,13 +54,14 @@ classdef RangeMeasurements < handle
             
             for i = 1:NrAnchors % change each anchor to a tag once
                 fwrite(SerialObject,'c'); % sending Switch-to-Tag command
-                disp("Switch-to-Tag command sent to Anchor "+i)
+                disp("Switch-to-Tag command sent to Anchor "+i+".");
                 
                 while Iterdex < NrIterAv+1
                     Line = fgetl(SerialObject);
                     
                     % re-interrogating in case of wrong tag number
                     while Line(17) ~= int2str(i)
+                        disp("Re-interrogating due to wrong tag number.");
                         Line = fgetl(SerialObject);
                     end
                     
@@ -67,10 +69,12 @@ classdef RangeMeasurements < handle
                     if FirstIter == 1
                         if i == 1
                             while strncmpi(Line,"Anchor 2",8) == 0
+                                disp("Waiting for anchor 2.");
                                 Line = fgetl(SerialObject);
                             end
                         elseif i > 1
                             while strncmpi(Line,"Anchor 1",8) == 0
+                                disp("Waiting for anchor 1.");
                                 Line = fgetl(SerialObject);
                             end
                         end
@@ -98,13 +102,15 @@ classdef RangeMeasurements < handle
                         Nextdex = 0;
                     end
                     
-                    disp("Progress [%]: "+Iterdex/NrIterAv*100)
+                    disp("Progress: "+Iterdex/NrIterAv*100+"%")
                 end
                 
                 Iterdex = 1;
                 FirstIter = 1;
                 
-                fwrite(SerialObject,"y"); % sending Switch-to-Anchor command
+                % sending Switch-to-Anchor command
+                fwrite(SerialObject,"y");
+                disp("Switch-to-Anchor command sent to Anchor "+i+".");
                 pause(3);
             end
             
@@ -133,11 +139,13 @@ classdef RangeMeasurements < handle
         %   - RangeMeasObj: Measurement object defined by the constructor
         %
         % Furthermore, the following points need to be investigated:
-        %   - How often does zero range measurements occur? How about other
-        %     kind of outliers?
+        %   - How often does zero range measurements occur? 
+        %   - How about other kind of outliers?
         %   - Right now, measurement starts at anchor 1 and ends at anchor
         %     6. Maybe one can speed up the frequency by considering the
-        %     current available range measurement instead.
+        %     next 6 available range measurement instead.
+        %   - Any delays introduced due to reading processing?
+        %   - Closing procedure right?
         function RangeArr = TagAnchorRanging(RangeMeasObj)
             SerialObject = RangeMeasObj.SerialObject;
             NrAnchors = RangeMeasObj.NrAnchors;
@@ -186,6 +194,8 @@ classdef RangeMeasurements < handle
         %
         % Furthermore, the following points need to be investigated:
         %   - Timestamps may not be accurate due to delays.
+        %   - Any delays introduced due to reading processing?
+        %   - Closing procedure right?
         function [SingleRangeArr,TimeArr] = SingleTagAnchorRanging(RangeMeasObj,Anchor,NrSingleMeas)
             SerialObject = RangeMeasObj.SerialObject;
             

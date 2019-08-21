@@ -15,10 +15,9 @@ classdef ConstantVelocityEKF < handle
         % Initialize the EKF with the corresponding matrices for the
         % process and measurement model.
         function Model = ConstantVelocityEKF()
-            q = [0,0;0,1];
-            
             Model.H = [1,0,0,0,0,0;0,0,1,0,0,0;0,0,0,0,1,0];
             
+            q = [0,0;0,1];
             Model.Q = blkdiag(q,q,q);
             Model.R = diag([0.01,0.01,0.01]);
 
