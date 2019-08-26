@@ -25,7 +25,7 @@ classdef ConstantVelocityEKF < handle
             Model.P = 10*eye(6);
         end
         
-        % EKF prior update equations 
+        % Executes the EKF prior update step.
         %   - Model: Model object defined by the constructor
         %   - dT: Time interval between each EKF iteration
         function UpdatePrior(Model,dT)
@@ -40,7 +40,7 @@ classdef ConstantVelocityEKF < handle
             Model.P = A*P*A'+Q;
         end
         
-        % EKF measurement update equations
+        % Executes the EKF posterior update step.
         %   - Model: Model object defined by the constructor
         %   - Z: Measurement from VICON system in form (3 x 1)
         function [CurPos,CurVel] = UpdateMeasurement(Model,Z)

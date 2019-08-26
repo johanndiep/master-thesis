@@ -6,7 +6,7 @@
 %   - X: Data parameter in form (d x n)
 %   - Y: Response parameter in form (1 x n)
 %   - Kernel: Corresponding kernel function handle
-%   - Xi: Pseudo-input data in form (d x n)
+%   - Xi: Pseudo-input data in form (d x m)
 %   - NoiseStd: Noise standard deviation
 %   - s0/s1/s2: Scalar kernel parameters
 %

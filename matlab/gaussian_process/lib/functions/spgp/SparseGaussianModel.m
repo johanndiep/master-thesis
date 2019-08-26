@@ -6,7 +6,7 @@
 %   - X: Data parameter in form (d x n)
 %   - Y: Response parameter in form (1 x n)
 %   - Kernel: Corresponding kernel function handle
-%   - Xi: Pseudo-input data in form (d x n)
+%   - Xi: Pseudo-input data in form (d x m)
 %   - NoiseVariance: Noise variance
 %   - s0/s1/s2: Scalar kernel parameters
 %
@@ -14,10 +14,6 @@
 %   - Model: Trained model structure with all necessary variables
 
 function Model = SparseGaussianModel(X,Y,Kernel,Xi,NoiseVariance,s0,s1,s2)
-    if nargin == 7
-        s2 = 1;
-    end    
-    
     Kmm = Kernel(Xi,Xi,s0,s1,s2);    
     Knm = Kernel(X,Xi,s0,s1,s2);
 

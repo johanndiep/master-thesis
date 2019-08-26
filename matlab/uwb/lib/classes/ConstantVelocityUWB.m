@@ -1,6 +1,7 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% Constant velocity model EKF with UWB measurement feedback.
+% Constant velocity model EKF with UWB measurement feedback. Thereby,
+% the conventional measurement model is used.
 
 classdef ConstantVelocityUWB < handle
     properties
@@ -9,7 +10,6 @@ classdef ConstantVelocityUWB < handle
         R
         X
         P
-        ParamSPGP
     end
     
     methods
@@ -27,7 +27,8 @@ classdef ConstantVelocityUWB < handle
             Model.P = 10*eye(6);
         end
         
-        % Measurement model and its linearization about current state
+        % Outputs the measurement model and its linearization 
+        % about current state.
         %   - Model: Model object defined by the constructor
         %   - Xp: Prior state estimate in form (6 x 1)
         function [h,H] = LinMeasurementModel(Model,Xp)  
@@ -43,40 +44,8 @@ classdef ConstantVelocityUWB < handle
             h = Denom';
             H = [V(:,1),Z,V(:,2),Z,V(:,3),Z];   
         end
-
-        % In total, there are 6 different Gaussian Process models, one
-        % for each anchor. This method returns all the necessary model
-        % parameter for Sparse Gaussian Process regression for each of 
-        % these anchor data.
-        %   - Model: Model object defined by the constructor
-        %   - Xd: Training data in form (d x n x 6)
-        %   - Yd: Response training data in form (1 x n x 6)
-        %   - Kernel: Corresponding kernel function handle
-        %   - Xid: Pseudo-input data in form (d x n x 6)
-        %   - NoiseVar: Noise variance in form (1 x 6)
-        %   - s0/s1/s2: Scalar kernel parameters in form (1 x 6)
-        function ParameterSPGP(Model,Xd,Yd,Kernel,Xi,NoiseVar,s0,s1,s2)
-            for i = 1:6
-                ParamSPGP(i) = SparseGaussianModel(Xd(:,:,i),Yd(:,:,i), ...
-                    Kernel,Xi(:,:,i),NoiseVar(i),s0(i),s1(i),s2(i));
-            end
-            
-            Model.ParamSPGP = ParamSPGP;
-        end
         
-        % Error corrected measurement model and its linearization about
-        % current state with Gaussian Process
-        %   - Model: Model object defined by the constructor
-        %   - Xp: Prior state estimate in form (6 x 1)
-        function [h,H] = ErrCorrMeasModel(Model,Xp)
-            
-            
-            
-            h = [];
-            H = [];
-        end
-        
-        % EKF prior update equations 
+        % Executes the EKF prior update step.
         %   - Model: Model object defined by the constructor
         %   - dT: Time interval between each EKF iteration        
         function UpdatePrior(Model,dT)
@@ -91,12 +60,25 @@ classdef ConstantVelocityUWB < handle
             Model.P = A*P*A'+Q;
         end
         
+        % Executes the EKF posterior update step.
+        %   - Model: Model object defined by the constructor
+        %   - Z: Range measurements from UWB in form (6 x 1)        
         function [CurPos,CurVel] = UpdateMeasurement(Model,Z)
            X = Model.X;
            P = Model.P;
            R = Model.R;
            
            [h,H] = Model.LinMeasurementModel(X);
+           
+           ZeroInd = find(Z==0);
+           if isempty(ZeroInd) == 0
+               Z(ZeroInd) = [];
+               
+               R(ZeroInd,:) = []; R(:,ZeroInd) = [];
+               
+               h(ZeroInd) = [];
+               H(ZeroInd,:) = [];
+           end
            
            S = H*P*H'+R;
            K = P*H'/S;
