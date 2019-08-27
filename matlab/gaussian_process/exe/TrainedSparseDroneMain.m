@@ -8,6 +8,10 @@
 % testing input given the data. The hyperparameters are pre-trained with 
 % the GPy Gaussian Process framework. For more informations, check out 
 % https://github.com/SheffieldML/GPy.
+%
+% Furthermore, the following points need to be investigated:
+%   - Seems like the hyperparameters trained through GPy does not
+%     accommodate for local uncertainty. 
 
 warning off;
 

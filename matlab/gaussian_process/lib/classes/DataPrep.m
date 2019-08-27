@@ -32,5 +32,16 @@ classdef DataPrep < handle
             X = quat2eul(ViconQuat');
             X(:,2:3) = [];
         end
+        
+        % Returns the dataset for the circular flight experiment.
+        %   - DataPrepObj: Data preprocessing object defined by the constructor
+        %   - ViconPos: Vicon position measurements of the drone in form (3 x n)
+        function [X,Y] = CircularFlight(DataPrepObj,ViconPos)
+            RangeArray = DataPrepObj.RangeArray;
+            
+            Y = RangeArray;
+            
+            X = atan2(ViconPos(2,:),ViconPos(1,:));
+        end
     end
 end
