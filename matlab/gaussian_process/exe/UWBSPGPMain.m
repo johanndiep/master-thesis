@@ -32,7 +32,7 @@ DataPrepObj = DataPrep(SaveRangeArr);
 %% Parameters
 
 AnchorNr = 1; % anchor 1-6
-s0 = 1; s1 = 1; NoiseStd = 1; % kernel and noise parameters initialization
+s0 = 1; s1 = 1; NoiseStd = 0.1; % kernel and noise parameters initialization
 Xt = linspace(-pi,pi,2000); % testing data
 Kernel = @PeriodicKernel;
 
@@ -89,10 +89,10 @@ disp("Estimated noise standard deviation: "+u(1));
 disp("Kernel hyperparameters: "+u(2)+"/"+u(3));
 
 switch AnchorNr
-    case 1, save('HyperParamAnchor1','u','s');
-    case 2, save('HyperParamAnchor2','u','s');
-    case 3, save('HyperParamAnchor3','u','s');
-    case 4, save('HyperParamAnchor4','u','s');
-    case 5, save('HyperParamAnchor5','u','s');
-    case 6, save('HyperParamAnchor6','u','s');
+    case 1, save('HyperParamAnchor1','X','Y','u','s');
+    case 2, save('HyperParamAnchor2','X','Y','u','s');
+    case 3, save('HyperParamAnchor3','X','Y','u','s');
+    case 4, save('HyperParamAnchor4','X','Y','u','s');
+    case 5, save('HyperParamAnchor5','X','Y','u','s');
+    case 6, save('HyperParamAnchor6','X','Y','u','s');
 end

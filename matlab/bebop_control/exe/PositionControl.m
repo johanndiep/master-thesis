@@ -4,8 +4,10 @@
 % position and velocity. It takes the feedback from the VICON 
 % positioning system, pass it through a constant velocity modeled EKF 
 % in order to estimate the velocity and uses a PD controller to move 
-% the drone towards the goal state. In order to optimize the performance, 
-% the following parameters need to be tuned:
+% the drone towards the goal state. 
+%
+% In order to optimize the performance, the following parameters need to 
+% be tuned:
 %   - P/D-gains in "Controller.m"
 %   - Threshold for maximal rotation in "Controller.m"
 %   - Time interval between each EKF iteration

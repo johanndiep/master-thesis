@@ -33,8 +33,10 @@
 %   - Are the buttons of the Spacemouse fast enough to react?
 %   - Tune the time-variant goal velocities and goal state rate 
 %     such that the flight is smooth.
+%   - Is goal velocities and goal state rate coupled?
 %   - Does the delay in range reading influence position estimation?
 %   - Does a batch of range measurement match to the current position good enough?
+%   - Should zero measurements be rejected?
 %
 % Step-by-Step:
 %   1. Place pole 1 and pole 3 such that the corresponding anchors have 
@@ -59,7 +61,6 @@
 %   12. Start the ROS driver for the Bebop
 %   13. Set the desired circle parameters
 %   14. Run the following script
-
 
 clear; clc;
 

@@ -1,12 +1,22 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% This script controls the state of the Bebop towards a desired goal 
-% position and velocity. Thereby, the goal position is changing per
-% iteration in a circular manner, resulting in the drone following 
-% a circular trajectory. Similiar to "PositionControl.m", it takes the 
-% feedback from the VICON positioning system, pass it through a 
-% constant velocity modeled EKF in order to estimate the velocity 
-% and uses a PD controller to move the drone towards the goal state.
+% With this script, the drone is commanded to fly a circular trajectory, where
+% the standard UWB range measurement model is used. The control part is copied 
+% from "CircleControl.m".
+%
+% Placement of the anchors with the following assumptions:
+%   - Anchor 1 is set to be the origin of the coordinate system
+%   - Anchor 3 and 5 are fixed on the same height as anchor 1
+%   - Anchor 2, 4 and 6 are fixed at a known constant height
+%   - Anchor 5 is assumed to be on the same axis with anchor 1 
+%     without loss of generality
+%   - Top anchors are assumed to have same x/y-coordinates as 
+%     bottom anchors
+% 
+% The anchors are distributed as follows where p1/p2/p3 are the unknown parameters:
+%   - Pole 1: Anchor 1 (0,0,0), Anchor 2 (0,0,h)
+%   - Pole 2: Anchor 3 (p1,p2,0), Anchor 4 (p1,p2,h)
+%   - Pole 3: Anchor 5 (0,p3,0), Anchor 6 (0,p3,h)
 %
 % In order to optimize the performance, the following parameters 
 % need to be tuned:
@@ -24,25 +34,50 @@
 %   - Tune the time-variant goal velocities and goal state rate 
 %     such that the flight is smooth.
 %   - Is goal velocities and goal state rate coupled?
+%   - Does the delay in range reading influence position estimation?
+%   - Does a batch of range measurement match to the current position good enough?
+%   - What happens if a large part of the batch consists of zero
+%     measurements? In this case, zero measurements are removed from 
+%     Z, h, H and R. How influence has this correction on the estimation?
+%   - The method to determine the anchor positions can be limiting,
+%     more details are described in "AnchorCalibMain.m".
+%   - How to accomodate for ranging offset from the UWB modules?
 %
 % Step-by-Step:
-%   1. Calibrate the VICON system and place the origin in the room with the
+%   1. Place pole 1 and pole 3 such that the corresponding anchors have 
+%      the same orientation.
+%   2. Place pole 2 such that its anchors are opposite directed compared to 
+%      the anchors from pole 1/3 and have positive x/y-coordinates.
+%   3. Power up each anchor, the modules should be in Anchor mode already.
+%      This can also be tested in Terminal using the following picocom 
+%      command and a computer-attached Sniffer module: sudo picocom /dev/ttyACM*
+%   4. Connect the Sniffer node to the computer and run the following
+%      command in terminal: sudo chmod 666 /dev/ttyACM*
+%   5. Run "AnchorCalibMain.m" first in order to obtain all the anchor
+%      positions.
+%   6. Calibrate the VICON system and place the origin in the room with the
 %      T-link, here the T-link should be placed in the middle of the room
-%   2. Attach VICON markers on the Bebop, group the markers on the VICON
+%   7. Attach VICON markers on the Bebop, group the markers on the VICON
 %      Tracker to an object and name it "Bebop_Johann"
-%   3. Place the drone such that the body-fixed frame (x-forward,y-left,z-ascend)
+%   8. Place the drone such that the body-fixed frame (x-forward,y-left,z-ascend)
 %      is aligned with the VICON frame
-%   4. Connect the computer with the VICON machine via Ethernet
-%   5. Turn on the Bebop and connect the laptop with it over Wi-Fi
-%   6. Start the ROS driver for the Spacemouse, turn it on
-%   7. Start the ROS VICON bridge node
-%   8. Start the ROS driver for the Bebop
-%   9. Set the desired circle parameters
-%   10. Run the following script
+%   9. Connect the computer with the VICON machine via Ethernet
+%   10. Turn on the Bebop and connect the laptop with it over Wi-Fi
+%   11. Start the ROS driver for the Spacemouse, turn it on
+%   12. Start the ROS VICON bridge node
+%   13. Start the ROS driver for the Bebop
+%   14. Set the desired circle parameters
+%   15. Run the following script
+%
+% To-Do (!):
+%   - The current code does not work yet, because the transformation
+%     between anchor- and VICON-frame is not implemented yet.
 
 clear; clc;
 
 rosshutdown; rosinit;
+
+load('AnchorPos.mat'); % load the anchor positions
 
 %% Parameters
 
@@ -57,6 +92,9 @@ TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 Time = 0; % helper variable to estimate the time-variant goal state
 
 %% Preliminary
+
+% initializing a range measurement object
+RangeMeasObj = RangeMeasurements();
 
 % ROS subscribers for Spacemouse and VICON positioning system
 JoySub = rossubscriber('/spacenav/joy'); 
@@ -84,7 +122,7 @@ ControlObj.Start; % starting the drone
 pause(5);
 
 % initializing the constant velocity modeled EKF
-Model = ConstantVelocityEKF();
+Model = ConstantVelocityUWB(AnchorPos);
 tic;
 
 i = 1;
@@ -97,11 +135,14 @@ while true
     
     % Vicon ground-truth position and quaternion of the drone
     [ViconPos,ViconQuat] = getGroundTruth(VicDroneSub);
+
+    % Reading UWB range measurements
+    RangeArray = RangeMeasObj.TagAnchorRanging/1000;    
     
     % prior and posterior update with process and measurement model
     dT = toc; Time = Time + dT;
     Model.UpdatePrior(dT);
-    [CurPos,CurVel] = Model.UpdateMeasurement(ViconPos);
+    [CurPos,CurVel] = Model.UpdateMeasurement(RangeArray);
     tic;
     
     % time-variant goal position and velocity
@@ -132,19 +173,19 @@ SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
 
-save('VicCircConData.mat','SaveViconPos','SaveViconQuat', ...
+save('UWBCircConData.mat','SaveViconPos','SaveViconQuat', ...
     'SaveCurPos','SaveCurVel','SaveGoalPos');
 
 clear; clc;
 
 %% Plotting and Results
 
-load('VicCircConData.mat');
+load('UWBCircConData.mat');
 
-SaveCurPos = SaveCurPos(:,1:300:end);
-SaveCurVel = SaveCurVel(:,1:300:end);
-SaveGoalPos = SaveGoalPos(:,1:300:end);
-SaveViconQuat = SaveViconQuat(:,1:300:end);
+SaveCurPos = SaveCurPos(:,1:3:end);
+SaveCurVel = SaveCurVel(:,1:3:end);
+SaveGoalPos = SaveGoalPos(:,1:3:end);
+SaveViconQuat = SaveViconQuat(:,1:3:end);
 
 figure();
 
