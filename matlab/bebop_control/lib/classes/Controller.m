@@ -54,10 +54,11 @@ classdef Controller
         % Calculating the rotational proportional error
         %   - ControlObject: Controller object defined by the constructor
         %   - CurYaw: Current yaw angle in scalar form
-        function YawError = CalcYawError(ControlObject,CurYaw)
+        %   - GoalYaw: Goal yaw angle in scalar form
+        function YawError = CalcYawError(ControlObject,CurYaw,GoalYaw)
             Py = ControlObject.Py;
             
-            Pc = -Py*CurYaw;
+            Pc = Py*(GoalYaw-CurYaw);
             
             YawError = Pc;
         end
@@ -78,7 +79,7 @@ classdef Controller
                 GoalVel,CurQuat);
             
             if abs(CurYaw) > ControlObject.TreshYaw
-                YawError = ControlObject.CalcYawError(CurYaw);
+                YawError = ControlObject.CalcYawError(CurYaw,0);
                 
                 % first correct translational error, then rotational error
                 ControlObject.Publisher.LinearCommand(TransError);

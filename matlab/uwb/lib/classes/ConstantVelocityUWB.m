@@ -13,8 +13,8 @@ classdef ConstantVelocityUWB < handle
     end
     
     methods
-        % Initialize the EKF with the corresponding matrices for the 
-        % process and measurement model.
+        % Initialize the EKF with the anchor positions and the corresponding 
+        % matrices for the process and measurement model.
         %   - AnchorPos: The position of the 6 anchors in form (6 x 3)
         function Model = ConstantVelocityUWB(AnchorPos)
             Model.AnchorPos = AnchorPos;

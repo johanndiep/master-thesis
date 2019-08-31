@@ -33,13 +33,6 @@ classdef RangeMeasurements < handle
         %   - RangeMeasObj: Measurement object defined by the constructor
         %   - NrIterAv: Amount of ranges to be gathered before averaged
         %     for anchor setup estimation
-        %
-        % Furthermore, the following points need to be investigated:
-        %   - Can one be sure, that after re-interrogating in case of a wrong tag number,
-        %     no wrong tag number will follow?
-        %   - Any delays introduced due to reading processing?
-        %   - Closing procedure right?
-        %   - Check under which condition outliers are removed.
         function AnchorRangeMean = AnchorSelfRanging(RangeMeasObj,NrIterAv)
             SerialObject = RangeMeasObj.SerialObject;
             NrAnchors = RangeMeasObj.NrAnchors;
@@ -143,16 +136,6 @@ classdef RangeMeasurements < handle
         % This function reads the distances between the drone-mounted tag and
         % each pole-mounted anchor.
         %   - RangeMeasObj: Measurement object defined by the constructor
-        %
-        % Furthermore, the following points need to be investigated:
-        %   - How often does zero range measurements occur?
-        %   - How about other kind of outliers?
-        %   - Right now, measurement starts at anchor 1 and ends at anchor
-        %     6. Maybe one can speed up the frequency by considering the
-        %     next 6 available range measurement instead.
-        %   - Any delays introduced due to reading processing?
-        %   - Closing procedure right?
-        %   - Set tag number, check if this number is interrogated.
         function RangeArr = TagAnchorRanging(RangeMeasObj)
             SerialObject = RangeMeasObj.SerialObject;
             NrAnchors = RangeMeasObj.NrAnchors;

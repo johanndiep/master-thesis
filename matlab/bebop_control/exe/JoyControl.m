@@ -5,13 +5,13 @@
 % terminal: 
 %
 % Step-by-Step:
-%   1. Start the ROS driver for the Spacemouse and turn it on
-%   2. Start the ROS driver for the Bebop
-%   3. Adjust the variable "DominantFlight" to either 1 or 0, with dominant
+%   1. Turn on the Spacemouse and start its ROS driver.
+%   2. Start the ROS driver for the Bebop.
+%   3. Adjust the variable "DominantFlight" to either 1 or 0. With dominant
 %      flight mode set to 1, the drone only moves in the direction with the largest
-%      offset
-%   4. Run the following script
-%   5. Control the drone by steering the joystick
+%      offset.
+%   4. Run the following script.
+%   5. Control the drone by steering the joystick.
 
 clear; clc;
 

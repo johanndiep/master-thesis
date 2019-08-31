@@ -31,17 +31,30 @@
 % Furthermore, the following points need to be investigated:
 %   - The yaw correction method could be optimized.
 %   - Are the buttons of the Spacemouse fast enough to react?
+%     [VICON readings and iterations occur at high frequency. However, the UWB
+%     readings occur at lower frequency. Therefore, it can happen, that 
+%     MATLAB does not respond to the button click. By holding the button, 
+%     the script has time to execute the landing maneuver.]
 %   - Tune the time-variant goal velocities and goal state rate 
-%     such that the flight is smooth.
-%   - Is goal velocities and goal state rate coupled?
+%     such that the flight is smooth. Is goal velocities and goal state rate 
+%     coupled?
+%     [I believe that a mismatch between goal state rate, goal and current
+%      velocity is responsible for shaky flights.]
+%   - How often does zero range measurements occur? What happens if a large 
+%     part of the batch consists of zero measurements? 
+%     [In this case, zero measurements are removed from Z, h, H and R.]
+%   - How about other kind of outliers?
+%   - Right now, measurement starts at anchor 1 and ends at anchor
+%     6. Maybe one can speed up the frequency by considering the
+%     next 6 available range measurement instead.
+%   - Any delays introduced due to reading processing?
 %   - Does the delay in range reading influence position estimation?
 %   - Does a batch of range measurement match to the current position good enough?
-%   - What happens if a large part of the batch consists of zero
-%     measurements? In this case, zero measurements are removed from 
-%     Z, h, H and R. How influence has this correction on the estimation?
-%   - The method to determine the anchor positions can be limiting,
-%     more details are described in "AnchorCalibMain.m".
+%   - Closing procedure right?
+%   - Set tag number, check if this number is interrogated.
 %   - How to accomodate for ranging offset from the UWB modules?
+%     [Learning the offset via Gaussian Process.]
+%   - For more points on anchor calibration, see "AnchorCalibMain.m".
 %
 % Step-by-Step:
 %   1. Place pole 1 and pole 3 such that the corresponding anchors have 
@@ -54,24 +67,24 @@
 %   4. Connect the Sniffer node to the computer and run the following
 %      command in terminal: sudo chmod 666 /dev/ttyACM*
 %   5. Run "AnchorCalibMain.m" first in order to obtain all the anchor
-%      positions.
+%      positions in a file called "AnchorPos.mat".
 %   6. Calibrate the VICON system and place the origin in the room with the
-%      T-link, here the T-link should be placed in the middle of the room
-%   7. Attach VICON markers on the Bebop, group the markers on the VICON
+%      T-link, here the T-link should be placed at the corner of pole 1.
+%      Thereby, there should not be any rotations between anchor and VICON
+%      frame.
+%   7. Measure the coordinates of anchor 1 in the VICON frame and fill the
+%      transformation matrix T.
+%   8. Attach VICON markers on the Bebop, group the markers on the VICON
 %      Tracker to an object and name it "Bebop_Johann"
-%   8. Place the drone such that the body-fixed frame (x-forward,y-left,z-ascend)
+%   9. Place the drone such that the body-fixed frame (x-forward,y-left,z-ascend)
 %      is aligned with the VICON frame
-%   9. Connect the computer with the VICON machine via Ethernet
-%   10. Turn on the Bebop and connect the laptop with it over Wi-Fi
-%   11. Start the ROS driver for the Spacemouse, turn it on
-%   12. Start the ROS VICON bridge node
-%   13. Start the ROS driver for the Bebop
-%   14. Set the desired circle parameters
-%   15. Run the following script
-%
-% To-Do (!):
-%   - The current code does not work yet, because the transformation
-%     between anchor- and VICON-frame is not implemented yet.
+%   10. Connect the computer with the VICON machine via Ethernet
+%   11. Turn on the Bebop and connect the laptop with it over Wi-Fi
+%   12. Turn on the Spacemouse and start its ROS driver.
+%   13. Start the ROS VICON bridge node
+%   14. Start the ROS driver for the Bebop
+%   15. Set the desired circle parameters
+%   16. Run the following script
 
 clear; clc;
 
@@ -81,8 +94,13 @@ load('AnchorPos.mat'); % load the anchor positions
 
 %% Parameters
 
+% coordinate transformation
+T = diag(ones(1,4));
+T(1:3,4) = [-0.229;-0.246;0.243];
+A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
+
 % initialize the trajectory object
-MidPoint = [0,0];
+MidPoint = [2,2];
 Height = 1;
 AbsVel = 0.2;
 Radius = 1;
@@ -104,11 +122,11 @@ VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 ControlObj = Controller();
 
 % pre-allocation
-SaveViconPos = zeros(3,50000);
-SaveViconQuat = zeros(4,50000);
-SaveCurPos = zeros(3,50000);
-SaveCurVel = zeros(3,50000);
-SaveGoalPos = zeros(3,50000);
+SaveViconPos = zeros(3,10000);
+SaveViconQuat = zeros(4,10000);
+SaveCurPos = zeros(3,10000);
+SaveCurVel = zeros(3,10000);
+SaveGoalPos = zeros(3,10000);
 
 %% PID
 
@@ -182,10 +200,11 @@ clear; clc;
 
 load('UWBCircConData.mat');
 
+SaveViconPos = SaveViconPos(:,1:3:end);
+SaveViconQuat = SaveViconQuat(:,1:3:end);
 SaveCurPos = SaveCurPos(:,1:3:end);
 SaveCurVel = SaveCurVel(:,1:3:end);
 SaveGoalPos = SaveGoalPos(:,1:3:end);
-SaveViconQuat = SaveViconQuat(:,1:3:end);
 
 figure();
 
@@ -193,8 +212,8 @@ title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([-2,2]);
-ylim([-2,2]);
+xlim([0,4]);
+ylim([0,4]);
 zlim([0,2.5]);
 hold on;
 

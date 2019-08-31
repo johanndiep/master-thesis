@@ -74,7 +74,7 @@ classdef BebopControl
         
         % For yaw angular movements only.
         %   - Publisher: Publisher object defined by the constructor
-        %   - AngularCommand: Array holding the commands for yaw angular rotation
+        %   - AngularCommand: Command for yaw angular rotation
         function AngularCommand(Publisher,AngularCommand)
             AngularMessage = rosmessage(Publisher.Flight);
             AngularMessage.Linear.X = 0;

@@ -1,15 +1,23 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% Standard Gaussian Process is prohibitive for large data sets. This 
-% script executes the sparse Gaussian Process prediction described in
-% "Sparse Gaussian Processes using Pseudo-inputs" by Edward Snelson and 
-% Zoubin Ghahramani for the tag-yaw-at-constant-distance experiment dataset. 
-% The underlying function is approximated with a mean and variance for 
-% each testing input given the data. The hyperparameter learning part is
-% split into learning the noise as well as the kernel parameters from the
-% complete log marginal likelihood and the induced pseudo-inputs from the 
-% sparse log marginal likelihood. In order to speed up the latter, the
-% available data is downsampled.  
+% Standard Gaussian Process is prohibitive for large data sets when it comes
+% to prediction speed. This script executes the sparse Gaussian Process 
+% prediction described in "Sparse Gaussian Processes using Pseudo-inputs" 
+% by Edward Snelson and Zoubin Ghahramani for the tag-yaw-at-constant-distance 
+% experiment dataset. The underlying function is approximated with a mean 
+% and variance for each testing input given the data. The hyperparameter 
+% learning part is split into learning the noise as well as the kernel 
+% parameters from the complete log marginal likelihood and the induced 
+% pseudo-inputs from the sparse log marginal likelihood. In order to speed 
+% up the latter, the available data can be downsampled.
+%
+% In order to optimize the performance, the following parameters need to 
+% be tuned:
+%   - Initialization parameters
+%
+% Furthermore, the following points need to be investigated:
+%   - Are there better optimization methods in Matlab? 
+%     [Using GPy if computation takes too long.]
 
 clear; clc;
 
@@ -21,8 +29,6 @@ load('RotationalMeasurements.mat'); % sample measurements
 
 DataPrepObj = DataPrep(RangeArray);
 [X,Y] = DataPrepObj.ConstDistanceYaw(DroneQuaternionGroundTruthArray,2);
-
-% save('Dataset.mat','X','Y');
 
 X = X';
 Y = Y';

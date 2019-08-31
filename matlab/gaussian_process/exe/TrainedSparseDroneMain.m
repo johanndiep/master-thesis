@@ -25,8 +25,6 @@ load('Hyperparameters.mat'); % pre-trained hyperparameters
 DataPrepObj = DataPrep(RangeArray);
 [X,Y] = DataPrepObj.ConstDistanceYaw(DroneQuaternionGroundTruthArray,2);
 
-% save('Dataset.mat','X','Y');
-
 X = X';
 Y = Y';
 

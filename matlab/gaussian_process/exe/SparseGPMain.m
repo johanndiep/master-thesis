@@ -1,12 +1,20 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% Standard Gaussian Process is prohibitive for large data sets. This script
-% executes the sparse Gaussian Process prediction described in "Sparse 
-% Gaussian Processes using Pseudo-inputs" by Edward Snelson and Zoubin 
-% Ghahramani. An arbitrary function is defined as a function handle. 
-% Data then can be generated which can include a noise term. The underlying 
-% function is then approximated with a mean and variance for each testing 
-% input given the data. 
+% Standard Gaussian Process is prohibitive for large data sets when it comes
+% to prediction speed. This script executes the sparse Gaussian Process 
+% prediction described in "Sparse Gaussian Processes using Pseudo-inputs" 
+% by Edward Snelson and Zoubin Ghahramani. An arbitrary function is defined 
+% as a function handle. Data then can be generated which can include a noise 
+% term. The underlying function is then approximated with a mean and variance 
+% for each testing input given the data. 
+%
+% In order to optimize the performance, the following parameters need to 
+% be tuned:
+%   - Initialization parameters
+%
+% Furthermore, the following points need to be investigated:
+%   - Are there better optimization methods in Matlab? 
+%     [Using GPy if computation takes too long.]
 
 clear; clc;
 

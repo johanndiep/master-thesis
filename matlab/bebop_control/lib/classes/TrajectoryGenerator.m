@@ -14,7 +14,7 @@ classdef TrajectoryGenerator < handle
     methods
         % Initialize the trajectory object with the chosen parameters.
         %   - MidPoint: Midpoint of circular trajectory in form (1 x 2),
-        %     for static hovering the midpoint defines the desired goal position 
+        %     for simple position control the midpoint defines the desired goal position 
         %   - Height: Constant height of the trajectory in scalar form
         %   - AbsVel: Constant velocity in scalar form
         %   - Radius: Radius of circle

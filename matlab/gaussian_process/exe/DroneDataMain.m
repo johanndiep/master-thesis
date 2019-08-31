@@ -5,6 +5,14 @@
 % Williams for the tag-yaw-at-constant-distance experiment dataset. The 
 % underlying function is approximated with a  mean and variance for each 
 % testing input given the data. 
+%
+% In order to optimize the performance, the following parameters need to 
+% be tuned:
+%   - Initialization parameters
+%
+% Furthermore, the following points need to be investigated:
+%   - Are there better optimization methods in Matlab? 
+%     [Using GPy if computation takes too long.]
 
 clear; clc;
 
@@ -14,8 +22,6 @@ load('RotationalMeasurements.mat'); % sample measurements
 
 DataPrepObj = DataPrep(RangeArray);
 [X,Y] = DataPrepObj.ConstDistanceYaw(DroneQuaternionGroundTruthArray,2);
-
-% save('Dataset.mat','X','Y');
 
 X = X';
 Y = Y';

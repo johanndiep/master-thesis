@@ -5,7 +5,7 @@
 % iteration in a circular manner, resulting in the drone following 
 % a circular trajectory. Similiar to "PositionControl.m", it takes the 
 % feedback from the VICON positioning system, pass it through a 
-% constant velocity modeled EKF in order to estimate the velocity 
+% constant velocity modeled EKF in order to estimate the position and velocity 
 % and uses a PD controller to move the drone towards the goal state.
 %
 % In order to optimize the performance, the following parameters 
@@ -21,24 +21,27 @@
 % Furthermore, the following points need to be investigated:
 %   - The yaw correction method could be optimized.
 %   - Are the buttons of the Spacemouse fast enough to react?
+%     [Yes, VICON readings and iterations occur at high frequency]
 %   - Tune the time-variant goal velocities and goal state rate 
-%     such that the flight is smooth.
-%   - Is goal velocities and goal state rate coupled?
+%     such that the flight is smooth. Is goal velocities and goal state rate 
+%     coupled?
+%     [I believe that a mismatch between goal state rate, goal and current
+%      velocity is responsible for shaky flights.]
 %
 % Step-by-Step:
-%   1. Calibrate the VICON system and place the origin in the room with the
-%      T-link, here the T-link should be placed in the middle of the room
+%   1. Calibrate the VICON system and place the origin in the middle of the room 
+%      with the T-link.
 %   2. Attach VICON markers on the Bebop, group the markers on the VICON
-%      Tracker to an object and name it "Bebop_Johann"
+%      Tracker to an object and name it "Bebop_Johann".
 %   3. Place the drone such that the body-fixed frame (x-forward,y-left,z-ascend)
-%      is aligned with the VICON frame
-%   4. Connect the computer with the VICON machine via Ethernet
-%   5. Turn on the Bebop and connect the laptop with it over Wi-Fi
-%   6. Start the ROS driver for the Spacemouse, turn it on
-%   7. Start the ROS VICON bridge node
-%   8. Start the ROS driver for the Bebop
-%   9. Set the desired circle parameters
-%   10. Run the following script
+%      is aligned with the VICON frame.
+%   4. Connect the computer with the VICON machine via Ethernet.
+%   5. Turn on the Bebop and connect the laptop with it over Wi-Fi.
+%   6. Turn on the Spacemouse and start its ROS driver.
+%   7. Start the ROS VICON bridge node.
+%   8. Start the ROS driver for the Bebop.
+%   9. Set the desired circle parameters.
+%   10. Run the following script.
 
 clear; clc;
 
@@ -141,10 +144,10 @@ clear; clc;
 
 load('VicCircConData.mat');
 
+SaveViconQuat = SaveViconQuat(:,1:300:end);
 SaveCurPos = SaveCurPos(:,1:300:end);
 SaveCurVel = SaveCurVel(:,1:300:end);
 SaveGoalPos = SaveGoalPos(:,1:300:end);
-SaveViconQuat = SaveViconQuat(:,1:300:end);
 
 figure();
 
