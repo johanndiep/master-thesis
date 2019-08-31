@@ -144,6 +144,7 @@ clear; clc;
 
 load('VicCircConData.mat');
 
+SaveViconPos = SaveViconPos(:,1:300:end);
 SaveViconQuat = SaveViconQuat(:,1:300:end);
 SaveCurPos = SaveCurPos(:,1:300:end);
 SaveCurVel = SaveCurVel(:,1:300:end);
@@ -162,13 +163,14 @@ hold on;
 
 scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),200,'ro');
 scatter3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),50,'b.');
+scatter3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:),10,'r.');
 scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),10,'ko');
 quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
     SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.5,'k');
 
 set(0,'DefaultLegendAutoUpdate','off')
-legend('Start Position','Desired Trajectory','EKF Position Estimation', ...
-    'EKF Velocity Estimation');
+legend('Start Position','Desired Trajectory','Vicon Position', ...
+    'EKF Position Estimation','EKF Velocity Estimation');
 
 quiver3(0,0,0,1,0,0,0.5,'r','LineWidth',2);
 quiver3(0,0,0,0,1,0,0.5,'g','LineWidth',2);

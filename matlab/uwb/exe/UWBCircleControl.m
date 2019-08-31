@@ -85,6 +85,9 @@
 %   14. Start the ROS driver for the Bebop
 %   15. Set the desired circle parameters
 %   16. Run the following script
+%
+% To-Do:
+%   - Track antenna instead of object center of mass with VICON.
 
 clear; clc;
 
@@ -96,11 +99,11 @@ load('AnchorPos.mat'); % load the anchor positions
 
 % coordinate transformation
 T = diag(ones(1,4));
-T(1:3,4) = [-0.229;-0.246;0.243];
+T(1:3,4) = [-0.23;-0.245;0.245];
 A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 
 % initialize the trajectory object
-MidPoint = [2,2];
+MidPoint = [1.2,1.3];
 Height = 1;
 AbsVel = 0.2;
 Radius = 1;
@@ -200,11 +203,11 @@ clear; clc;
 
 load('UWBCircConData.mat');
 
-SaveViconPos = SaveViconPos(:,1:3:end);
-SaveViconQuat = SaveViconQuat(:,1:3:end);
-SaveCurPos = SaveCurPos(:,1:3:end);
-SaveCurVel = SaveCurVel(:,1:3:end);
-SaveGoalPos = SaveGoalPos(:,1:3:end);
+SaveViconPos = SaveViconPos(:,1:1:end);
+SaveViconQuat = SaveViconQuat(:,1:1:end);
+SaveCurPos = SaveCurPos(:,1:1:end);
+SaveCurVel = SaveCurVel(:,1:1:end);
+SaveGoalPos = SaveGoalPos(:,1:1:end);
 
 figure();
 
@@ -212,20 +215,21 @@ title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([0,4]);
-ylim([0,4]);
+xlim([-0.1,3]);
+ylim([-0.1,3]);
 zlim([0,2.5]);
 hold on;
 
 scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),200,'ro');
 scatter3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),50,'b.');
+scatter3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:),10,'r.');
 scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),10,'ko');
 quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
     SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.5,'k');
 
 set(0,'DefaultLegendAutoUpdate','off')
-legend('Start Position','Desired Trajectory','EKF Position Estimation', ...
-    'EKF Velocity Estimation');
+legend('Start Position','Desired Trajectory','Vicon Position', ...
+'EKF-UWB Position Estimation','EKF-UWB Velocity Estimation');
 
 quiver3(0,0,0,1,0,0,0.5,'r','LineWidth',2);
 quiver3(0,0,0,0,1,0,0.5,'g','LineWidth',2);

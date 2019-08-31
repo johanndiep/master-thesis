@@ -59,26 +59,40 @@
 %      command in terminal: sudo chmod 666 /dev/ttyACM*
 %   6. Calibrate the VICON system and place the origin in the middle of the room 
 %      with the T-link.
-%   8. Attach VICON markers on the Bebop and on the UWB antenna, 
+%   8. Place the drone such that the body-fixed frame (x-forward,y-left,z-ascend)
+%       is aligned with the VICON frame.
+%   9. Attach VICON markers on the Bebop and on the UWB antenna ("TagMarker"), 
 %      group the markers on the VICON Tracker to an object and name it 
-%      "Bebop_Johann"
-%   9. Attach VICON markers on the anchor poles, group the markers on the
-%      VICON Tracker to an object and name it "Anchors_Johann"
-%   10. Place the drone such that the body-fixed frame (x-forward,y-left,z-ascend)
-%      is aligned with the VICON frame
-%   11. Connect the computer with the VICON machine via Ethernet
-%   12. Turn on the Bebop and connect the laptop with it over Wi-Fi
-%   13. Turn on the Spacemouse and start its ROS driver.
-%   14. Start the ROS VICON bridge node
-%   15. Start the ROS driver for the Bebop
-%   16. Set the desired circle parameters
-%   17. Run the following script
+%      "Bebop_Johann".
+%   10. Attach VICON markers on the anchor poles ("Pole1", "Pole2" and "Pole3"),
+%      group the markers on the VICON Tracker to an object and name it 
+%      "Anchors_Johann".
+%   11. Write down the body-frame coordinates of "TagMarker", "Pole1", "Pole2" 
+%       and "Pole3". The coordinates can be seen in VICON Tracker application.
+%   12. Connect the computer with the VICON machine via Ethernet
+%   13. Turn on the Bebop and connect the laptop with it over Wi-Fi.
+%   14. Turn on the Spacemouse and start its ROS driver.
+%   15. Start the ROS VICON bridge node.
+%   16. Start the ROS driver for the Bebop.
+%   17. Set the desired circle parameters.
+%   18. Run the following script.
+%
+% To-Do:
+%   - Track antenna instead of object center of mass with VICON.
+%   - Figure out how to subscribe to "/vicon/markers".
 
 clear; clc;
 
 rosshutdown; rosinit;
 
 %% Parameters
+
+% marker positions
+MarkTag = [6,9,49]/1000;
+MarkP1 = [-1280,-1535,-4]/1000;
+MarkP2 = [2416,-114,9]/1000;
+MarkP3 = [-1136,1648,-5]/1000;
+Dev = [-0.01,2.146];
 
 % initialize the trajectory object
 MidPoint = [0,0];
@@ -181,8 +195,8 @@ SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
 SaveRangeArr(:,CuttingIndex:end) = [];
 
-save('UWBGroundTruthMeas.mat','SaveViconPos','SaveViconQuat', ...
+save('UWB-GP.mat','SaveViconPos','SaveViconQuat', ...
     'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-    'VicAncPos','VicAncQuat');
+    'VicAncPos','VicAncQuat','MarkTag','MarkP1','MarkP2','MarkP3','Dev');
 
 clear; clc;
