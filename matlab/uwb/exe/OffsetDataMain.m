@@ -88,11 +88,11 @@ rosshutdown; rosinit;
 %% Parameters
 
 % marker positions
-MarkTag = [6,9,49]/1000;
-MarkP1 = [-1280,-1535,-4]/1000;
-MarkP2 = [2416,-114,9]/1000;
-MarkP3 = [-1136,1648,-5]/1000;
-Dev = [-0.01,2.146];
+Marker.MarkTag = [6,9,49]/1000;
+Marker.MarkP1 = [-1280,-1535,-4]/1000;
+Marker.MarkP2 = [2416,-114,9]/1000;
+Marker.MarkP3 = [-1136,1648,-5]/1000;
+Marker.Dev = [-0.01,2.146];
 
 % initialize the trajectory object
 MidPoint = [0,0];
@@ -155,7 +155,7 @@ while true
     [ViconPos,ViconQuat] = getGroundTruth(VicDroneSub);
     
     % Reading UWB range measurements
-    RangeArray = RangeMeasObj.TagAnchorRanging/1000;
+    RangeArray = RangeMeasObj.TagAnchorRanging;
     
     % prior and posterior update with process and measurement model
     dT = toc; Time = Time + dT;
@@ -197,6 +197,6 @@ SaveRangeArr(:,CuttingIndex:end) = [];
 
 save('UWB-GP.mat','SaveViconPos','SaveViconQuat', ...
     'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-    'VicAncPos','VicAncQuat','MarkTag','MarkP1','MarkP2','MarkP3','Dev');
+    'VicAncPos','VicAncQuat','Marker');
 
 clear; clc;

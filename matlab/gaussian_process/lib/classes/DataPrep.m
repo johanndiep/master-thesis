@@ -21,26 +21,63 @@ classdef DataPrep < handle
         % Returns the dataset for the tag-yaw-at-constant-distance
         % experiment. Hereby, the anchor stays at a fixed position.
         %   - DataPrepObj: Data preprocessing object defined by the constructor
-        %   - ViconQuat: Vicon quaternion measurements of the tag in form (4 x n)
+        %   - VicQuat: Vicon quaternion measurements of the tag in form (4 x n)
         %   - ActualDistance: Actual distance between the nodes in scalar form
-        function [X,Y] = ConstDistanceYaw(DataPrepObj,ViconQuat,ActualDistance)
+        function [X,Y] = ConstDistanceYaw(DataPrepObj,VicQuat,ActualDistance)
             RangeArray = DataPrepObj.RangeArray;
             
             ErrorArray = ActualDistance-RangeArray;
             Y = ErrorArray';
             
-            X = quat2eul(ViconQuat');
+            X = quat2eul(VicQuat');
             X(:,2:3) = [];
         end
         
-        % Returns the dataset for the flight experiment.
+        % Returns the dataset for the UWB flight experiment.
         %   - DataPrepObj: Data preprocessing object defined by the constructor
-        %   - ViconPos: Vicon position measurements of the drone in form (3 x n)
-        function [X,Y] = Flight(DataPrepObj,ViconPos)
+        %   - Marker: Sruct containing the marker positions in corresponding 
+        %     body-frame 
+        %   - VicDrPos: Vicon position measurements of the drone in form (3 x n)
+        %   - VicDrQuat: Vicon quaternion measurements of the drone in form (4 x n)
+        %   - VicAncPos: Vicon position measurement of the anchor system in
+        %     form (3 x 1)
+        %   - VicAncQuat: Vicon quaternion measurement of the anchor system
+        %     in form (4 x 1)
+        function [X,Y,P] = Flight(DataPrepObj,Marker,VicDrPos,VicDrQuat,VicAncPos,VicAncQuat)
             RangeArray = DataPrepObj.RangeArray;
             
-            Y = RangeArray;
-            X = ViconPos;
+            Dev = Marker.Dev;
+            MarkP1 = Marker.MarkP1;
+            MarkP2 = Marker.MarkP2;
+            MarkP3 = Marker.MarkP3;
+            MarkTag = Marker.MarkTag;
+            
+            Ta = diag(ones(1,4));
+            Ta(1:3,1:3) = quat2rotm(VicAncQuat');
+            Ta(1:3,4) = VicAncPos;
+            
+            A(:,1) = Ta*[(MarkP1+[0,0,Dev(1)])';1];
+            A(:,2) = Ta*[(MarkP1+[0,0,Dev(2)])';1];
+            A(:,3) = Ta*[(MarkP2+[0,0,Dev(1)])';1];
+            A(:,4) = Ta*[(MarkP2+[0,0,Dev(2)])';1];
+            A(:,5) = Ta*[(MarkP3+[0,0,Dev(1)])';1];
+            A(:,6) = Ta*[(MarkP3+[0,0,Dev(2)])';1];
+            A(4,:) = [];
+            
+            for i = 1:size(VicDrPos,2)
+                Td = diag(ones(1,4));
+                Td(1:3,1:3) = quat2rotm(VicDrQuat(:,i)');
+                Td(1:3,4) = VicDrPos(:,i);
+                
+                X(:,i) = Td*[MarkTag';1];
+            end
+            X(4,:) = [];
+            
+            for j = 1:6
+               B = repmat(A(:,j),1,size(VicDrPos,2));
+               P = vecnorm(B-X);
+               Y(j,:) = P-RangeArray(j,:);
+            end
         end
     end
 end
