@@ -18,6 +18,5 @@ function K = PoseKernel(r1,r2,s0,s1,s2)
 
     A = (1 - DotProduct./bsxfun(@times,nr1',nr2))/s1;
     B = bsxfun(@minus,nr1',nr2).^2/s2;
-    
     K = s0*exp(-A-B);
 end

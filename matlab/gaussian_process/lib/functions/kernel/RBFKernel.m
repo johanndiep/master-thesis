@@ -13,7 +13,7 @@
 
 function K = RBFKernel(r1,r2,s0,s1,s2)    
     nr1 = vecnorm(r1);
-    nr2  =vecnorm(r2);
+    nr2 = vecnorm(r2);
 
     B = bsxfun(@minus,nr1',nr2).^2/s1;
     

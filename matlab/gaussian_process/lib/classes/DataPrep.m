@@ -43,7 +43,7 @@ classdef DataPrep < handle
         %     form (3 x 1)
         %   - VicAncQuat: Vicon quaternion measurement of the anchor system
         %     in form (4 x 1)
-        function [X,Y,P] = Flight(DataPrepObj,Marker,VicDrPos,VicDrQuat,VicAncPos,VicAncQuat)
+        function [X,Y] = Flight(DataPrepObj,Marker,VicDrPos,VicDrQuat,VicAncPos,VicAncQuat)
             RangeArray = DataPrepObj.RangeArray;
             
             Dev = Marker.Dev;

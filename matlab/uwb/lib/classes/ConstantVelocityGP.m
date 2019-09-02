@@ -1,119 +1,123 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
 % Constant velocity model EKF with UWB measurement feedback. Thereby,
-% the Gaussian Process measurement model is used.
+% the Gaussian Process measurement model is used. In order to get the 
+% trained hyperparameters for each Gaussian Process model, run
+% "CovEvalMain.m" first.
 
 classdef ConstantVelocityGP < handle
     properties
         Xd
         Yd
         Kernel
-        Xid
         NoiseVar
         s0
         s1
         s2
-        ParamSPGP
+        AnchorPos
+        ParamGP
         Q
         X
         P
     end
     
     methods
-        % Initialize the EKF with the corresponding matrices for the 
-        % process and measurement model.
+        % Initialize the EKF with the corresponding parameters and matrices 
+        % for the process and measurement model.
         %   - Xd: Training data in form (3 x n)
         %   - Yd: Response training data in form (6 x n)
         %   - Kernel: Corresponding kernel function handle
-        %   - Xid: Pseudo-input data in form (3 x m x 6)
         %   - NoiseStd: Noise standard deviation in form (1 x 6)
         %   - s0/s1/s2: Scalar kernel parameters in form (1 x 6)
-        function Model = ConstantVelocityGP(Xd,Yd,Kernel,Xid,NoiseStd,s0,s1,s2)
-            if nargin == 7
-                s2 = ones(1,6);
-            end
-            
+        %   - AnchorPos: The position of the 6 anchors in form (6 x 3)
+        function Model = ConstantVelocityGP(Xd,Yd,Kernel,NoiseStd,s0,s1,s2,AnchorPos)            
             Model.Xd = Xd;
             Model.Yd = Yd;
             Model.Kernel = Kernel;
-            Model.Xid = Xid;
             Model.NoiseVar = NoiseStd^2;
             Model.s0 = s0;
             Model.s1 = s1;
             Model.s2 = s2;
+            Model.AnchorPos = AnchorPos;
             
-            Model.ParamSPGP = Model.ParameterSPGP;
+            Model.ParamGP = Model.ParameterGP;
 
             q = [0,0;0,1];
             Model.Q = blkdiag(q,q,q);
-            
+          
             Model.X = zeros(6,1); % (px,vx,py,vy,pz,vz)
             Model.P = 10*eye(6);
         end
 
         % In total, there are 6 different Gaussian Process models, one
         % for each anchor. Xd is a matrix which correspond to the 
-        % ground-truth positions measured by the VICON capture system 
-        % and Yd is the oberservation matrix which stores the range
-        % measurements between the tag and the corresponding anchor. 
-        % Thereby, this method calculate all the necessary model 
-        % parameters for Sparse Gaussian Process regressions.
+        % ground-truth positions of the tag measured by the VICON 
+        % capture system and Yd is the oberservation matrix which stores 
+        % the offset range measurements between the tag and the 
+        % corresponding anchor. Thereby, this method calculate all the 
+        % necessary model parameters for the Gaussian Process.
         %   - Model: Model object defined by the constructor
-        function ParamSPGP = ParameterSPGP(Model)
+        function ParamGP = ParameterGP(Model)
             Xd = Model.Xd;
             Yd = Model.Yd;
             Kernel = Model.Kernel;
-            Xid = Model.Xid;
             NoiseVar = Model.NoiseVar;
             s0 = Model.s0;
             s1 = Model.s1;
             s2 = Model.s2;            
             
             for i = 1:6
-                ParamSPGP(i) = SparseGaussianModel(Xd,Yd(i,:),Kernel,Xi(:,:,i), ...
+                ParamGP(i) = GaussianModel(Xd,Yd(i,:),Kernel, ...
                     NoiseVar(i),s0(i),s1(i),s2(i));
             end
         end
         
-        % For a given position, this method outputs its UWB measurement 
+        % For a given position, this method outputs its UWB range offset 
         % distributation by a mean vector and covariance matrix.
         %   - Model: Model object defined by the constructor
         %   - Xp: Prior state estimate in form (6 x 1)
-        function [Mean,Covariance] = PredictionSPGP(Model,Xp)
-            ParamSPGP = Model.ParamSPGP;
+        function [h,R] = PredictionGP(Model,Xp)
             Kernel = Model.Kernel;
-            
+            AnchorPos = Model.AnchorPos;
+            ParamGP = Model.ParamGP;
+
             Px = Xp(1:2:end);
+            
+            Diff = repmat(Px,1,6)-AnchorPos';
+            Abs = vecnorm(Diff)';
             
             Mean = zeros(6,1);
             CovVal = zeros(6,1);
-            
             for i = 1:6
-                [Mean(i),CovVal(i),~] = SparseGaussianPrediction(ParamSPGP(i),Px,Kernel);
+                [Mean(i),CovVal(i),~] = GaussianPrediction(ParamGP(i),Px,Kernel);
             end
             
-            Covariance = diag(CovVal);
+            h = Abs-Mean;
+            R = diag(CovVal);
         end
         
         % Error corrected measurement model and its linearization about
-        % current state with Gaussian Process
+        % current state with Gaussian Process.
         %   - Model: Model object defined by the constructor
         %   - Xp: Prior state estimate in form (6 x 1)
         function H = ErrCorrMeasModel(Model,Xp)
-            Xid = Model.Xid;
+            AnchorPos = Model.AnchorPos;            
             s0 = Model.s0;
             s1 = Model.s1;
             s2 = Model.s2;
-            ParamSPGP = Model.ParamSPGP;
+            ParamGP = Model.ParamGP;
             
             Px = Xp(1:2:end);
-            
             H = zeros(6,6);
             
+            Num = repmat(Px,1,6)-AnchorPos';
+            Denom = vecnorm(Num);
+            V = (Num./Denom)';
+            H(:,1) = V(:,1); H(:,3) = V(:,2); H(:,5) = V(:,3);
+            
             for i = 1:6
-                C = ParamSPGP(i).C;
-                KernDer = PosePerKernDeriv(Px,Xid(:,:,i),s0,s1,s2);
-                H(i,:) = C'*KernDer;
+                a = ParamGP(i).a;
+                
             end
         end      
         
@@ -139,7 +143,7 @@ classdef ConstantVelocityGP < handle
            X = Model.X;
            P = Model.P;
            
-           [h,R] = Model.PredictionSPGP(X);
+           [h,R] = Model.PredictionGP(X);
            H = Model.ErrCorrMeasModel(X);
            
            ZeroInd = find(Z==0);
