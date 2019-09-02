@@ -33,7 +33,7 @@ classdef DataPrep < handle
             X(:,2:3) = [];
         end
         
-        % Returns the dataset for the UWB flight experiment.
+        % Returns the offset for the UWB range measurement during flight.
         %   - DataPrepObj: Data preprocessing object defined by the constructor
         %   - Marker: Sruct containing the marker positions in corresponding 
         %     body-frame 
@@ -56,12 +56,12 @@ classdef DataPrep < handle
             Ta(1:3,1:3) = quat2rotm(VicAncQuat');
             Ta(1:3,4) = VicAncPos;
             
-            A(:,1) = Ta*[(MarkP1+[0,0,Dev(1)])';1];
-            A(:,2) = Ta*[(MarkP1+[0,0,Dev(2)])';1];
-            A(:,3) = Ta*[(MarkP2+[0,0,Dev(1)])';1];
-            A(:,4) = Ta*[(MarkP2+[0,0,Dev(2)])';1];
-            A(:,5) = Ta*[(MarkP3+[0,0,Dev(1)])';1];
-            A(:,6) = Ta*[(MarkP3+[0,0,Dev(2)])';1];
+            A(:,1) = Ta*[MarkP1'+[0;0;Dev(1)];1];
+            A(:,2) = Ta*[MarkP1'+[0;0;Dev(2)];1];
+            A(:,3) = Ta*[MarkP2'+[0;0;Dev(1)];1];
+            A(:,4) = Ta*[MarkP2'+[0;0;Dev(2)];1];
+            A(:,5) = Ta*[MarkP3'+[0;0;Dev(1)];1];
+            A(:,6) = Ta*[MarkP3'+[0;0;Dev(2)];1];
             A(4,:) = [];
             
             for i = 1:size(VicDrPos,2)
@@ -74,9 +74,9 @@ classdef DataPrep < handle
             X(4,:) = [];
             
             for j = 1:6
-               B = repmat(A(:,j),1,size(VicDrPos,2));
-               P = vecnorm(B-X);
-               Y(j,:) = P-RangeArray(j,:);
+               B = repmat(A(:,j),1,size(X,2));
+               P(j,:) = vecnorm(B-X);
+               Y(j,:) = P(j,:)-RangeArray(j,:);
             end
         end
     end

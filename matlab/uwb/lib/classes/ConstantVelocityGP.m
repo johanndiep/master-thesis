@@ -26,9 +26,9 @@ classdef ConstantVelocityGP < handle
         %   - Yd: Response training data in form (6 x n)
         %   - Kernel: Corresponding kernel function handle
         %   - Xid: Pseudo-input data in form (3 x m x 6)
-        %   - NoiseVar: Noise variance in form (1 x 6)
+        %   - NoiseStd: Noise standard deviation in form (1 x 6)
         %   - s0/s1/s2: Scalar kernel parameters in form (1 x 6)
-        function Model = ConstantVelocityGP(Xd,Yd,Kernel,Xid,NoiseVar,s0,s1,s2)
+        function Model = ConstantVelocityGP(Xd,Yd,Kernel,Xid,NoiseStd,s0,s1,s2)
             if nargin == 7
                 s2 = ones(1,6);
             end
@@ -37,7 +37,7 @@ classdef ConstantVelocityGP < handle
             Model.Yd = Yd;
             Model.Kernel = Kernel;
             Model.Xid = Xid;
-            Model.NoiseVar = NoiseVar;
+            Model.NoiseVar = NoiseStd^2;
             Model.s0 = s0;
             Model.s1 = s1;
             Model.s2 = s2;
