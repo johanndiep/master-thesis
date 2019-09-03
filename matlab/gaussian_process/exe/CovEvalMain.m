@@ -45,12 +45,12 @@ Xt(1,:) = x(:)';
 Xt(2,:) = y(:)';
 Xt(3,:) = ones(size(Xt(1,:)));
 
-ShowResults = false;
+ShowResults = true;
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
 %% Optimization
 
-for i = 1:6  
+for i = 6  
     % negative log marginal likelihood as objective function
     tic;
     LogLikelihood = @(p) getLogLikelihood(Xd,Yd(i,:),Kernel,p(1),p(2),p(3),p(4));
@@ -74,10 +74,27 @@ for i = 1:6
         zlabel("Standard Deviation [cm]");
         hold on;
         
-        % covariance intensities
+        % covariance evaluation
         Std = sqrt(diag(Covariance))*100;
         scatter3(Xt(1,:),Xt(2,:),Std,10,Std);
-        colormap(jet);
+        colormap(gray);
+        colorbar;
+        
+        grid on;
+        hold off;        
+        
+        figure()
+        
+        title("Flight Space Offset Evaluation");
+        xlabel("x-Axis [m]");
+        ylabel("y-Axis [m]");
+        zlabel("Range Offset [m]");
+        hold on;
+        
+        % offset evaluation
+        scatter3(Xd(1,:),Xd(2,:),Yd(i,:),5,'k+')
+        scatter3(Xt(1,:),Xt(2,:),Mean,10,Mean)
+        colormap(gray);
         colorbar;
         
         grid on;

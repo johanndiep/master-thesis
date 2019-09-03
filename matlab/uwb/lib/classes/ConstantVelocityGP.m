@@ -101,24 +101,45 @@ classdef ConstantVelocityGP < handle
         %   - Model: Model object defined by the constructor
         %   - Xp: Prior state estimate in form (6 x 1)
         function H = ErrCorrMeasModel(Model,Xp)
+            Kernel = Model.Kernel;
             AnchorPos = Model.AnchorPos;            
+            ParamGP = Model.ParamGP;
+            Xd = Model.Xd;
             s0 = Model.s0;
             s1 = Model.s1;
             s2 = Model.s2;
-            ParamGP = Model.ParamGP;
             
             Px = Xp(1:2:end);
-            H = zeros(6,6);
+            Hs = zeros(6,6);
             
             Num = repmat(Px,1,6)-AnchorPos';
             Denom = vecnorm(Num);
             V = (Num./Denom)';
-            H(:,1) = V(:,1); H(:,3) = V(:,2); H(:,5) = V(:,3);
+            Hs(:,1) = V(:,1); Hs(:,3) = V(:,2); Hs(:,5) = V(:,3);
             
             for i = 1:6
-                a = ParamGP(i).a;
+                nPx = vecnorm(Px);
+                nXd = vecnorm(Xd);
+                DotProduct = Px'*Xd; 
                 
+                K = Kernel(Px,Xd,s0(i),s1(i),s2(i));   
+                A = 1/s1*Xd./bsxfun(@times,nPx,nXd);                
+                B = 1/s1*(Xd*DotProduct)./bsxfun(@times,nPx^3,nXd);
+                C = 2/s2*Px;
+                D = 2/s2*(Px*nXd/nPx);
+                
+                E = repmat(K,1,3).*(A-B-C+D);
+                
+                Kderiv = zeros(size(Xd,2),6);
+                Kderiv(:,1) = E(1,:)'; 
+                Kderiv(:,3) = E(2,:)'; 
+                Kderiv(:,5) = E(3,:)';
+                
+                a = ParamGP(i).a;
+                Hg(i,:) = a'*Kderiv;
             end
+            
+            H = Hs+Hg;
         end      
         
         % Executes the EKF prior update step.
