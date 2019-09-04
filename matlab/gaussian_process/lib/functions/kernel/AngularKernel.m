@@ -5,19 +5,19 @@
 % Input:
 %   - r1: Data matrix in form (3 x nx)
 %   - r2: Data matrix in form (3 x ny)
-%   - s0/s1/s2: Scalar kernel parameters
+%   - s0/s1: Scalar kernel parameters
+%   - s2: Scalar kernel parameter for the PoseKernel, ignored here
 %
 % Output:
 %   - K: covariance matrix in the form (nx x ny)
 
-function K = PoseKernel(r1,r2,s0,s1,s2)
+function K = AngularKernel(r1,r2,s0,s1,s2)
     DotProduct = r1'*r2; 
     
     nr1 = vecnorm(r1);
     nr2  =vecnorm(r2);
 
     A = (1 - DotProduct./bsxfun(@times,nr1',nr2))/s1;
-    B = bsxfun(@minus,nr1',nr2).^2/s2;
     
-    K = s0*exp(-A-B);
+    K = s0*exp(-A);
 end

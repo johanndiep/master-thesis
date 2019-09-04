@@ -13,7 +13,6 @@ classdef ConstantVelocityGP < handle
         NoiseVar
         s0
         s1
-        s2
         AnchorPos
         ParamGP
         Q
@@ -28,16 +27,15 @@ classdef ConstantVelocityGP < handle
         %   - Yd: Response training data in form (6 x n)
         %   - Kernel: Corresponding kernel function handle
         %   - NoiseStd: Noise standard deviation in form (1 x 6)
-        %   - s0/s1/s2: Scalar kernel parameters in form (1 x 6)
+        %   - s0/s1: Scalar kernel parameters in form (1 x 6)
         %   - AnchorPos: The position of the 6 anchors in form (6 x 3)
-        function Model = ConstantVelocityGP(Xd,Yd,Kernel,NoiseStd,s0,s1,s2,AnchorPos)            
+        function Model = ConstantVelocityGP(Xd,Yd,Kernel,NoiseStd,s0,s1,AnchorPos)            
             Model.Xd = Xd;
             Model.Yd = Yd;
             Model.Kernel = Kernel;
-            Model.NoiseVar = NoiseStd^2;
+            Model.NoiseVar = NoiseStd.^2;
             Model.s0 = s0;
             Model.s1 = s1;
-            Model.s2 = s2;
             Model.AnchorPos = AnchorPos;
             
             Model.ParamGP = Model.ParameterGP;
@@ -45,7 +43,7 @@ classdef ConstantVelocityGP < handle
             q = [0,0;0,1];
             Model.Q = blkdiag(q,q,q);
           
-            Model.X = zeros(6,1); % (px,vx,py,vy,pz,vz)
+            Model.X = [1;0;1;0;1;0]; % (px,vx,py,vy,pz,vz)
             Model.P = 10*eye(6);
         end
 
@@ -64,11 +62,10 @@ classdef ConstantVelocityGP < handle
             NoiseVar = Model.NoiseVar;
             s0 = Model.s0;
             s1 = Model.s1;
-            s2 = Model.s2;            
             
             for i = 1:6
                 ParamGP(i) = GaussianModel(Xd,Yd(i,:),Kernel, ...
-                    NoiseVar(i),s0(i),s1(i),s2(i));
+                    NoiseVar(i),s0(i),s1(i));
             end
         end
         
@@ -100,17 +97,17 @@ classdef ConstantVelocityGP < handle
         % current state with Gaussian Process.
         %   - Model: Model object defined by the constructor
         %   - Xp: Prior state estimate in form (6 x 1)
-        function H = ErrCorrMeasModel(Model,Xp)
+        function H = ErrorCorrectionModel(Model,Xp)
             Kernel = Model.Kernel;
             AnchorPos = Model.AnchorPos;            
             ParamGP = Model.ParamGP;
             Xd = Model.Xd;
             s0 = Model.s0;
             s1 = Model.s1;
-            s2 = Model.s2;
             
             Px = Xp(1:2:end);
             Hs = zeros(6,6);
+            Hg = zeros(6,6);
             
             Num = repmat(Px,1,6)-AnchorPos';
             Denom = vecnorm(Num);
@@ -122,13 +119,11 @@ classdef ConstantVelocityGP < handle
                 nXd = vecnorm(Xd);
                 DotProduct = Px'*Xd; 
                 
-                K = Kernel(Px,Xd,s0(i),s1(i),s2(i));   
-                A = 1/s1*Xd./bsxfun(@times,nPx,nXd);                
-                B = 1/s1*(Xd*DotProduct)./bsxfun(@times,nPx^3,nXd);
-                C = 2/s2*Px;
-                D = 2/s2*(Px*nXd/nPx);
+                K = Kernel(Px,Xd,s0(i),s1(i));
+                A = 1/s1(i)*Xd./bsxfun(@times,nPx,nXd);                
+                B = 1/s1(i)*(Px*DotProduct)./bsxfun(@times,nPx^3,nXd);
                 
-                E = repmat(K,1,3).*(A-B-C+D);
+                E = s0(i)*repmat(K,3,1).*(A-B);
                 
                 Kderiv = zeros(size(Xd,2),6);
                 Kderiv(:,1) = E(1,:)'; 
@@ -138,8 +133,8 @@ classdef ConstantVelocityGP < handle
                 a = ParamGP(i).a;
                 Hg(i,:) = a'*Kderiv;
             end
-            
-            H = Hs+Hg;
+
+            H = Hs-Hg;
         end      
         
         % Executes the EKF prior update step.
@@ -165,7 +160,7 @@ classdef ConstantVelocityGP < handle
            P = Model.P;
            
            [h,R] = Model.PredictionGP(X);
-           H = Model.ErrCorrMeasModel(X);
+           H = Model.ErrorCorrectionModel(X);
            
            ZeroInd = find(Z==0);
            if isempty(ZeroInd) == 0

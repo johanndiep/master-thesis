@@ -12,7 +12,11 @@
 % Output:
 %   - Model: Trained model structure with all necessary variables
 
-function Model = GaussianModel(X,Y,Kernel,NoiseVariance,s0,s1,s2)    
+function Model = GaussianModel(X,Y,Kernel,NoiseVariance,s0,s1,s2)
+    if nargin == 6
+        s2 = 1;
+    end  
+
     K = Kernel(X,X,s0,s1,s2);
     Kn = K+NoiseVariance*eye(size(X,2));
     cKn = chol(Kn);

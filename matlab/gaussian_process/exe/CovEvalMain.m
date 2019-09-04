@@ -26,16 +26,15 @@ load('UWB-GP.mat'); % UWB and VICON measurements
 %% Data Preprocessing
 
 DataPrepObj = DataPrep(SaveRangeArr);
-[Xd,Yd] = DataPrepObj.Flight(Marker,SaveViconPos,SaveViconQuat, ...
+[Xd,Yd,AnchorPos] = DataPrepObj.Flight(Marker,SaveViconPos,SaveViconQuat, ...
     VicAncPos,VicAncQuat);
-    
-Kernel = @PoseKernel;
+
+Kernel = @AngularKernel;
 
 % pre-allocation
 NoiseStd = zeros(1,6);
 s0 = zeros(1,6);
 s1 = zeros(1,6);
-s2 = zeros(1,6);
 
 % testing space and testing data
 a = linspace(-1.5,1.5,100);
@@ -50,64 +49,76 @@ options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
 %% Optimization
 
-for i = 6  
+for i = 6
     % negative log marginal likelihood as objective function
     tic;
-    LogLikelihood = @(p) getLogLikelihood(Xd,Yd(i,:),Kernel,p(1),p(2),p(3),p(4));
-    s = fmincon(LogLikelihood,[1,1,1,1],[],[],[],[],[0,0,0,0],[Inf,Inf,Inf,Inf],[],options);
+    LogLikelihood = @(p) getLogLikelihood(Xd,Yd(i,:),Kernel,p(1),p(2),p(3));
+    s = fmincon(LogLikelihood,[1,1,1],[],[],[],[],[0,0,0],[Inf,Inf,Inf],[],options);
     time = toc;
     
     NoiseStd(i) = s(1);
     s0(i) = s(2);
     s1(i) = s(3);
-    s2(i) = s(4);
         
     if ShowResults == true        
         % prediction at testing data
-        [Mean,Covariance,LogLikelihood] = GaussianProcess(Xd,Yd(i,:),Xt,Kernel,s(1),s(2),s(3),s(4));
+        [Mean,Covariance,LogLikelihood] = GaussianProcess(Xd,Yd(i,:),Xt,Kernel,s(1),s(2),s(3));
         
         figure();
         
-        title("Flight Space Covariance Evaluation");
-        xlabel("x-Axis [m]");
-        ylabel("y-Axis [m]");
-        zlabel("Standard Deviation [cm]");
-        hold on;
-        
-        % covariance evaluation
-        Std = sqrt(diag(Covariance))*100;
-        scatter3(Xt(1,:),Xt(2,:),Std,10,Std);
-        colormap(gray);
-        colorbar;
-        
-        grid on;
-        hold off;        
-        
-        figure()
-        
-        title("Flight Space Offset Evaluation");
+        subplot(1,3,1);
+        title("Flight Offset");
         xlabel("x-Axis [m]");
         ylabel("y-Axis [m]");
         zlabel("Range Offset [m]");
+        xlim([-1.5,1.5]);
+        ylim([-1.5,1.5]);
+        hold on;
+        
+        scatter3(Xd(1,:),Xd(2,:),Yd(i,:),5,'k+')
+
+        grid on;
+        hold off;
+        
+        subplot(1,3,2);
+        title("Flight Space Offset Evaluation");
+        xlabel("x-Axis [m]");
+        ylabel("y-Axis [m]");
+        zlabel("Range Offset Prediction [m]");
         hold on;
         
         % offset evaluation
         scatter3(Xd(1,:),Xd(2,:),Yd(i,:),5,'k+')
         scatter3(Xt(1,:),Xt(2,:),Mean,10,Mean)
         colormap(gray);
-        colorbar;
+        
+        grid on;
+        hold off;
+        
+        subplot(1,3,3);
+        title("Flight Space Covariance Evaluation");
+        xlabel("x-Axis [m]");
+        ylabel("y-Axis [m]");
+        zlabel("Standard Deviation Prediction [cm]");
+        hold on;
+        
+        % covariance evaluation
+        Std = sqrt(diag(Covariance))*100;
+        scatter3(Xt(1,:),Xt(2,:),Std,10,Std);
+        colormap(gray);
         
         grid on;
         hold off;
         
         % results
-        disp("Kernel: PoseKernel");
+        disp("Kernel: AngularKernel");
         disp("Training time: "+time+" seconds");
         disp("Final negative sparse log marginal likelihood: "+LogLikelihood);
         disp("Number of training points: "+size(Xd,2));
         disp("Estimated noise standard deviation: "+s(1));
-        disp("Kernel hyperparameters: "+s(2)+"/"+s(3)+"/"+s(4));
+        disp("Kernel hyperparameters: "+s(2)+"/"+s(3));
     end
 end
 
-save('HyperparametersGP.mat','NoiseStd','s0','s1','s2');
+AnchorPos = AnchorPos';
+save('HyperparametersGP.mat','Xd','Yd','AnchorPos','NoiseStd','s0','s1');

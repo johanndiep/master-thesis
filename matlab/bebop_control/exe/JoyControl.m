@@ -23,7 +23,7 @@ JoySubscriber = rossubscriber('/spacenav/joy');
 BebopPublisher = BebopControl();
 
 FlyState = 0;
-DominantFlight = 1; % only fly in the main direction/rotation
+DominantFlight = 0; % only fly in the main direction/rotation
 
 while true
     JoyMessage = JoySubscriber.LatestMessage;
