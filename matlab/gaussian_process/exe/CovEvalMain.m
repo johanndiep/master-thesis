@@ -26,10 +26,10 @@ load('UWB-GP.mat'); % UWB and VICON measurements
 %% Data Preprocessing
 
 DataPrepObj = DataPrep(SaveRangeArr);
-[Xd,Yd,AnchorPos] = DataPrepObj.Flight(Marker,SaveViconPos,SaveViconQuat, ...
+[Xd,Yd,AnchorPos,~] = DataPrepObj.Flight(Marker,SaveViconPos,SaveViconQuat, ...
     VicAncPos,VicAncQuat);
 
-Kernel = @AngularKernel;
+Kernel = @RBFKernel;
 
 % pre-allocation
 NoiseStd = zeros(1,6);
@@ -45,11 +45,12 @@ Xt(2,:) = y(:)';
 Xt(3,:) = ones(size(Xt(1,:)));
 
 ShowResults = true;
+Save = true;
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
-%% Optimization
+%% Optimization and Prediction
 
-for i = 6
+for i = 1:6
     % negative log marginal likelihood as objective function
     tic;
     LogLikelihood = @(p) getLogLikelihood(Xd,Yd(i,:),Kernel,p(1),p(2),p(3));
@@ -75,6 +76,7 @@ for i = 6
         ylim([-1.5,1.5]);
         hold on;
         
+        % offset
         scatter3(Xd(1,:),Xd(2,:),Yd(i,:),5,'k+')
 
         grid on;
@@ -90,7 +92,7 @@ for i = 6
         % offset evaluation
         scatter3(Xd(1,:),Xd(2,:),Yd(i,:),5,'k+')
         scatter3(Xt(1,:),Xt(2,:),Mean,10,Mean)
-        colormap(gray);
+        colormap(gca,'gray');
         
         grid on;
         hold off;
@@ -105,7 +107,7 @@ for i = 6
         % covariance evaluation
         Std = sqrt(diag(Covariance))*100;
         scatter3(Xt(1,:),Xt(2,:),Std,10,Std);
-        colormap(gray);
+        colormap(gca,'jet');
         
         grid on;
         hold off;
@@ -120,5 +122,7 @@ for i = 6
     end
 end
 
-AnchorPos = AnchorPos';
-save('HyperparametersGP.mat','Xd','Yd','AnchorPos','NoiseStd','s0','s1');
+if Save == true
+    AnchorPos = AnchorPos';
+    save('HyperparametersGP.mat','Xd','Yd','AnchorPos','NoiseStd','s0','s1');
+end

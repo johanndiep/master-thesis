@@ -22,7 +22,7 @@ TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
 
-Kernel = @AngularKernel;
+Kernel = @RBFKernel;
 
 %% Preliminary
 
@@ -37,11 +37,12 @@ VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 ControlObj = Controller();
 
 % pre-allocation
-SaveViconPos = zeros(3,10000);
-SaveViconQuat = zeros(4,10000);
-SaveCurPos = zeros(3,10000);
-SaveCurVel = zeros(3,10000);
-SaveGoalPos = zeros(3,10000);
+SaveViconPos = zeros(3,2000);
+SaveViconQuat = zeros(4,2000);
+SaveCurPos = zeros(3,2000);
+SaveCurVel = zeros(3,2000);
+SaveGoalPos = zeros(3,2000);
+SaveRangeArr = zeros(6,2000);
 
 %% PID
 
@@ -55,7 +56,7 @@ ControlObj.Start; % starting the drone
 pause(5);
 
 % initializing the constant velocity modeled EKF
-Model = ConstantVelocityGP(Xd,Yd,Kernel,NoiseStd,s0,s1,s2,AnchorPos);
+Model = ConstantVelocityGP(Xd,Yd,Kernel,NoiseStd,s0,s1,AnchorPos);
 tic;
 
 i = 1;
@@ -91,6 +92,7 @@ while true
     SaveCurPos(:,i) = CurPos;
     SaveCurVel(:,i) = CurVel;
     SaveGoalPos(:,i) = GoalPos';
+    SaveRangeArr(:,i) = RangeArray;
     i = i+1;
 end
 
@@ -105,9 +107,10 @@ SaveViconQuat(:,CuttingIndex:end) = [];
 SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
+SaveRangeArr(:,CuttingIndex:end) = [];
 
 save('GPCircConData.mat','SaveViconPos','SaveViconQuat', ...
-    'SaveCurPos','SaveCurVel','SaveGoalPos');
+    'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr');
 
 clear; clc;
 

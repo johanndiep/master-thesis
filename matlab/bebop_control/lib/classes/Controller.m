@@ -21,7 +21,7 @@ classdef Controller
  
            ControlObject.P = 0.1; % forward/backward, left/right
            ControlObject.Ph = 0.3; % ascend/descend
-           ControlObject.Py = 2; % yaw-rotation
+           ControlObject.Py = 1; % yaw-rotation
            ControlObject.D = 0.15; % forward/backward, left/right
            ControlObject.Dh = 0; % ascend/descend
            

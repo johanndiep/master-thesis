@@ -88,11 +88,11 @@ rosshutdown; rosinit;
 %% Parameters
 
 % marker positions
-Marker.MarkTag = [24,-15,61]/1000;
-Marker.MarkP1 = [-1341,-1411,22]/1000;
-Marker.MarkP2 = [2613,111,-35]/1000;
-Marker.MarkP3 = [-1272,1300,13]/1000;
 Marker.Dev = [-0.04,2.116];
+Marker.MarkP1 = [-1205,-1574,19]/1000;
+Marker.MarkP2 = [2430,29,-38]/1000;
+Marker.MarkP3 = [-1225,1544,19]/1000;
+Marker.MarkTag = [-8,2,73]/1000;
 
 % initialize the trajectory object
 MidPoint = [0,0];
@@ -118,12 +118,12 @@ VicAncSub = rossubscriber('/vicon/Anchors_Johann/Anchors_Johann');
 ControlObj = Controller();
 
 % pre-allocation
-SaveViconPos = zeros(3,10000);
-SaveViconQuat = zeros(4,10000);
-SaveCurPos = zeros(3,10000);
-SaveCurVel = zeros(3,10000);
-SaveGoalPos = zeros(3,10000);
-SaveRangeArr = zeros(6,10000);
+SaveViconPos = zeros(3,2000);
+SaveViconQuat = zeros(4,2000);
+SaveCurPos = zeros(3,2000);
+SaveCurVel = zeros(3,2000);
+SaveGoalPos = zeros(3,2000);
+SaveRangeArr = zeros(6,2000);
 
 % anchor positions
 [VicAncPos,VicAncQuat] = getGroundTruth(VicAncSub);

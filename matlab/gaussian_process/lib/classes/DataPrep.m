@@ -34,7 +34,8 @@ classdef DataPrep < handle
         end
         
         % Returns the offsets for the UWB range measurement during flight
-        % as well as the anchor positions in VICON frame.
+        % as well as the anchor positions in VICON frame and the ground-truth
+        % ranges.
         %   - DataPrepObj: Data preprocessing object defined by the constructor
         %   - Marker: Sruct containing the marker positions in corresponding 
         %     body-frame 
@@ -44,7 +45,7 @@ classdef DataPrep < handle
         %     form (3 x 1)
         %   - VicAncQuat: Vicon quaternion measurement of the anchor system
         %     in form (4 x 1)
-        function [X,Y,A] = Flight(DataPrepObj,Marker,VicDrPos,VicDrQuat,VicAncPos,VicAncQuat)
+        function [X,Y,A,P] = Flight(DataPrepObj,Marker,VicDrPos,VicDrQuat,VicAncPos,VicAncQuat)
             RangeArray = DataPrepObj.RangeArray;
             
             Dev = Marker.Dev;

@@ -43,7 +43,7 @@ classdef ConstantVelocityGP < handle
             q = [0,0;0,1];
             Model.Q = blkdiag(q,q,q);
           
-            Model.X = [1;0;1;0;1;0]; % (px,vx,py,vy,pz,vz)
+            Model.X = [0;0;-1;0;1;0]; % (px,vx,py,vy,pz,vz)
             Model.P = 10*eye(6);
         end
 
@@ -115,15 +115,10 @@ classdef ConstantVelocityGP < handle
             Hs(:,1) = V(:,1); Hs(:,3) = V(:,2); Hs(:,5) = V(:,3);
             
             for i = 1:6
-                nPx = vecnorm(Px);
-                nXd = vecnorm(Xd);
-                DotProduct = Px'*Xd; 
-                
                 K = Kernel(Px,Xd,s0(i),s1(i));
-                A = 1/s1(i)*Xd./bsxfun(@times,nPx,nXd);                
-                B = 1/s1(i)*(Px*DotProduct)./bsxfun(@times,nPx^3,nXd);
+                A = 1/s1(i)*(Px-Xd);                
                 
-                E = s0(i)*repmat(K,3,1).*(A-B);
+                E = repmat(K,3,1).*A;
                 
                 Kderiv = zeros(size(Xd,2),6);
                 Kderiv(:,1) = E(1,:)'; 

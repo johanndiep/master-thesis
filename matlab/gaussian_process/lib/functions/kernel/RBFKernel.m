@@ -12,10 +12,9 @@
 %   - K: covariance matrix in the form (nx x ny)
 
 function K = RBFKernel(r1,r2,s0,s1,s2)    
-    nr1 = vecnorm(r1);
-    nr2 = vecnorm(r2);
-
-    B = bsxfun(@minus,nr1',nr2).^2/s1;
+    A = (vecnorm(r1).^2)';
+    B = vecnorm(r2).^2;
+    C = r1'*r2;
     
-    K = s0*exp(-0.5*B);
+    K = s0*exp(-0.5*(A-2*C+B)/s1);
 end
