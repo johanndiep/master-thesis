@@ -25,6 +25,13 @@ load('UWB-GP.mat'); % UWB and VICON measurements
 
 %% Data Preprocessing
 
+% removing zero measurements
+[r,c] = find(SaveRangeArr==0);
+SaveRangeArr(:,c) = [];
+SaveViconPos(:,c) = [];
+SaveViconQuat(:,c) = [];
+
+% data mapping
 DataPrepObj = DataPrep(SaveRangeArr);
 [Xd,Yd,AnchorPos,~] = DataPrepObj.Flight(Marker,SaveViconPos,SaveViconQuat, ...
     VicAncPos,VicAncQuat);

@@ -4,8 +4,9 @@
 % where the GP-augmented UWB range measurement model is used. The control
 % part is copied from "CircleControl.m".
 %
-% There are no assumptions for anchor placements. If the results should be
-% comparable with the UWB flight, follow the instructions on "UWBCircleControl.m".
+% For setup, follow the instructions written in "OffsetDataMain.m". This
+% program should be run after data gathering with "OffsetDataMain.m" and 
+% hyperparameter training with "CovEvalMain.m".
 % 
 % In order to optimize the performance, the following parameters 
 % need to be tuned:
@@ -16,6 +17,9 @@
 %   - R/Q-covariance in "ConstantVelocityEKF.m"
 %   - Goal state changing rate f in "TrajectoryGenerator.m"
 %   - Absolute goal velocity in "TrajectoryGenerator.m"
+%
+% To-Do:
+%   - Track antenna instead of object center of mass with VICON.
 
 clear; clc;
 

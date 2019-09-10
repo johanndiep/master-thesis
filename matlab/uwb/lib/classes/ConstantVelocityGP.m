@@ -40,7 +40,7 @@ classdef ConstantVelocityGP < handle
             
             Model.ParamGP = Model.ParameterGP;
 
-            q = [0,0;0,1];
+            q = [0,0;0,0.05];
             Model.Q = blkdiag(q,q,q);
           
             Model.X = [0;0;-1;0;1;0]; % (px,vx,py,vy,pz,vz)

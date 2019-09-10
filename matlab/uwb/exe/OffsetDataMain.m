@@ -89,10 +89,10 @@ rosshutdown; rosinit;
 
 % marker positions
 Marker.Dev = [-0.04,2.116];
-Marker.MarkP1 = [-1205,-1574,19]/1000;
-Marker.MarkP2 = [2430,29,-38]/1000;
-Marker.MarkP3 = [-1225,1544,19]/1000;
-Marker.MarkTag = [-8,2,73]/1000;
+Marker.MarkP1 = [-1296,-1706,30]/1000;
+Marker.MarkP2 = [2575,-180,-56]/1000;
+Marker.MarkP3 = [-1279,1886,26]/1000;
+Marker.MarkTag = [20,5,37]/1000;
 
 % initialize the trajectory object
 MidPoint = [0,0];
