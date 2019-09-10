@@ -3,6 +3,19 @@
 % With this script, the drone is commanded to fly a circular trajectory,
 % where the GP-augmented UWB range measurement model is used. The control
 % part is copied from "CircleControl.m".
+%
+% There are no assumptions for anchor placements. If the results should be
+% comparable with the UWB flight, follow the instructions on "UWBCircleControl.m".
+% 
+% In order to optimize the performance, the following parameters 
+% need to be tuned:
+%   - P/D-gains in "Controller.m"
+%   - Threshold for maximal rotation in "Controller.m"
+%   - Time interval between each EKF iteration
+%   - x/P-initialization in "ConstantVelocityEKF.m"
+%   - R/Q-covariance in "ConstantVelocityEKF.m"
+%   - Goal state changing rate f in "TrajectoryGenerator.m"
+%   - Absolute goal velocity in "TrajectoryGenerator.m"
 
 clear; clc;
 

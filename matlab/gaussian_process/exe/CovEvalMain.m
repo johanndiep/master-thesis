@@ -45,7 +45,7 @@ Xt(2,:) = y(:)';
 Xt(3,:) = ones(size(Xt(1,:)));
 
 ShowResults = true;
-Save = true;
+Save = false;
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
 %% Optimization and Prediction
@@ -108,6 +108,7 @@ for i = 1:6
         Std = sqrt(diag(Covariance))*100;
         scatter3(Xt(1,:),Xt(2,:),Std,10,Std);
         colormap(gca,'jet');
+        colorbar;
         
         grid on;
         hold off;
