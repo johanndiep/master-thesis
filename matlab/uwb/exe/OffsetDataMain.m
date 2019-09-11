@@ -89,17 +89,17 @@ rosshutdown; rosinit;
 
 % marker positions
 Marker.Dev = [-0.04,2.116];
-Marker.MarkP1 = [-1296,-1706,30]/1000;
-Marker.MarkP2 = [2575,-180,-56]/1000;
-Marker.MarkP3 = [-1279,1886,26]/1000;
-Marker.MarkTag = [20,5,37]/1000;
+Marker.MarkP1 = [-1313,-1684,38]/1000;
+Marker.MarkP2 = [2728,-134,-64]/1000;
+Marker.MarkP3 = [-1414,1819,26]/1000;
+Marker.MarkTag = [20,6,37]/1000;
 
 % initialize the trajectory object
 MidPoint = [0,0];
 Height = 1;
-AbsVel = 0.2;
+AbsVel = 0;
 Radius = 1;
-Frequency = 0.01;
+Frequency = 0.01; % one circle in 100 seconds
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
@@ -118,12 +118,12 @@ VicAncSub = rossubscriber('/vicon/Anchors_Johann/Anchors_Johann');
 ControlObj = Controller();
 
 % pre-allocation
-SaveViconPos = zeros(3,2000);
-SaveViconQuat = zeros(4,2000);
-SaveCurPos = zeros(3,2000);
-SaveCurVel = zeros(3,2000);
-SaveGoalPos = zeros(3,2000);
-SaveRangeArr = zeros(6,2000);
+SaveViconPos = zeros(3,5000);
+SaveViconQuat = zeros(4,5000);
+SaveCurPos = zeros(3,5000);
+SaveCurVel = zeros(3,5000);
+SaveGoalPos = zeros(3,5000);
+SaveRangeArr = zeros(6,5000);
 
 % anchor positions
 [VicAncPos,VicAncQuat] = getGroundTruth(VicAncSub);

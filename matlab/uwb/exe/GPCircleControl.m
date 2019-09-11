@@ -20,6 +20,7 @@
 %
 % To-Do:
 %   - Track antenna instead of object center of mass with VICON.
+%   - Figure out why there are mismatch at certain areas.
 
 clear; clc;
 
@@ -32,9 +33,9 @@ load('HyperparametersGP.mat'); % load the parameters
 % initialize the trajectory object
 MidPoint = [0,0];
 Height = 1;
-AbsVel = 0.2;
+AbsVel = 0;
 Radius = 1;
-Frequency = 0.01;
+Frequency = 0.0067; % one circle in 150 seconds
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
@@ -54,12 +55,12 @@ VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 ControlObj = Controller();
 
 % pre-allocation
-SaveViconPos = zeros(3,2000);
-SaveViconQuat = zeros(4,2000);
-SaveCurPos = zeros(3,2000);
-SaveCurVel = zeros(3,2000);
-SaveGoalPos = zeros(3,2000);
-SaveRangeArr = zeros(6,2000);
+SaveViconPos = zeros(3,5000);
+SaveViconQuat = zeros(4,5000);
+SaveCurPos = zeros(3,5000);
+SaveCurVel = zeros(3,5000);
+SaveGoalPos = zeros(3,5000);
+SaveRangeArr = zeros(6,5000);
 
 %% PID
 

@@ -116,7 +116,7 @@ classdef ConstantVelocityGP < handle
             
             for i = 1:6
                 K = Kernel(Px,Xd,s0(i),s1(i));
-                A = 1/s1(i)*(Px-Xd);                
+                A = -1/s1(i)*(Px-Xd);                
                 
                 E = repmat(K,3,1).*A;
                 

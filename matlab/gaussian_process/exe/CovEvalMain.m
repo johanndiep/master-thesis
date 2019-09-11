@@ -33,7 +33,7 @@ SaveViconQuat(:,c) = [];
 
 % data mapping
 DataPrepObj = DataPrep(SaveRangeArr);
-[Xd,Yd,AnchorPos,~] = DataPrepObj.Flight(Marker,SaveViconPos,SaveViconQuat, ...
+[Xd,Yd,AnchorPos,P] = DataPrepObj.Flight(Marker,SaveViconPos,SaveViconQuat, ...
     VicAncPos,VicAncQuat);
 
 Kernel = @RBFKernel;
@@ -97,7 +97,6 @@ for i = 1:6
         hold on;
         
         % offset evaluation
-        scatter3(Xd(1,:),Xd(2,:),Yd(i,:),5,'k+')
         scatter3(Xt(1,:),Xt(2,:),Mean,10,Mean)
         colormap(gca,'gray');
         
@@ -115,13 +114,12 @@ for i = 1:6
         Std = sqrt(diag(Covariance))*100;
         scatter3(Xt(1,:),Xt(2,:),Std,10,Std);
         colormap(gca,'jet');
-        colorbar;
         
         grid on;
         hold off;
         
         % results
-        disp("Kernel: AngularKernel");
+        disp("Kernel: RBFKernel");
         disp("Training time: "+time+" seconds");
         disp("Final negative sparse log marginal likelihood: "+LogLikelihood);
         disp("Number of training points: "+size(Xd,2));
