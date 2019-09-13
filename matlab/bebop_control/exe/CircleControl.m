@@ -52,12 +52,14 @@ rosshutdown; rosinit;
 % initialize the trajectory object
 MidPoint = [0,0];
 Height = 1;
-AbsVel = 0.2;
+AbsVel = 0;
 Radius = 1;
 Frequency = 0.01;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
+
+ChangeHeading = true; % drone is pointing in the direction of flight
 
 %% Preliminary
 
@@ -107,12 +109,21 @@ while true
     [CurPos,CurVel] = Model.UpdateMeasurement(ViconPos);
     tic;
     
-    % time-variant goal position and velocity
-    [GoalPos,GoalVel] = TrajObj.getCircleTrajectory(Time);
-    
-    % moving the drone towards the desired goal position while 
-    % keeping the orientation fixed
-    ControlObj.NoTurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat);
+    if ChangeHeading == false
+        % time-variant goal position and velocity
+        [GoalPos,GoalVel] = TrajObj.getCircleTrajectory(Time);
+        
+        % moving the drone towards the desired goal position while 
+        % keeping the orientation fixed
+        ControlObj.NoTurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat);
+    else
+        % time-variant goal position, yaw and velocity
+        [GoalPos,GoalYaw,GoalVel] = TrajObj.getYawCircleTraj(Time);
+        
+        % moving the drone towards the desired goal position while 
+        % keeping the orientation in the direction of flight
+        ControlObj.TurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat,GoalYaw);
+    end
     
     % saving to array
     SaveViconPos(:,i) = ViconPos;

@@ -73,7 +73,7 @@ classdef ConstantVelocityGP < handle
         % distributation by a mean vector and covariance matrix.
         %   - Model: Model object defined by the constructor
         %   - Xp: Prior state estimate in form (6 x 1)
-        function [h,R] = PredictionGP(Model,Xp)
+        function [h,R,Abs,CovVal] = PredictionGP(Model,Xp)
             Kernel = Model.Kernel;
             AnchorPos = Model.AnchorPos;
             ParamGP = Model.ParamGP;
@@ -150,13 +150,15 @@ classdef ConstantVelocityGP < handle
         % Executes the EKF posterior update step.
         %   - Model: Model object defined by the constructor
         %   - Z: Range measurements from UWB in form (6 x 1)        
-        function [CurPos,CurVel] = UpdateMeasurement(Model,Z)
+        function [CurPos,CurVel,t,Abs,CovVal] = UpdateMeasurement(Model,Z)
            X = Model.X;
            P = Model.P;
            
-           [h,R] = Model.PredictionGP(X);
+           [h,R,Abs,CovVal] = Model.PredictionGP(X);
            H = Model.ErrorCorrectionModel(X);
            
+           t = h;
+                      
            ZeroInd = find(Z==0);
            if isempty(ZeroInd) == 0
                Z(ZeroInd) = [];

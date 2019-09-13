@@ -4,13 +4,14 @@
 
 classdef Controller
     properties
+        Publisher
         P
         Ph
         Py
         D
         Dh
         TreshYaw
-        Publisher
+        YawJumpTresh
     end
     
     methods
@@ -19,13 +20,14 @@ classdef Controller
         function ControlObject = Controller()
            ControlObject.Publisher = BebopControl();
  
-           ControlObject.P = 0.22; % forward/backward, left/right
-           ControlObject.Ph = 0.3; % ascend/descend
-           ControlObject.Py = 0.5; % yaw-rotation
-           ControlObject.D = 0.28; % forward/backward, left/right
-           ControlObject.Dh = 0; % ascend/descend
+           ControlObject.P = 1.2; % forward/backward, left/right, [0.22 nr]
+           ControlObject.Ph = 0.3; % ascend/descend, [0.3 nr]
+           ControlObject.Py = 0.3; % yaw-rotation, [0.5 nr]
+           ControlObject.D = 0.4; % forward/backward, left/right, [0.28 nr]
+           ControlObject.Dh = 0; % ascend/descend, [0 nr]
            
            ControlObject.TreshYaw = 1/180*pi;
+           ControlObject.YawJumpTresh = pi;
         end
         
         % Calculating the translative proportional and differential error.
@@ -57,8 +59,17 @@ classdef Controller
         %   - GoalYaw: Goal yaw angle in scalar form
         function YawError = CalcYawError(ControlObject,CurYaw,GoalYaw)
             Py = ControlObject.Py;
+            YawJumpTresh = ControlObject.YawJumpTresh;
             
-            Pc = Py*(GoalYaw-CurYaw);
+            YawDiff = GoalYaw-CurYaw;
+            
+            % avoid rotation issue at +/- 0 radian
+            if abs(YawDiff) > YawJumpTresh
+                YawDiff = 2*pi+YawDiff;
+                Pc = Py*YawDiff;
+            else
+                Pc = Py*YawDiff;
+            end
             
             YawError = Pc;
         end
@@ -75,8 +86,7 @@ classdef Controller
             CurOrient = quat2eul(CurQuat');
             CurYaw = CurOrient(1);
             
-            TransError = ControlObject.CalcTransError(CurPos,GoalPos,CurVel, ...
-                GoalVel,CurQuat);
+            TransError = ControlObject.CalcTransError(CurPos,GoalPos,CurVel,GoalVel,CurQuat);
             
             if abs(CurYaw) > ControlObject.TreshYaw
                 YawError = ControlObject.CalcYawError(CurYaw,0);
@@ -87,6 +97,32 @@ classdef Controller
             else
                 ControlObject.Publisher.LinearCommand(TransError);
             end
+        end
+
+        % Position controller which corrects for positional displacement from 
+        % goal position. Thereby, the yaw angle is fixed.
+        %   - ControlObject: Controller object defined by the constructor
+        %   - CurPos: Current position of the drone in form (3 x 1)
+        %   - GoalPos: Goal position of the drone in form (3 x 1)
+        %   - CurVel: Current velocity of the drone in form (3 x 1)
+        %   - GoalVel: Goal velocity of the drone in form (3 x 1)
+        %   - CurQuat: Current orientation in quaternion (qw,wx,qy,qz) form (4 x 1)
+        %   - GoalYaw: Goal yaw of the drone in scalar form
+        function TurnFlight(ControlObject,CurPos,GoalPos,CurVel,GoalVel,CurQuat,GoalYaw)
+            CurOrient = quat2eul(CurQuat');
+            CurYaw = CurOrient(1);
+            
+            % avoid rotation issue at +/- Pi radian
+            if CurYaw < 0
+               CurYaw = 2*pi+CurYaw; 
+            end
+            
+            TransError = ControlObject.CalcTransError(CurPos,GoalPos,CurVel,GoalVel,CurQuat);
+            YawError = ControlObject.CalcYawError(CurYaw,GoalYaw);
+            
+            % first correct translational error, then rotational error
+            ControlObject.Publisher.LinearCommand(TransError);
+            ControlObject.Publisher.AngularCommand(YawError);
         end
     
         % Starting takeoff by slowly increasing motor speeds.

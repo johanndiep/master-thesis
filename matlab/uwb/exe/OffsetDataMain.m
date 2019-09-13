@@ -89,17 +89,17 @@ rosshutdown; rosinit;
 
 % marker positions
 Marker.Dev = [-0.04,2.116];
-Marker.MarkP1 = [-1313,-1684,38]/1000;
-Marker.MarkP2 = [2728,-134,-64]/1000;
-Marker.MarkP3 = [-1414,1819,26]/1000;
-Marker.MarkTag = [20,6,37]/1000;
+Marker.MarkP1 = [-2131,-990,42]/1000;
+Marker.MarkP2 = [1125,-1183,-21]/1000;
+Marker.MarkP3 = [1006,2172,-21]/1000;
+Marker.MarkTag = [20,6,38]/1000;
 
 % initialize the trajectory object
 MidPoint = [0,0];
 Height = 1;
 AbsVel = 0;
 Radius = 1;
-Frequency = 0.01; % one circle in 100 seconds
+Frequency = 0.005; % one circle in 200 seconds
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state

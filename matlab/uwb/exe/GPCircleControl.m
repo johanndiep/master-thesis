@@ -35,7 +35,7 @@ MidPoint = [0,0];
 Height = 1;
 AbsVel = 0;
 Radius = 1;
-Frequency = 0.0067; % one circle in 150 seconds
+Frequency = 0.005; % one circle in 200 seconds
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
@@ -61,6 +61,9 @@ SaveCurPos = zeros(3,5000);
 SaveCurVel = zeros(3,5000);
 SaveGoalPos = zeros(3,5000);
 SaveRangeArr = zeros(6,5000);
+Savet = zeros(6,5000);
+SaveAbs = zeros(6,5000);
+SaveCovVal = zeros(6,5000);
 
 %% PID
 
@@ -94,7 +97,7 @@ while true
     % prior and posterior update with process and measurement model
     dT = toc; Time = Time + dT;
     Model.UpdatePrior(dT);
-    [CurPos,CurVel] = Model.UpdateMeasurement(RangeArray);
+    [CurPos,CurVel,t,Abs,CovVal] = Model.UpdateMeasurement(RangeArray);
     tic;
     
      % time-variant goal position and velocity
@@ -111,6 +114,9 @@ while true
     SaveCurVel(:,i) = CurVel;
     SaveGoalPos(:,i) = GoalPos';
     SaveRangeArr(:,i) = RangeArray;
+    Savet(:,i) = t;
+    SaveAbs(:,i) = Abs;
+    SaveCovVal(:,i) = CovVal;
     i = i+1;
 end
 
@@ -126,9 +132,13 @@ SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
 SaveRangeArr(:,CuttingIndex:end) = [];
+Savet(:,CuttingIndex:end) = [];
+SaveAbs(:,CuttingIndex:end) = [];
+SaveCovVal(:,CuttingIndex:end) = [];
 
 save('GPCircConData.mat','SaveViconPos','SaveViconQuat', ...
-    'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr');
+    'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
+    'Savet','SaveAbs','SaveCovVal');
 
 clear; clc;
 
