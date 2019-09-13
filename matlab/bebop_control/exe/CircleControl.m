@@ -52,7 +52,7 @@ rosshutdown; rosinit;
 % initialize the trajectory object
 MidPoint = [0,0];
 Height = 1;
-AbsVel = 0;
+AbsVel = 0.1;
 Radius = 1;
 Frequency = 0.01;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
@@ -146,9 +146,14 @@ SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
 
-save('VicCircConData.mat','SaveViconPos','SaveViconQuat', ...
-    'SaveCurPos','SaveCurVel','SaveGoalPos');
-
+if ChangeHeading == false
+    save('VicCircConData.mat','SaveViconPos','SaveViconQuat', ...
+        'SaveCurPos','SaveCurVel','SaveGoalPos');
+else
+    save('VicYawCircConData.mat','SaveViconPos','SaveViconQuat', ...
+        'SaveCurPos','SaveCurVel','SaveGoalPos');    
+end
+    
 clear; clc;
 
 %% Plotting and Results

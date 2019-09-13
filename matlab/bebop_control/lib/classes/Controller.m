@@ -20,11 +20,11 @@ classdef Controller
         function ControlObject = Controller()
            ControlObject.Publisher = BebopControl();
  
-           ControlObject.P = 1.2; % forward/backward, left/right, [0.22 nr]
-           ControlObject.Ph = 0.3; % ascend/descend, [0.3 nr]
-           ControlObject.Py = 0.3; % yaw-rotation, [0.5 nr]
-           ControlObject.D = 0.4; % forward/backward, left/right, [0.28 nr]
-           ControlObject.Dh = 0; % ascend/descend, [0 nr]
+           ControlObject.P = 1.2; % forward/backward, left/right, [0.22nr/1.22r]
+           ControlObject.Ph = 0.3; % ascend/descend, [0.3nr/0.3r]
+           ControlObject.Py = 0.3; % yaw-rotation, [0.5nr/0.3r]
+           ControlObject.D = 0.2; % forward/backward, left/right, [0.28nr/0.4r]
+           ControlObject.Dh = 0; % ascend/descend, [0nr/0r]
            
            ControlObject.TreshYaw = 1/180*pi;
            ControlObject.YawJumpTresh = pi;
