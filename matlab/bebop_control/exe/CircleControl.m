@@ -52,9 +52,9 @@ rosshutdown; rosinit;
 % initialize the trajectory object
 MidPoint = [0,0];
 Height = 1;
-AbsVel = 0.1;
 Radius = 1;
 Frequency = 0.01;
+AbsVel = 2*Radius*pi*Frequency;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
@@ -68,7 +68,7 @@ JoySub = rossubscriber('/spacenav/joy');
 VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 
 % initializing a controller object
-ControlObj = Controller();
+ControlObj = Controller(ChangeHeading);
 
 % pre-allocation
 SaveViconPos = zeros(3,50000);
@@ -154,11 +154,13 @@ else
         'SaveCurPos','SaveCurVel','SaveGoalPos');    
 end
     
-clear; clc;
-
 %% Plotting and Results
 
-load('VicCircConData.mat');
+if ChangeHeading == false
+    load('VicCircConData.mat');
+else
+    load('VicYawCircConData.mat');
+end
 
 SaveViconPos = SaveViconPos(:,1:300:end);
 SaveViconQuat = SaveViconQuat(:,1:300:end);

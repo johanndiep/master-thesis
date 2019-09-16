@@ -89,20 +89,22 @@ rosshutdown; rosinit;
 
 % marker positions
 Marker.Dev = [-0.04,2.116];
-Marker.MarkP1 = [-2131,-990,42]/1000;
-Marker.MarkP2 = [1125,-1183,-21]/1000;
-Marker.MarkP3 = [1006,2172,-21]/1000;
+Marker.MarkP1 = [-1386,-2146,17]/1000;
+Marker.MarkP2 = [2850,597,-54]/1000;
+Marker.MarkP3 = [-1464,1549,37]/1000;
 Marker.MarkTag = [20,6,38]/1000;
 
 % initialize the trajectory object
 MidPoint = [0,0];
 Height = 1;
-AbsVel = 0;
 Radius = 1;
-Frequency = 0.005; % one circle in 200 seconds
+Frequency = 0.01;
+AbsVel = 2*Radius*pi*Frequency;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
+
+ChangeHeading = false; % drone is pointing in the direction of flight
 
 %% Preliminary
 
@@ -115,7 +117,7 @@ VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 VicAncSub = rossubscriber('/vicon/Anchors_Johann/Anchors_Johann');
 
 % initializing a controller object
-ControlObj = Controller();
+ControlObj = Controller(ChangeHeading);
 
 % pre-allocation
 SaveViconPos = zeros(3,5000);
@@ -163,12 +165,21 @@ while true
     [CurPos,CurVel] = Model.UpdateMeasurement(ViconPos);
     tic;
     
-    % time-variant goal position and velocity
-    [GoalPos,GoalVel] = TrajObj.getCircleTrajectory(Time);
-    
-    % moving the drone towards the desired goal position while 
-    % keeping the orientation fixed
-    ControlObj.NoTurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat);
+    if ChangeHeading == false
+        % time-variant goal position and velocity
+        [GoalPos,GoalVel] = TrajObj.getCircleTrajectory(Time);
+        
+        % moving the drone towards the desired goal position while
+        % keeping the orientation fixed
+        ControlObj.NoTurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat);
+    else
+        % time-variant goal position, yaw and velocity
+        [GoalPos,GoalYaw,GoalVel] = TrajObj.getYawCircleTraj(Time);
+        
+        % moving the drone towards the desired goal position while 
+        % keeping the orientation in the direction of flight
+        ControlObj.TurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat,GoalYaw);        
+    end
     
     % saving to array
     SaveViconPos(:,i) = ViconPos;

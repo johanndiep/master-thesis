@@ -45,7 +45,7 @@ classdef DataPrep < handle
         %     form (3 x 1)
         %   - VicAncQuat: Vicon quaternion measurement of the anchor system
         %     in form (4 x 1)
-        function [X,Y,A,P] = Flight(DataPrepObj,Marker,VicDrPos,VicDrQuat,VicAncPos,VicAncQuat)
+        function [X,Xa,Y,Ya,A,P] = Flight(DataPrepObj,Marker,VicDrPos,VicDrQuat,VicAncPos,VicAncQuat)
             RangeArray = DataPrepObj.RangeArray;
             
             Dev = Marker.Dev;
@@ -75,10 +75,16 @@ classdef DataPrep < handle
             end
             X(4,:) = [];
             
+            Xa = VicDrPos;
+            
             for j = 1:6
                B = repmat(A(:,j),1,size(X,2));
+               
                P(j,:) = vecnorm(B-X);
+               Pa(j,:) = vecnorm(B-Xa);
+               
                Y(j,:) = P(j,:)-RangeArray(j,:);
+               Ya(j,:) = Pa(j,:)-RangeArray(j,:);
             end
         end
     end

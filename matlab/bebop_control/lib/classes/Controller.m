@@ -17,17 +17,26 @@ classdef Controller
     methods
         % Initialize the control object with the publisher object 
         % for messaging, the chosen gains and the threshold for yaw-rotations. 
-        function ControlObject = Controller()
-           ControlObject.Publisher = BebopControl();
- 
-           ControlObject.P = 1.2; % forward/backward, left/right, [0.22nr/1.22r]
-           ControlObject.Ph = 0.3; % ascend/descend, [0.3nr/0.3r]
-           ControlObject.Py = 0.3; % yaw-rotation, [0.5nr/0.3r]
-           ControlObject.D = 0.2; % forward/backward, left/right, [0.28nr/0.4r]
-           ControlObject.Dh = 0; % ascend/descend, [0nr/0r]
-           
-           ControlObject.TreshYaw = 1/180*pi;
-           ControlObject.YawJumpTresh = pi;
+        function ControlObject = Controller(ChangeHeading)
+            ControlObject.Publisher = BebopControl();
+            
+            if ChangeHeading == false
+                ControlObject.P = 0.22; % forward/backward, left/right
+                ControlObject.Ph = 0.3; % ascend/descend
+                ControlObject.Py = 0.5; % yaw-rotation
+                ControlObject.D = 0.28; % forward/backward, left/right
+                ControlObject.Dh = 0; % ascend/descend
+                
+                ControlObject.TreshYaw = 1/180*pi;
+            else
+                ControlObject.P = 0.3; % forward/backward, left/right, [0.6f]
+                ControlObject.Ph = 0.3; % ascend/descend, [0.3f]
+                ControlObject.Py = 0.5; % yaw-rotation, [0.3f]
+                ControlObject.D = 0.4; % forward/backward, left/right, [0.5f]
+                ControlObject.Dh = 0; % ascend/descend, [0f]
+                
+                ControlObject.YawJumpTresh = pi;
+            end
         end
         
         % Calculating the translative proportional and differential error.
@@ -92,8 +101,7 @@ classdef Controller
                 YawError = ControlObject.CalcYawError(CurYaw,0);
                 
                 % first correct translational error, then rotational error
-                ControlObject.Publisher.LinearCommand(TransError);
-                ControlObject.Publisher.AngularCommand(YawError);
+                ControlObject.Publisher.MovementCommand([TransError,YawError]);
             else
                 ControlObject.Publisher.LinearCommand(TransError);
             end
@@ -121,8 +129,7 @@ classdef Controller
             YawError = ControlObject.CalcYawError(CurYaw,GoalYaw);
             
             % first correct translational error, then rotational error
-            ControlObject.Publisher.LinearCommand(TransError);
-            ControlObject.Publisher.AngularCommand(YawError);
+            ControlObject.Publisher.MovementCommand([TransError,YawError]);
         end
     
         % Starting takeoff by slowly increasing motor speeds.

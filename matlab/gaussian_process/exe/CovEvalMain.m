@@ -33,7 +33,7 @@ SaveViconQuat(:,c) = [];
 
 % data mapping
 DataPrepObj = DataPrep(SaveRangeArr);
-[Xd,Yd,AnchorPos,P] = DataPrepObj.Flight(Marker,SaveViconPos,SaveViconQuat, ...
+[Xd,Xa,Yd,Ya,AnchorPos,P] = DataPrepObj.Flight(Marker,SaveViconPos,SaveViconQuat, ...
     VicAncPos,VicAncQuat);
 
 Kernel = @RBFKernel;
@@ -60,7 +60,7 @@ options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 for i = 1:6
     % negative log marginal likelihood as objective function
     tic;
-    LogLikelihood = @(p) getLogLikelihood(Xd,Yd(i,:),Kernel,p(1),p(2),p(3));
+    LogLikelihood = @(p) getLogLikelihood(Xa,Ya(i,:),Kernel,p(1),p(2),p(3));
     s = fmincon(LogLikelihood,[1,1,1],[],[],[],[],[0,0,0],[Inf,Inf,Inf],[],options);
     time = toc;
     
@@ -70,7 +70,7 @@ for i = 1:6
         
     if ShowResults == true        
         % prediction at testing data
-        [Mean,Covariance,LogLikelihood] = GaussianProcess(Xd,Yd(i,:),Xt,Kernel,s(1),s(2),s(3));
+        [Mean,Covariance,LogLikelihood] = GaussianProcess(Xa,Ya(i,:),Xt,Kernel,s(1),s(2),s(3));
         
         figure();
         
@@ -84,7 +84,7 @@ for i = 1:6
         hold on;
         
         % offset
-        scatter3(Xd(1,:),Xd(2,:),Yd(i,:),5,'k+')
+        scatter3(Xa(1,:),Xa(2,:),Ya(i,:),5,'k+')
 
         grid on;
         hold off;
@@ -122,7 +122,7 @@ for i = 1:6
         disp("Kernel: RBFKernel");
         disp("Training time: "+time+" seconds");
         disp("Final negative sparse log marginal likelihood: "+LogLikelihood);
-        disp("Number of training points: "+size(Xd,2));
+        disp("Number of training points: "+size(Xa,2));
         disp("Estimated noise standard deviation: "+s(1));
         disp("Kernel hyperparameters: "+s(2)+"/"+s(3));
     end
@@ -130,5 +130,5 @@ end
 
 if Save == true
     AnchorPos = AnchorPos';
-    save('HyperparametersGP.mat','Xd','Yd','AnchorPos','NoiseStd','s0','s1');
+    save('HyperparametersGP.mat','Xd','Xa','Yd','Ya','AnchorPos','NoiseStd','s0','s1');
 end
