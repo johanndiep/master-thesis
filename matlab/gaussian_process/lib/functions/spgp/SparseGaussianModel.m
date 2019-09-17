@@ -14,6 +14,10 @@
 %   - Model: Trained model structure with all necessary variables
 
 function Model = SparseGaussianModel(X,Y,Kernel,Xi,NoiseVariance,s0,s1,s2)
+    if nargin == 7
+        s2 = 1;
+    end  
+    
     Kmm = Kernel(Xi,Xi,s0,s1,s2);    
     Knm = Kernel(X,Xi,s0,s1,s2);
 

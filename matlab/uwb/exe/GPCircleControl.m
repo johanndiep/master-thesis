@@ -43,6 +43,7 @@ Time = 0; % helper variable to estimate the time-variant goal state
 ChangeHeading = false; % drone is pointing in the direction of flight
 
 Kernel = @RBFKernel;
+Mode = "GP";
 
 %% Preliminary
 
@@ -99,7 +100,7 @@ while true
     % prior and posterior update with process and measurement model
     dT = toc; Time = Time + dT;
     Model.UpdatePrior(dT);
-    [CurPos,CurVel,t,Abs,CovVal] = Model.UpdateMeasurement(RangeArray);
+    [CurPos,CurVel,t,Abs,CovVal] = Model.UpdateMeasurement(RangeArray,Mode);
     tic;
     
     if ChangeHeading == false
