@@ -52,8 +52,8 @@ Xt(1,:) = x(:)';
 Xt(2,:) = y(:)';
 Xt(3,:) = ones(size(Xt(1,:)));
 
-ShowResults = false;
-Save = true;
+ShowResults = true;
+Save = false;
 Mode = "SPGP";
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
@@ -78,7 +78,7 @@ end
 
 %% Optimization and Prediction
 
-for i = 1:6
+for i = 1
     % negative log marginal likelihood as objective function
     if Mode == "GP"
         tic;
@@ -184,6 +184,6 @@ if Save == true
     if Mode == "GP"
         save('HyperparametersGP.mat','Xd','Xa','Yd','Ya','AnchorPos','NoiseStd','s0','s1');
     elseif Mode == "SPGP"
-        save('HyperparametersGP.mat','Xd','Xa','Yd','Ya','AnchorPos','NoiseStd','s0','s1','Xi');
+        save('HyperparametersSPGP.mat','Xd','Xa','Yd','Ya','AnchorPos','NoiseStd','s0','s1','Xi');
     end
 end

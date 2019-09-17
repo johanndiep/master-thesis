@@ -26,7 +26,7 @@ clear; clc;
 
 rosshutdown; rosinit;
 
-load('HyperparametersGP.mat'); % load the parameters
+load('HyperparametersSPGP.mat'); % load the parameters
 
 %% Parameters
 
