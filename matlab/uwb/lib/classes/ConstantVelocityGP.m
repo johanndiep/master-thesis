@@ -2,7 +2,7 @@
 %
 % Constant velocity model EKF with UWB measurement feedback. Thereby,
 % the (Sparse) Gaussian Process measurement model is used. In order to 
-% get the trained hyperparameters for each Gaussian Process model, run
+% get the trained hyperparameters for each (Sparse) Gaussian Process model, run
 % "CovEvalMain.m" first.
 
 classdef ConstantVelocityGP < handle
