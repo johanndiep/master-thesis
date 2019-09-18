@@ -83,7 +83,7 @@ pause(5);
 Model = ConstantVelocityGP(Xa,Ya,Kernel,NoiseStd,s0,s1,AnchorPos);
 tic;
 
-i = 1:6;
+i = 1;
 while true
     % stopping estimation when the right button on the Spacemouse is pushed
     JoyMessage = JoySub.LatestMessage;

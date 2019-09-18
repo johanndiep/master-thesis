@@ -89,9 +89,9 @@ rosshutdown; rosinit;
 
 % marker positions
 Marker.Dev = [-0.04,2.116];
-Marker.MarkP1 = [-1386,-2146,17]/1000;
-Marker.MarkP2 = [2850,597,-54]/1000;
-Marker.MarkP3 = [-1464,1549,37]/1000;
+Marker.MarkP1 = [-1346,-1816,18]/1000;
+Marker.MarkP2 = [2534,316,-33]/1000;
+Marker.MarkP3 = [-1189,1499,15]/1000;
 Marker.MarkTag = [20,6,38]/1000;
 
 % initialize the trajectory object
@@ -157,7 +157,7 @@ while true
     [ViconPos,ViconQuat] = getGroundTruth(VicDroneSub);
     
     % Reading UWB range measurements
-    RangeArray = RangeMeasObj.TagAnchorRanging;
+    RangeArray = RangeMeasObj.TagAnchorRanging;    
     
     % prior and posterior update with process and measurement model
     dT = toc; Time = Time + dT;
