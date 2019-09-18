@@ -89,9 +89,9 @@ rosshutdown; rosinit;
 
 % marker positions
 Marker.Dev = [-0.04,2.116];
-Marker.MarkP1 = [-1346,-1816,18]/1000;
-Marker.MarkP2 = [2534,316,-33]/1000;
-Marker.MarkP3 = [-1189,1499,15]/1000;
+Marker.MarkP1 = [-1350,-1814,15]/1000;
+Marker.MarkP2 = [2539,307,-27]/1000;
+Marker.MarkP3 = [-1189,1507,12]/1000;
 Marker.MarkTag = [20,6,38]/1000;
 
 % initialize the trajectory object

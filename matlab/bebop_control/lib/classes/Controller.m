@@ -21,10 +21,10 @@ classdef Controller
             ControlObject.Publisher = BebopControl();
             
             if ChangeHeading == false
-                ControlObject.P = 0.22; % forward/backward, left/right
+                ControlObject.P = 0.3; % forward/backward, left/right
                 ControlObject.Ph = 0.3; % ascend/descend
                 ControlObject.Py = 0.5; % yaw-rotation
-                ControlObject.D = 0.28; % forward/backward, left/right
+                ControlObject.D = 0.4; % forward/backward, left/right
                 ControlObject.Dh = 0; % ascend/descend
                 
                 ControlObject.TreshYaw = 1/180*pi;
