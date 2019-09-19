@@ -37,7 +37,7 @@ DataPrepObj = DataPrep(SaveRangeArr);
 [Xd,Xa,Yd,Ya,AnchorPos,P] = DataPrepObj.Flight(Marker,SaveViconPos,SaveViconQuat, ...
     VicAncPos,VicAncQuat);
 
-Kernel = @RBFKernel;
+Kernel = @DistanceKernel;
 
 % pre-allocation
 NoiseStd = zeros(1,6);
@@ -59,7 +59,7 @@ options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
 % generate pseudo-inputs
 if Mode == "SPGP"
-    m = 30;
+    m = 40;
 
     MidPoint = [0,0];
     Height = 1;
@@ -82,7 +82,7 @@ for i = 1:6
     % negative log marginal likelihood as objective function
     if Mode == "GP"
         tic;
-        LogLikelihood = @(p) getLogLikelihood(Xa,Ya(i,:),Kernel,p(1),p(2),p(3));
+        LogLikelihood = @(p) getLogLikelihood(AnchorPos(:,i)-Xa,Ya(i,:),Kernel,p(1),p(2),p(3));
         s = fmincon(LogLikelihood,[1,1,1],[],[],[],[],[0,0,0],[Inf,Inf,Inf],[],options);
         time = toc;
         
@@ -91,10 +91,10 @@ for i = 1:6
         s1(i) = s(3);
     elseif Mode == "SPGP"
         tic;
-        PreLogLikelihood = @(t) getLogLikelihood(Xa,Ya(i,:),Kernel,t(1),t(2),t(3));
+        PreLogLikelihood = @(t) getLogLikelihood(AnchorPos(:,i)-Xa,Ya(i,:),Kernel,t(1),t(2),t(3));
         u = fmincon(PreLogLikelihood,[1,1,1],[],[],[],[],[0,0,0],[Inf,Inf,Inf],[],options);
         
-        LogLikelihood = @(p) getSparseLogLikelihood(Xa,Ya(i,:),Kernel,[p;ones(1,m)],u(1),u(2),u(3));
+        LogLikelihood = @(p) getSparseLogLikelihood(AnchorPos(:,i)-Xa,Ya(i,:),Kernel,AnchorPos(:,i)-[p;ones(1,m)],u(1),u(2),u(3));
         s = fmincon(LogLikelihood,Si,[],[],[],[],[],[],nonlcon,options);
         time = toc;
         
@@ -107,11 +107,11 @@ for i = 1:6
     if ShowResults == true        
         % prediction at testing data
         if Mode == "GP"
-            [Mean,Covariance,LogLikelihood] = GaussianProcess(Xa,Ya(i,:),Xt,Kernel, ...
-                NoiseStd(i),s0(i),s1(i));
+            [Mean,Covariance,LogLikelihood] = GaussianProcess(AnchorPos(:,i)-Xa,Ya(i,:),AnchorPos(:,i)-Xt, ...
+                Kernel,NoiseStd(i),s0(i),s1(i));
         elseif Mode == "SPGP"
-            [Mean,Covariance,LogLikelihood] = SparseGaussianProcess(Xa,Ya(i,:),Xt,Kernel, ...
-                Xi(:,:,i),NoiseStd(i),s0(i),s1(i));
+            [Mean,Covariance,LogLikelihood] = SparseGaussianProcess(AnchorPos(:,i)-Xa,Ya(i,:),AnchorPos(:,i)-Xt, ...
+                Kernel,AnchorPos(:,i)-Xi(:,:,i),NoiseStd(i),s0(i),s1(i));
         end
         
         figure();
@@ -121,12 +121,11 @@ for i = 1:6
         xlabel("x-Axis [m]");
         ylabel("y-Axis [m]");
         zlabel("Range Offset [m]");
-        xlim([-1.5,1.5]);
-        ylim([-1.5,1.5]);
         hold on;
         
         % offset
-        scatter3(Xa(1,:),Xa(2,:),Ya(i,:),5,'k+')
+        scatter3(Xa(1,:),Xa(2,:),Ya(i,:),5,'k+');
+        scatter3(AnchorPos(1,i),AnchorPos(2,i),0,'ro');
 
         grid on;
         hold off;
@@ -139,8 +138,9 @@ for i = 1:6
         hold on;
         
         % offset evaluation
-        scatter3(Xt(1,:),Xt(2,:),Mean,10,Mean)
+        scatter3(Xt(1,:),Xt(2,:),Mean,10,Mean);
         colormap(gca,'gray');
+        colorbar;
         
         grid on;
         hold off;
@@ -156,6 +156,7 @@ for i = 1:6
         Std = sqrt(diag(Covariance))*100;
         scatter3(Xt(1,:),Xt(2,:),Std,10,Std);
         colormap(gca,'jet');
+        colorbar;
         
         grid on;
         hold off;

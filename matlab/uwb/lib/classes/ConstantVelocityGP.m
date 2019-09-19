@@ -51,9 +51,6 @@ classdef ConstantVelocityGP < handle
             else
                 Model.ParamSPGP = Model.ParameterSPGP;
             end
-
-            q = [0,0;0,0.05];
-            Model.Q = blkdiag(q,q,q);
           
             Model.X = zeros(6,1); % (px,vx,py,vy,pz,vz)
             Model.P = 10*eye(6);
@@ -74,9 +71,10 @@ classdef ConstantVelocityGP < handle
             NoiseVar = Model.NoiseVar;
             s0 = Model.s0;
             s1 = Model.s1;
+            AnchorPos = Model.AnchorPos;
             
             for i = 1:6
-                ParamGP(i) = GaussianModel(Xd,Yd(i,:),Kernel, ...
+                ParamGP(i) = GaussianModel(AnchorPos(i,:)'-Xd,Yd(i,:),Kernel, ...
                     NoiseVar(i),s0(i),s1(i));
             end
         end
@@ -119,7 +117,8 @@ classdef ConstantVelocityGP < handle
             Mean = zeros(6,1);
             CovVal = zeros(6,1);
             for i = 1:6
-                [Mean(i),CovVal(i),~] = GaussianPrediction(ParamGP(i),Px,Kernel);
+                [Mean(i),CovVal(i),~] = GaussianPrediction(ParamGP(i), ...
+                    AnchorPos(i,:)'-Px,Kernel);
             end
             
             h = Abs-Mean;
@@ -153,7 +152,7 @@ classdef ConstantVelocityGP < handle
         end
         
         % Error corrected measurement model and its linearization about
-        % current state with Gaussian Process. Hereby, the RBF Kernel is
+        % current state with Gaussian Process. Hereby, the Distance Kernel is
         % used.
         %   - Model: Model object defined by the constructor
         %   - Xp: Prior state estimate in form (6 x 1)
@@ -175,8 +174,12 @@ classdef ConstantVelocityGP < handle
             Hs(:,1) = V(:,1); Hs(:,3) = V(:,2); Hs(:,5) = V(:,3);
             
             for i = 1:6
-                K = Kernel(Px,Xd,s0(i),s1(i));
-                A = -1/s1(i)*(Px-Xd);                
+                K = Kernel(AnchorPos(i,:)'-Px,AnchorPos(i,:)'-Xd,s0(i),s1(i));
+                
+                n1 = vecnorm(AnchorPos(i,:)'-Px);
+                n2 = vecnorm(AnchorPos(i,:)'-Xd);
+                
+                A = 1/s1(i)*(n1-n2)*1/n1.*(AnchorPos(i,:)'-Px);                
                 
                 E = repmat(K,3,1).*A;
                 
@@ -238,7 +241,9 @@ classdef ConstantVelocityGP < handle
         function UpdatePrior(Model,dT)
             X = Model.X;
             P = Model.P;
-            Q = Model.Q;
+
+            q = [0.25*dT^4,0.5*dT^3;0.5*dT^3,dT^2]*0.125;
+            Q = blkdiag(q,q,q);
             
             a = [1,dT;0,1];
             A = blkdiag(a,a,a);

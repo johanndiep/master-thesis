@@ -42,7 +42,7 @@ Time = 0; % helper variable to estimate the time-variant goal state
 
 ChangeHeading = false; % drone is pointing in the direction of flight
 
-Kernel = @RBFKernel;
+Kernel = @DistanceKernel;
 Mode = "GP";
 
 %% Preliminary
