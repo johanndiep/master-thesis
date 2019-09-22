@@ -53,7 +53,7 @@ Xt(2,:) = y(:)';
 Xt(3,:) = ones(size(Xt(1,:)));
 
 ShowResults = true;
-Save = false;
+Save = true;
 Mode = "GP";
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
@@ -125,7 +125,7 @@ for i = 1:6
         
         % offset
         scatter3(Xa(1,:),Xa(2,:),Ya(i,:),5,'k+');
-        scatter3(AnchorPos(1,i),AnchorPos(2,i),0,'ro');
+        scatter3(AnchorPos(1,i),AnchorPos(2,i),0,'bx');
 
         grid on;
         hold off;
@@ -139,7 +139,7 @@ for i = 1:6
         
         % offset evaluation
         scatter3(Xt(1,:),Xt(2,:),Mean,10,Mean);
-        colormap(gca,'gray');
+        colormap(gca,'jet');
         colorbar;
         
         grid on;

@@ -19,9 +19,7 @@ classdef ConstantVelocityUWB < handle
         function Model = ConstantVelocityUWB(AnchorPos)
             Model.AnchorPos = AnchorPos;
             
-            q = [0,0;0,1];
-            Model.Q = blkdiag(q,q,q);
-            Model.R = diag([0.05,0.05,0.05,0.05,0.05,0.05]);
+            Model.R = diag([0.1,0.05,0.1,0.05,0.1,0.05]);
             
             Model.X = zeros(6,1); % (px,vx,py,vy,pz,vz)
             Model.P = 10*eye(6);
@@ -51,7 +49,9 @@ classdef ConstantVelocityUWB < handle
         function UpdatePrior(Model,dT)
             X = Model.X;
             P = Model.P;
-            Q = Model.Q;
+
+            q = [0.25*dT^4,0.5*dT^3;0.5*dT^3,dT^2]*3;
+            Q = blkdiag(q,q,q);
             
             a = [1,dT;0,1];
             A = blkdiag(a,a,a);

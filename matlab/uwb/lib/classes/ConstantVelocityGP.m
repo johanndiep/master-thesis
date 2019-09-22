@@ -91,10 +91,11 @@ classdef ConstantVelocityGP < handle
             NoiseVar = Model.NoiseVar;
             s0 = Model.s0;
             s1 = Model.s1;
+            AnchorPos = Model.AnchorPos;
             
             for i = 1:6
-                ParamSPGP(i) = SparseGaussianModel(Xd,Yd(i,:),Kernel, ...
-                    Xi(:,:,i),NoiseVar(i),s0(i),s1(i));
+                ParamSPGP(i) = SparseGaussianModel(AnchorPos(i,:)'-Xd,Yd(i,:), ...
+                    Kernel,AnchorPos(i,:)'-Xi(:,:,i),NoiseVar(i),s0(i),s1(i));
             end
         end
         
@@ -144,7 +145,8 @@ classdef ConstantVelocityGP < handle
             Mean = zeros(6,1);
             CovVal = zeros(6,1);
             for i = 1:6
-                [Mean(i),CovVal(i),~] = SparseGaussianPrediction(ParamSPGP(i),Px,Kernel);
+                [Mean(i),CovVal(i),~] = SparseGaussianPrediction(ParamSPGP(i), ...
+                    AnchorPos(i,:)'-Px,Kernel);
             end
             
             h = Abs-Mean;
@@ -182,7 +184,7 @@ classdef ConstantVelocityGP < handle
                 A = 1/s1(i)*(n1-n2)*1/n1.*(AnchorPos(i,:)'-Px);                
                 
                 E = repmat(K,3,1).*A;
-                
+
                 Kderiv = zeros(size(Xd,2),6);
                 Kderiv(:,1) = E(1,:)'; 
                 Kderiv(:,3) = E(2,:)'; 
@@ -191,7 +193,7 @@ classdef ConstantVelocityGP < handle
                 a = ParamGP(i).a;
                 Hg(i,:) = a'*Kderiv;
             end
-
+            
             H = Hs-Hg;
         end      
         
@@ -218,8 +220,12 @@ classdef ConstantVelocityGP < handle
             Hs(:,1) = V(:,1); Hs(:,3) = V(:,2); Hs(:,5) = V(:,3);
             
             for i = 1:6
-                K = Kernel(Px,Xi(:,:,i),s0(i),s1(i));
-                A = -1/s1(i)*(Px-Xi(:,:,i));                
+                K = Kernel(AnchorPos(i,:)'-Px,AnchorPos(i,:)'-Xi(:,:,i),s0(i),s1(i));
+
+                n1 = vecnorm(AnchorPos(i,:)'-Px);
+                n2 = vecnorm(AnchorPos(i,:)'-Xi(:,:,i));
+                
+                A = 1/s1(i)*(n1-n2)*1/n1.*(AnchorPos(i,:)'-Px);
                 
                 E = repmat(K,3,1).*A;
                 
@@ -242,7 +248,7 @@ classdef ConstantVelocityGP < handle
             X = Model.X;
             P = Model.P;
 
-            q = [0.25*dT^4,0.5*dT^3;0.5*dT^3,dT^2]*0.125;
+            q = [0.25*dT^4,0.5*dT^3;0.5*dT^3,dT^2]*3;
             Q = blkdiag(q,q,q);
             
             a = [1,dT;0,1];

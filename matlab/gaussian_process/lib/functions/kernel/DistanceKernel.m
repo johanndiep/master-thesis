@@ -1,6 +1,6 @@
 % Johann Diep (jdiep@student.ethz.ch) - September 2019
 %
-% This function calculates the pose kernel matrix.
+% This function calculates the distance kernel matrix.
 %
 % Input:
 %   - r1: Data matrix in form (3 x nx)

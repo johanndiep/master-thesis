@@ -91,19 +91,19 @@
 
 clear; clc;
 
-rosshutdown; rosinit;
+rosinit;
 
 load('AnchorPos.mat'); % load the anchor positions
 
 %% Parameters
 
 % coordinate transformation
-T = diag(ones(1,4));
-T(1:3,4) = [-0.23;-0.245;0.245];
-A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
+% T = diag(ones(1,4));
+% T(1:3,4) = [-0.23;-0.245;0.245];
+% A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 
 % initialize the trajectory object
-MidPoint = [1.2,1.3];
+MidPoint = [0,0];
 Height = 1;
 Radius = 1;
 Frequency = 0.01;
@@ -112,7 +112,7 @@ TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
 
-ChangeHeading = true; % drone is pointing in the direction of flight
+ChangeHeading = false; % drone is pointing in the direction of flight
 
 %% Preliminary
 
@@ -132,6 +132,7 @@ SaveViconQuat = zeros(4,10000);
 SaveCurPos = zeros(3,10000);
 SaveCurVel = zeros(3,10000);
 SaveGoalPos = zeros(3,10000);
+SaveRangeArr = zeros(6,10000);
 
 %% PID
 
@@ -145,7 +146,7 @@ ControlObj.Start; % starting the drone
 pause(5);
 
 % initializing the constant velocity modeled EKF
-Model = ConstantVelocityUWB(AnchorPos);
+Model = ConstantVelocityUWB(A');
 tic;
 
 i = 1;
@@ -190,6 +191,7 @@ while true
     SaveCurPos(:,i) = CurPos;
     SaveCurVel(:,i) = CurVel;
     SaveGoalPos(:,i) = GoalPos';
+    SaveRangeArr(:,i) = RangeArray;
     i = i+1;
 end
 
@@ -206,7 +208,7 @@ SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
 
 save('UWBCircConData.mat','SaveViconPos','SaveViconQuat', ...
-    'SaveCurPos','SaveCurVel','SaveGoalPos');
+    'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr');
 
 clear; clc;
 
@@ -226,8 +228,8 @@ title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([-0.1,3]);
-ylim([-0.1,3]);
+xlim([-2,2]);
+ylim([-2,2]);
 zlim([0,2.5]);
 hold on;
 
