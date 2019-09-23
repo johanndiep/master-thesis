@@ -2,7 +2,7 @@
 %
 % This class contains methods which convert the gathered data from the
 % Ultra-Wideband system into the desired format for Gaussian Process analysis.
-% This is especially useful for exporting data to Python for parameter
+% This is can also be useful for exporting data to Python for parameter
 % learning.
 
 classdef DataPrep < handle
@@ -34,7 +34,7 @@ classdef DataPrep < handle
         end
         
         % Returns the offsets for the UWB range measurement during flight
-        % as well as the anchor positions in VICON frame and the ground-truth
+        % as well as the anchor positions in VICON inertial frame and the ground-truth
         % ranges.
         %   - DataPrepObj: Data preprocessing object defined by the constructor
         %   - Marker: Sruct containing the marker positions in corresponding 

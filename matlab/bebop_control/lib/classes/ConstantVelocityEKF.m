@@ -5,7 +5,6 @@
 classdef ConstantVelocityEKF < handle
     properties
         H
-        Q
         R
         X
         P
@@ -17,8 +16,6 @@ classdef ConstantVelocityEKF < handle
         function Model = ConstantVelocityEKF()
             Model.H = [1,0,0,0,0,0;0,0,1,0,0,0;0,0,0,0,1,0];
             
-            q = [0,0;0,1];
-            Model.Q = blkdiag(q,q,q);
             Model.R = diag([0.01,0.01,0.01]);
 
             Model.X = zeros(6,1); % (px,vx,py,vy,pz,vz)
@@ -31,7 +28,9 @@ classdef ConstantVelocityEKF < handle
         function UpdatePrior(Model,dT)
             X = Model.X;
             P = Model.P;
-            Q = Model.Q;
+
+            q = [0.25*dT^4,0.5*dT^3;0.5*dT^3,dT^2]*3;
+            Q = blkdiag(q,q,q);
             
             a = [1,dT;0,1];
             A = blkdiag(a,a,a);

@@ -1,12 +1,12 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
 % Standard Gaussian Process is prohibitive for large data sets when it comes
-% to prediction speed. This script executes the sparse Gaussian Process 
-% prediction described in "Sparse Gaussian Processes using Pseudo-inputs" 
-% by Edward Snelson and Zoubin Ghahramani. An arbitrary function is defined 
-% as a function handle. Data then can be generated which can include a noise 
-% term. The underlying function is then approximated with a mean and variance 
-% for each testing input given the data. 
+% to prediction speed as well as predicting local uncertainties. This script 
+% executes the sparse Gaussian Process prediction described in "Sparse Gaussian 
+% Processes using Pseudo-inputs" by Edward Snelson and Zoubin Ghahramani. 
+% An arbitrary function is defined as a function handle. Data then can be 
+% generated which can include a noise term. The underlying function is then 
+% approximated with a mean and variance for each testing input given the data. 
 %
 % In order to optimize the performance, the following parameters need to 
 % be tuned:
@@ -26,7 +26,7 @@ f = @(x) sin(x); % ground-truth underlying function
 s0 = 1; s1 = 1; % kernel parameters initialization
 NoiseStd = 0.5; % standard deviation for noise
 a = -pi; b = pi; % interval of training data [a,b]
-t = 1000; % number of training data
+t = 100; % number of training data
 X = a + (b-a).*rand(1,t); % training data
 Y = f(X)+normrnd(0,NoiseStd,[1,size(X,2)]); % response data
 Xt = linspace(a,b,2000); % testing data
@@ -65,14 +65,14 @@ figure();
 
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
 hold on;
-plot(Xt,f(Xt),'b--');
+plot(Xt,f(Xt),'b');
 plot(X,Y,'ko','MarkerSize',3);
 for i = 1:m
    xline(s(i),':r','LineWidth',0.5);
 end
 
 legend('Standard Deviation','Prediction','Ground-Truth: y=sin(x)',...
-    'Training Data','Pseudo-input locations','Location','northeast');
+    'Training Data','Pseudo-input Locations','Location','northeast');
 
 grid on;
 hold off;

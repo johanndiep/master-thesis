@@ -11,16 +11,13 @@
 % In order to optimize the performance, the following parameters 
 % need to be tuned:
 %   - P/D-gains in "Controller.m"
-%   - Threshold for maximal rotation in "Controller.m"
-%   - Time interval between each EKF iteration
 %   - x/P-initialization in "ConstantVelocityEKF.m"
 %   - R/Q-covariance in "ConstantVelocityEKF.m"
 %   - Goal state changing rate f in "TrajectoryGenerator.m"
-%   - Absolute goal velocity in "TrajectoryGenerator.m"
 %
 % To-Do:
-%   - Track antenna instead of object center of mass with VICON.
 %   - Figure out why there are mismatch at certain areas.
+%     [The mismatch also happens at UWB flight.]
 
 clear; clc;
 
@@ -42,7 +39,7 @@ Time = 0; % helper variable to estimate the time-variant goal state
 
 ChangeHeading = false; % drone is pointing in the direction of flight
 
-Kernel = @RBFKernel;
+Kernel = @DistanceKernel;
 Mode = "SPGP";
 
 %% Preliminary

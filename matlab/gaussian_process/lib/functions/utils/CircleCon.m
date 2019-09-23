@@ -1,11 +1,10 @@
 % Johann Diep (jdiep@student.ethz.ch) - September 2019
 %
 % Calculates the circular condition for "fmincon" MATLAB function. For more
-% informations, check out
-% https://ch.mathworks.com/help/optim/ug/fmincon.html.
+% informations, check out https://ch.mathworks.com/help/optim/ug/fmincon.html.
 %
 % Input:
-%   - p: Pseudo-input data in form (3 x m)
+%   - p: x/y coordinates of pseudo-input data in form (2 x m)
 %   - MidPoint: Midpoint of circular trajectory in form (1 x 2)
 %   - Radius: Radius of circle
 % 

@@ -62,7 +62,8 @@ classdef ConstantVelocityGP < handle
         % capture system and Yd is the oberservation matrix which stores 
         % the offset range measurements between the tag and the 
         % corresponding anchor. Thereby, this method calculates all the 
-        % necessary model parameters for the Gaussian Process.
+        % necessary model parameters for the Gaussian Process using the 
+        % distance kernel.
         %   - Model: Model object defined by the constructor
         function ParamGP = ParameterGP(Model)
             Xd = Model.Xd;
@@ -81,7 +82,7 @@ classdef ConstantVelocityGP < handle
         
         % This method is similiar to the "ParameterGP"-method, except that
         % it calculates all the necessary model parameters for the Sparse
-        % Gaussian Process.
+        % Gaussian Process using the distance kernel.
         %    - Model: Model object defined by the constructor
         function ParamSPGP = ParameterSPGP(Model)
             Xd = Model.Xd;
@@ -101,8 +102,8 @@ classdef ConstantVelocityGP < handle
         
         % For a given position, this method outputs its UWB range offset 
         % distributation by a mean vector and covariance matrix according 
-        % to Gaussian Process. Besides, it also returns the conventional 
-        % measurement prediction for analysis purpose.
+        % to Gaussian Process using the distance kernel. Besides, it also 
+        % returns the conventional measurement prediction for analysis purpose.
         %   - Model: Model object defined by the constructor
         %   - Xp: Prior state estimate in form (6 x 1)
         function [h,R,Abs,CovVal] = PredictionGP(Model,Xp)
@@ -128,8 +129,9 @@ classdef ConstantVelocityGP < handle
         
         % For a given position, this method outputs its UWB range offset 
         % distribution by a mean vector and covariance matrix according to
-        % Sparse Gaussian Process. Besides, it also returns the
-        % conventional measurement prediction for analysis purpose.
+        % Sparse Gaussian Process using the distance kernel. Besides, it 
+        % also returns the conventional measurement prediction for analysis 
+        % purpose.
         %   - Model: Model object defined by the constructor
         %   - Xp: Prior state estimate in form (6 x 1)
         function [h,R,Abs,CovVal] = PredictionSPGP(Model,Xp)
@@ -154,7 +156,7 @@ classdef ConstantVelocityGP < handle
         end
         
         % Error corrected measurement model and its linearization about
-        % current state with Gaussian Process. Hereby, the Distance Kernel is
+        % current state with Gaussian Process. Hereby, the distance Kernel is
         % used.
         %   - Model: Model object defined by the constructor
         %   - Xp: Prior state estimate in form (6 x 1)
@@ -198,8 +200,8 @@ classdef ConstantVelocityGP < handle
         end      
         
         % Error corrected measurement model and its linearization about
-        % current state with Sparse Gaussian Process. Hereby, the RBF
-        % Kernel is used.
+        % current state with Sparse Gaussian Process. Hereby, the distance
+        % kernel is used.
         %   - Model: Model object defined by the constructor
         %   - Xp: Prior state estimate in form (6 x 1)        
         function H = ErrorCorrectionSPGP(Model,Xp)

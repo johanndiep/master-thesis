@@ -11,22 +11,21 @@
 % In order to optimize the performance, the following parameters 
 % need to be tuned:
 %   - P/D-gains in "Controller.m"
-%   - Threshold for maximal rotation in "Controller.m"
-%   - Time interval between each EKF iteration
 %   - x/P-initialization in "ConstantVelocityEKF.m"
 %   - R/Q-covariance in "ConstantVelocityEKF.m"
 %   - Goal state changing rate f in "TrajectoryGenerator.m"
-%   - Absolute goal velocity in "TrajectoryGenerator.m"
 %
 % Furthermore, the following points need to be investigated:
 %   - The yaw correction method could be optimized.
+%     [By grouping translation and rotation in one command, jiggly
+%     movementes can be avoided.]
 %   - Are the buttons of the Spacemouse fast enough to react?
 %     [Yes, VICON readings and iterations occur at high frequency]
 %   - Tune the time-variant goal velocities and goal state rate 
 %     such that the flight is smooth. Is goal velocities and goal state rate 
 %     coupled?
-%     [I believe that a mismatch between goal state rate, goal and current
-%      velocity is responsible for shaky flights.]
+%     [An equation is relating frequency to absolute velocities now.]
+%   - Is the dT timing accurate?
 %
 % Step-by-Step:
 %   1. Calibrate the VICON system and place the origin in the middle of the room 
@@ -71,11 +70,11 @@ VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 ControlObj = Controller(ChangeHeading);
 
 % pre-allocation
-SaveViconPos = zeros(3,50000);
-SaveViconQuat = zeros(4,50000);
-SaveCurPos = zeros(3,50000);
-SaveCurVel = zeros(3,50000);
-SaveGoalPos = zeros(3,50000);
+SaveViconPos = zeros(3,30000);
+SaveViconQuat = zeros(4,30000);
+SaveCurPos = zeros(3,30000);
+SaveCurVel = zeros(3,30000);
+SaveGoalPos = zeros(3,30000);
 
 %% PID
 

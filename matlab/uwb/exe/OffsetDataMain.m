@@ -21,25 +21,26 @@
 % In order to optimize the performance, the following parameters 
 % need to be tuned:
 %   - P/D-gains in "Controller.m"
-%   - Threshold for maximal rotation in "Controller.m"
-%   - Time interval between each EKF iteration
 %   - x/P-initialization in "ConstantVelocityEKF.m"
 %   - R/Q-covariance in "ConstantVelocityEKF.m"
 %   - Goal state changing rate f in "TrajectoryGenerator.m"
-%   - Absolute goal velocity in "TrajectoryGenerator.m"
 %
 % Furthermore, the following points need to be investigated:
 %   - The yaw correction method could be optimized.
+%     [By grouping translation and rotation in one command, jiggly
+%     movementes can be avoided.]
 %   - Are the buttons of the Spacemouse fast enough to react?
 %     [VICON readings and iterations occur at high frequency. However, the UWB
 %     readings occur at lower frequency. Therefore, it can happen, that 
 %     MATLAB does not respond to the button click. By holding the button, 
-%     the script has time to execute the landing maneuver.]
+%     the script has time to execute the landing maneuver. Sometimes, it also
+%     happens that the landing button does not work. In that case, send a separate
+%     command from the terminal.]
 %   - Tune the time-variant goal velocities and goal state rate 
 %     such that the flight is smooth. Is goal velocities and goal state rate 
 %     coupled?
-%     [I believe that a mismatch between goal state rate, goal and current
-%      velocity is responsible for shaky flights.]
+%     [An equation is relating frequency to absolute velocities now.]
+%   - Is the dT timing accurate?
 %   - Any delays introduced due to reading processing?
 %   - Does the delay in range reading influence position estimation?
 %   - Does a batch of range measurement match to the current position good enough?
@@ -78,7 +79,6 @@
 %   18. Run the following script.
 %
 % To-Do:
-%   - Track antenna instead of object center of mass with VICON.
 %   - Figure out how to subscribe to "/vicon/markers".
 
 clear; clc;
@@ -92,7 +92,7 @@ Marker.Dev = [-0.04,2.116];
 Marker.MarkP1 = [-1289,-2141,33]/1000;
 Marker.MarkP2 = [3093,591,-47]/1000;
 Marker.MarkP3 = [-1805,1551,14]/1000;
-Marker.MarkTag = [20,6,38]/1000;
+Marker.MarkTag = [0,0,0];
 
 % initialize the trajectory object
 MidPoint = [0,0];

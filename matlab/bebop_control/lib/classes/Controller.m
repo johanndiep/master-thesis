@@ -27,13 +27,13 @@ classdef Controller
                 ControlObject.D = 0.4; % forward/backward, left/right
                 ControlObject.Dh = 0; % ascend/descend
                 
-                ControlObject.TreshYaw = 1/180*pi;
+                ControlObject.TreshYaw = 1/180*pi; % absolute rotation threshold
             else
                 ControlObject.P = 0.3; % forward/backward, left/right, [0.6f]
-                ControlObject.Ph = 0.3; % ascend/descend, [0.3f]
+                ControlObject.Ph = 0.3; % ascend/descend
                 ControlObject.Py = 0.5; % yaw-rotation, [0.3f]
                 ControlObject.D = 0.4; % forward/backward, left/right, [0.5f]
-                ControlObject.Dh = 0; % ascend/descend, [0f]
+                ControlObject.Dh = 0; % ascend/descend
                 
                 ControlObject.YawJumpTresh = pi;
             end
@@ -108,7 +108,7 @@ classdef Controller
         end
 
         % Position controller which corrects for positional displacement from 
-        % goal position. Thereby, the yaw angle is fixed.
+        % goal position. Thereby, the drone is facing the flying direction.
         %   - ControlObject: Controller object defined by the constructor
         %   - CurPos: Current position of the drone in form (3 x 1)
         %   - GoalPos: Goal position of the drone in form (3 x 1)

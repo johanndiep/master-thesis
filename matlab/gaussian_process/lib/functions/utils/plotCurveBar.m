@@ -1,5 +1,4 @@
-% Johann Diep (jdiep@student.ethz.ch) - July 2019
-% Mo Chen (sth4nth@gmail.com)
+% Johann Diep (jdiep@student.ethz.ch), Mo Chen (sth4nth@gmail.com) - July 2019
 %
 % Plot 1d curve and variance.
 %

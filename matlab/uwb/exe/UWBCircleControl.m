@@ -21,25 +21,26 @@
 % In order to optimize the performance, the following parameters 
 % need to be tuned:
 %   - P/D-gains in "Controller.m"
-%   - Threshold for maximal rotation in "Controller.m"
-%   - Time interval between each EKF iteration
 %   - x/P-initialization in "ConstantVelocityEKF.m"
 %   - R/Q-covariance in "ConstantVelocityEKF.m"
 %   - Goal state changing rate f in "TrajectoryGenerator.m"
-%   - Absolute goal velocity in "TrajectoryGenerator.m"
 %
 % Furthermore, the following points need to be investigated:
 %   - The yaw correction method could be optimized.
+%     [By grouping translation and rotation in one command, jiggly
+%     movementes can be avoided.]
 %   - Are the buttons of the Spacemouse fast enough to react?
 %     [VICON readings and iterations occur at high frequency. However, the UWB
 %     readings occur at lower frequency. Therefore, it can happen, that 
 %     MATLAB does not respond to the button click. By holding the button, 
-%     the script has time to execute the landing maneuver.]
+%     the script has time to execute the landing maneuver. Sometimes, it also
+%     happens that the landing button does not work. In that case, send a separate
+%     command from the terminal.]
 %   - Tune the time-variant goal velocities and goal state rate 
 %     such that the flight is smooth. Is goal velocities and goal state rate 
 %     coupled?
-%     [I believe that a mismatch between goal state rate, goal and current
-%      velocity is responsible for shaky flights.]
+%     [An equation is relating frequency to absolute velocities now.]
+%   - Is the dT timing accurate?
 %   - How often does zero range measurements occur? What happens if a large 
 %     part of the batch consists of zero measurements? 
 %     [In this case, zero measurements are removed from Z, h, H and R.]
@@ -85,22 +86,20 @@
 %   14. Start the ROS driver for the Bebop
 %   15. Set the desired circle parameters
 %   16. Run the following script
-%
-% To-Do:
-%   - Track antenna instead of object center of mass with VICON.
 
 clear; clc;
 
 rosinit;
 
 load('AnchorPos.mat'); % load the anchor positions
+% load('HyperparametersGP.mat'); % load the VICON anchor positions
 
 %% Parameters
 
-% coordinate transformation
-% T = diag(ones(1,4));
-% T(1:3,4) = [-0.23;-0.245;0.245];
-% A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
+% coordinate transformation, only needed for anchor self-calibration
+T = diag(ones(1,4));
+T(1:3,4) = [-0.23;-0.245;0.245];
+A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 
 % initialize the trajectory object
 MidPoint = [0,0];

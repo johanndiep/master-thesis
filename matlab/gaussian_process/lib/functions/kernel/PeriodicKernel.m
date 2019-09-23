@@ -1,6 +1,7 @@
 % Johann Diep (jdiep@student.ethz.ch) - July 2019
 %
-% This function calculates the periodic kernel matrix.
+% This function calculates the periodic kernel matrix. For more
+% informations, check out https://www.research-collection.ethz.ch/bitstream/handle/20.500.11850/229319/3/cctaconf17.pdf.
 %
 % Input:
 %   - X1: Data matrix in form (1 x nx)

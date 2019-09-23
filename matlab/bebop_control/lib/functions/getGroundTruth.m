@@ -1,9 +1,10 @@
 % Johann Diep (jdiep@student.ethz.ch) - June 2019
 %
-% This function reads the position ground-truth data of the object from the 
-% VICON system over a ROS bridge. In order to execute this function, the 
+% This function reads the position and rotation ground-truth data of the 
+% object from the VICON system over a ROS bridge. The data are represented in 
+% the VICON inertial coordinate frame. In order to execute this function, the 
 % corresponding ROS driver for the VICON motion capture system needs to be 
-% launched (more informations on https://github.com/ethz-asl/vicon_bridge).
+% launched. For more informations, check out https://github.com/ethz-asl/vicon_bridge).
 %
 % Input:
 %   - ViconSubscriber: Subscriber object to a ROS topic

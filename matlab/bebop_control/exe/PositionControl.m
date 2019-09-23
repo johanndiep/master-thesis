@@ -1,6 +1,6 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% This script controls the state of the Bebop towards a desired goal 
+% This script controls the state of the Bebop towards a single desired goal 
 % position and velocity. It takes the feedback from the VICON 
 % positioning system, pass it through a constant velocity modeled EKF 
 % in order to estimate the position and velocity and uses a PD controller 
@@ -9,15 +9,16 @@
 % In order to optimize the performance, the following parameters need to 
 % be tuned:
 %   - P/D-gains in "Controller.m"
-%   - Threshold for maximal rotation in "Controller.m"
-%   - Time interval between each EKF iteration
 %   - x/P-initialization in "ConstantVelocityEKF.m"
 %   - R/Q-covariance in "ConstantVelocityEKF.m"
 %
 % Furthermore, the following points need to be investigated:
 %   - The yaw correction method could be optimized.
+%     [By grouping translation and rotation in one command, jiggly
+%     movementes can be avoided.]
 %   - Are the buttons of the Spacemouse fast enough to react? 
 %     [Yes, VICON readings and iterations occur at high frequency]
+%   - Is the dT timing accurate?
 %
 % Step-by-Step:
 %   1. Calibrate the VICON system and place the origin in the middle of the room 
@@ -57,10 +58,10 @@ VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 ControlObj = Controller();
 
 % pre-allocation
-SaveViconPos = zeros(3,10000);
-SaveViconQuat = zeros(4,10000);
-SaveCurPos = zeros(3,10000);
-SaveCurVel = zeros(3,10000);
+SaveViconPos = zeros(3,7000);
+SaveViconQuat = zeros(4,7000);
+SaveCurPos = zeros(3,7000);
+SaveCurVel = zeros(3,7000);
 
 %% PID
 

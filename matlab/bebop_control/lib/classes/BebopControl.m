@@ -9,6 +9,7 @@ classdef BebopControl
         Land
         Emergency
         Flight
+        Animation
     end
     
     methods
@@ -18,6 +19,7 @@ classdef BebopControl
            Publisher.Land = rospublisher('/bebop/land','std_msgs/Empty');
            Publisher.Emergency = rospublisher('/bebop/reset','std_msgs/Empty');
            Publisher.Flight = rospublisher('/bebop/cmd_vel','geometry_msgs/Twist');
+           Publisher.Animation = rospublisher('/bebop/flip','std_msgs/UInt8');
         end
         
         % Starting takeoff by slowly increasing motor speeds.
@@ -84,6 +86,16 @@ classdef BebopControl
             AngularMessage.Angular.Y = 0;
             AngularMessage.Angular.Z = AngularCommand;
             send(Publisher.Flight,AngularMessage);
+        end
+        
+        % For flight animations.
+        %   - Publisher: Publisher object defined by the constructor
+        %   - AnimationCommand: Command for animation (0 for Flip Forward, 
+        %     1 for Flip Backward, 2 for Flip Right and 3 for Flip Left)
+        function AnimationCommand(Publisher,AnimationCommand)
+            AnimationMessage = rosmessage(Publisher.Animation);
+            AnimationMessage.Data = AnimationCommand;
+            send(Publisher.Animation,AnimationMessage);
         end
     end
 end

@@ -1,6 +1,7 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% Standard Gaussian Process is prohibitive for large data sets.
+% Standard Gaussian Process is prohibitive for large data sets when it comes
+% to prediction speed as well as predicting local uncertainties.
 % This script executes the sparse Gaussian Process prediction described in
 % "Sparse Gaussian Processes using Pseudo-inputs" by Edward Snelson and 
 % Zoubin Ghahramani for the tag-yaw-at-constant-distance experiment dataset. 
@@ -51,7 +52,7 @@ for i = 1:size(Xi,2)
 end
 
 legend('Double Standard Deviations','Mean Prediction','Training Data', ...
-    'Pseudo-input locations','Location','northeast');
+    'Pseudo-input Locations','Location','northeast');
 
 grid on;
 hold off;

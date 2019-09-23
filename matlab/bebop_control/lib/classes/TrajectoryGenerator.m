@@ -1,6 +1,10 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% This class offers multiple methods for generating specific trajectories.
+% This class offers multiple methods for generating specific trajectories:
+%   - Static hovering over a specified position while fixing yaw
+%   - Circular flight with specified midpoint and radius while fixing yaw
+%   - Circular flight with specified midpoint and radius while heading at
+%     the direction of flight
 
 classdef TrajectoryGenerator < handle
     properties
@@ -76,11 +80,11 @@ classdef TrajectoryGenerator < handle
 
             Yaw = 2*pi*f*t;
             RotationCounter = floor(Yaw/FullRot);
-            GoalYaw = Yaw - RotationCounter*2*pi; 
+            GoalYaw = Yaw - RotationCounter*2*pi;
     
             GoalVel(1) = v*cos(2*pi*f*t);
             GoalVel(2) = v*sin(2*pi*f*t);
-            GoalVel(3) = 0;  
+            GoalVel(3) = 0;
         end        
         
         % This function returns a static position for hovering.

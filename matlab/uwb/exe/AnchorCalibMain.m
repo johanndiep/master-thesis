@@ -70,13 +70,16 @@ ObjNorm = @(p) getObjectiveNorm(AnchorRangeMean,h,p(1),p(2),p(3));
 
 p = fmincon(ObjNorm,s,[],[],[],[],[0,0,0],[6,6,6],[],options);
 
-%% Plotting and Results
-
 AnchorPos = [0,0,0;0,0,h;p(1),p(2),0;p(1),p(2),h;0,p(3),0;0,p(3),h];
 save('AnchorPos.mat','AnchorPos');
 
-figure()
+clear; clc;
 
+%% Plotting and Results
+
+load('AnchorPos.mat');
+
+figure()
 title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");

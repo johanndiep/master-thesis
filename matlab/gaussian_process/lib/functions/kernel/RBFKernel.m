@@ -1,6 +1,7 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% This function calculates the RBF kernel matrix.
+% This function calculates the RBF kernel matrix. For more informations,
+% check out https://en.wikipedia.org/wiki/Radial_basis_function_kernel.
 %
 % Input:
 %   - r1: Data matrix in form (3 x nx)

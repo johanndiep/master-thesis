@@ -14,11 +14,16 @@
 % Furthermore, the following points need to be investigated:
 %   - Are there better optimization methods in Matlab?
 %     [Using GPy if computation takes too long.]
-%   - Check why the data from anchor 3 does not converge.
 %   - The true ranging distance is an approximation, since the markers are
 %     not planarly placed on the antennas. Does this influence the
 %     prediction in any way?
+%   - Can we also achieve good accuracy with an estimate of anchor
+%     positions?
 %   - Influence of kernel functions.
+%     [Depending on which kernel function one chooses, we get more or less
+%     non-linear behaviour around the space where we have data
+%     measurements.
+%   - SPGP does not converge sometimes, why? 
 
 clear; clc;
 
@@ -53,13 +58,13 @@ Xt(2,:) = y(:)';
 Xt(3,:) = ones(size(Xt(1,:)));
 
 ShowResults = true;
-Save = true;
-Mode = "GP";
+Save = false;
+Mode = "SPGP";
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
 % generate pseudo-inputs
 if Mode == "SPGP"
-    m = 40;
+    m = 20;
 
     MidPoint = [0,0];
     Height = 1;
@@ -70,10 +75,11 @@ if Mode == "SPGP"
     y = MidPoint(2)-Radius*cos(c);
     
     RandIndex = randperm(length(c),m);
-    
     Si = [x(1,RandIndex);y(1,RandIndex)];
     
     nonlcon = @(n) CircleCon(n,MidPoint,Radius);
+    
+    Xi = zeros(3,m,6);
 end
 
 %% Optimization and Prediction
@@ -94,7 +100,8 @@ for i = 1:6
         PreLogLikelihood = @(t) getLogLikelihood(AnchorPos(:,i)-Xa,Ya(i,:),Kernel,t(1),t(2),t(3));
         u = fmincon(PreLogLikelihood,[1,1,1],[],[],[],[],[0,0,0],[Inf,Inf,Inf],[],options);
         
-        LogLikelihood = @(p) getSparseLogLikelihood(AnchorPos(:,i)-Xa,Ya(i,:),Kernel,AnchorPos(:,i)-[p;ones(1,m)],u(1),u(2),u(3));
+        LogLikelihood = @(p) getSparseLogLikelihood(AnchorPos(:,i)-Xa,Ya(i,:),Kernel, ...
+            AnchorPos(:,i)-[p;ones(1,m)],u(1),u(2),u(3));
         s = fmincon(LogLikelihood,Si,[],[],[],[],[],[],nonlcon,options);
         time = toc;
         
@@ -107,11 +114,11 @@ for i = 1:6
     if ShowResults == true        
         % prediction at testing data
         if Mode == "GP"
-            [Mean,Covariance,LogLikelihood] = GaussianProcess(AnchorPos(:,i)-Xa,Ya(i,:),AnchorPos(:,i)-Xt, ...
-                Kernel,NoiseStd(i),s0(i),s1(i));
+            [Mean,Covariance,LogLikelihood] = GaussianProcess(AnchorPos(:,i)-Xa,Ya(i,:), ...
+                AnchorPos(:,i)-Xt,Kernel,NoiseStd(i),s0(i),s1(i));
         elseif Mode == "SPGP"
-            [Mean,Covariance,LogLikelihood] = SparseGaussianProcess(AnchorPos(:,i)-Xa,Ya(i,:),AnchorPos(:,i)-Xt, ...
-                Kernel,AnchorPos(:,i)-Xi(:,:,i),NoiseStd(i),s0(i),s1(i));
+            [Mean,Covariance,LogLikelihood] = SparseGaussianProcess(AnchorPos(:,i)-Xa,Ya(i,:), ...
+                AnchorPos(:,i)-Xt,Kernel,AnchorPos(:,i)-Xi(:,:,i),NoiseStd(i),s0(i),s1(i));
         end
         
         figure();
@@ -163,14 +170,14 @@ for i = 1:6
         
         % results
         if Mode == "GP"
-            disp("Kernel: RBFKernel");
+            disp("Kernel: DistanceKernel");
             disp("Training time: "+time+" seconds");
             disp("Final negative log marginal likelihood: "+LogLikelihood);
             disp("Number of training points: "+size(Xa,2));
             disp("Estimated noise standard deviation: "+NoiseStd(i));
             disp("Kernel hyperparameters: "+s0(i)+"/"+s1(i));
         elseif Mode == "SPGP"
-            disp("Kernel: RBFKernel");
+            disp("Kernel: DistanceKernel");
             disp("Training time: "+time+" seconds");
             disp("Final negative sparse log marginal likelihood: "+LogLikelihood);
             disp("Number of training points: "+size(Xa,2));

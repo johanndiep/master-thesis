@@ -6,7 +6,6 @@
 classdef ConstantVelocityUWB < handle
     properties
         AnchorPos
-        Q
         R
         X
         P
@@ -19,7 +18,7 @@ classdef ConstantVelocityUWB < handle
         function Model = ConstantVelocityUWB(AnchorPos)
             Model.AnchorPos = AnchorPos;
             
-            Model.R = diag([0.1,0.05,0.1,0.05,0.1,0.05]);
+            Model.R = diag([0.1,0.1,0.1,0.1,0.1,0.1]);
             
             Model.X = zeros(6,1); % (px,vx,py,vy,pz,vz)
             Model.P = 10*eye(6);

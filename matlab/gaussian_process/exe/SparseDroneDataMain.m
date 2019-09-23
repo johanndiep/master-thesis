@@ -1,15 +1,16 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
 % Standard Gaussian Process is prohibitive for large data sets when it comes
-% to prediction speed. This script executes the sparse Gaussian Process 
-% prediction described in "Sparse Gaussian Processes using Pseudo-inputs" 
-% by Edward Snelson and Zoubin Ghahramani for the tag-yaw-at-constant-distance 
-% experiment dataset. The underlying function is approximated with a mean 
-% and variance for each testing input given the data. The hyperparameter 
-% learning part is split into learning the noise as well as the kernel 
-% parameters from the complete log marginal likelihood and the induced 
-% pseudo-inputs from the sparse log marginal likelihood. In order to speed 
-% up the latter, the available data can be downsampled.
+% to prediction speed as well as predicting local uncertainties. 
+% This script executes the sparse Gaussian Process prediction described 
+% in "Sparse Gaussian Processes using Pseudo-inputs" by Edward Snelson and 
+% Zoubin Ghahramani for the tag-yaw-at-constant-distance experiment dataset.
+% The underlying function is approximated with a mean and variance for each 
+% testing input given the data. The hyperparameter learning part is split 
+% into learning the noise as well as the kernel parameters from the complete 
+% log marginal likelihood and the induced pseudo-inputs from the sparse 
+% log marginal likelihood. In order to speed up the latter, the available 
+% data can be downsampled.
 %
 % In order to optimize the performance, the following parameters need to 
 % be tuned:
@@ -82,7 +83,7 @@ for i = 1:m
 end
 
 legend('Double Standard Deviations','Mean Prediction','Training Data', ...
-    'Pseudo-input locations','Location','northeast');
+    'Pseudo-input Locations','Location','northeast');
 
 grid on;
 hold off;
