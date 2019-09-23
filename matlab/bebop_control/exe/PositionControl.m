@@ -48,6 +48,8 @@ AbsVel = 0;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel);
 [GoalPos,GoalVel] = TrajObj.getStaticPosition;
 
+ChangeHeading = false;
+
 %% Preliminary
 
 % ROS subscribers for Spacemouse and VICON positioning system
@@ -55,7 +57,7 @@ JoySub = rossubscriber('/spacenav/joy');
 VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 
 % initializing a controller object
-ControlObj = Controller();
+ControlObj = Controller(ChangeHeading);
 
 % pre-allocation
 SaveViconPos = zeros(3,7000);

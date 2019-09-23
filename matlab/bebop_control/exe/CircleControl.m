@@ -58,7 +58,7 @@ TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
 
-ChangeHeading = true; % drone is pointing in the direction of flight
+ChangeHeading = false; % drone is pointing in the direction of flight
 
 %% Preliminary
 
