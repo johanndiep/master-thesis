@@ -58,8 +58,8 @@ Xt(2,:) = y(:)';
 Xt(3,:) = ones(size(Xt(1,:)));
 
 ShowResults = true;
-Save = false;
-Mode = "SPGP";
+Save = true;
+Mode = "GP";
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
 % generate pseudo-inputs

@@ -86,20 +86,23 @@
 %   14. Start the ROS driver for the Bebop
 %   15. Set the desired circle parameters
 %   16. Run the following script
+%
+% To-Do:
+%   - Track marker instead of drone center with VICON.
 
 clear; clc;
 
 rosinit;
 
-load('AnchorPos.mat'); % load the anchor positions
-% load('HyperparametersGP.mat'); % load the VICON anchor positions
+% load('AnchorPos.mat'); % load the anchor positions
+load('HyperparametersGP.mat'); % load the VICON anchor positions
 
 %% Parameters
 
 % coordinate transformation, only needed for anchor self-calibration
-T = diag(ones(1,4));
-T(1:3,4) = [-0.23;-0.245;0.245];
-A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
+% T = diag(ones(1,4));
+% T(1:3,4) = [-0.23;-0.245;0.245];
+% A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 
 % initialize the trajectory object
 MidPoint = [0,0];
@@ -145,7 +148,7 @@ ControlObj.Start; % starting the drone
 pause(5);
 
 % initializing the constant velocity modeled EKF
-Model = ConstantVelocityUWB(A');
+Model = ConstantVelocityUWB(AnchorPos);
 tic;
 
 i = 1;
