@@ -17,7 +17,7 @@ classdef DynamicModel < handle
         function DynamicObject = DynamicModel()
             DynamicObject.g = 9.81; % gravitational constant
             DynamicObject.C = 0.35; % translational drag constant
-            DynamicObject.MaxTiltAngle = 40/180*pi; % maximal pitch and roll angle
+            DynamicObject.MaxTiltAngle = 15/180*pi; % maximal pitch and roll angle
             DynamicObject.MaxVertSpeed = 1; % maximal speed in vertical direction
         end
         

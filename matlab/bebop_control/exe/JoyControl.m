@@ -34,12 +34,14 @@ BebopPublisher = BebopControl();
 FlyState = 0;
 DominantFlight = 1; % only fly in the main direction/rotation
 Index = 1;
+Save = true;
 
 while true
     JoyMessage = JoySubscriber.LatestMessage;
     
     if JoyMessage.Buttons(1) == 1
         BebopPublisher.TakeOffCommand;
+        pause(5);
         tic;
         FlyState = 1;
     elseif JoyMessage.Buttons(2) == 1
@@ -50,7 +52,7 @@ while true
     end
     
     if FlyState == 1
-        [ViconPos(:,Index),~] = getGroundTruth(VicDroneSub);
+        [ViconPos(:,Index),ViconQuat(:,Index)] = getGroundTruth(VicDroneSub);
         JoyCommand = JoyMessage.Axes';
         JoyCommand(4:5) = [];
         
@@ -80,5 +82,7 @@ end
 
 rosshutdown;
 
-FlightCommand(:,4) = [];
-save('FlightCommand.mat','FlightCommand','ViconPos','T');
+if Save == true
+    FlightCommand(:,4) = [];
+    save('FlightCommand.mat','FlightCommand','ViconPos','ViconQuat','T');
+end
