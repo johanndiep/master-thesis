@@ -1,6 +1,6 @@
 clear; clc;
 
-load('FlightCommand2.mat');
+load('FlightCommand.mat');
 
 CurState = zeros(1,6);
 CurState(1) = ViconPos(1,1); CurState(3) = ViconPos(2,1); CurState(5) = ViconPos(3,1);

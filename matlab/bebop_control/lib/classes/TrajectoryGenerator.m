@@ -102,5 +102,38 @@ classdef TrajectoryGenerator < handle
             GoalVel(2) = v;
             GoalVel(3) = v;            
         end
+        
+        % This function calculates the dynamic position and the corresponding 
+        % velocity for a spline flight, where the drone is facing its flying
+        % direction.
+        %   - TrajectoryObject: Trajectory object defined by the constructor
+        %   - t: Timestep at which the the corresponding waypoint should be
+        %        gathered
+        function [GoalPos,GoalVel] = getSplinePosition(TrajectoryObject,t)
+            m = TrajectoryObject.m;
+            h = TrajectoryObject.h;
+            v = TrajectoryObject.v;
+            f = TrajectoryObject.f;
+
+            Points = [m(1)-0.5,m(2)+0.5,h;m(1)-0.5,m(2)-0.5,h; ...
+                m(1),m(2)-0.5,h;m(1),m(2)+0.5,h; ...
+                m(1)+0.5,m(2)+0.5,h;m(1)+0.5,m(2)-0.5,h];
+            
+            xPoints = Points(:,1); yPoints = Points(:,2);
+            
+            s = [0,1,2,3,4,5];
+            sq = 0:0.1:5;
+            
+            SlopeStart = 0; SlopeFinal = 0;
+            
+            xQuery = spline(s,[SlopeStart;xPoints;SlopeFinal],sq);
+            yQuery = spline(s,[SlopeStart;yPoints;SlopeFinal],sq);
+            
+            N = size(xQuery,2);
+            
+            GoalVel(1) = 0;
+            GoalVel(2) = 0;
+            GoalVel(3) = 0;            
+        end
     end
 end
