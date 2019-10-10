@@ -21,17 +21,17 @@ classdef Controller
             ControlObject.Publisher = BebopControl();
             
             if ChangeHeading == false
-                ControlObject.P = 0.2; % forward/backward, left/right
+                ControlObject.P = 0.5; % forward/backward, left/right
                 ControlObject.Ph = 0.3; % ascend/descend
-                ControlObject.Py = 0.5; % yaw-rotation
-                ControlObject.D = 0.25; % forward/backward, left/right
+                ControlObject.Py = 0.6; % yaw-rotation
+                ControlObject.D = 0.3; % forward/backward, left/right
                 ControlObject.Dh = 0; % ascend/descend
                 
                 ControlObject.TreshYaw = 1/180*pi; % absolute rotation threshold
             else
-                ControlObject.P = 0.3; % forward/backward, left/right
+                ControlObject.P = 0.5; % forward/backward, left/right
                 ControlObject.Ph = 0.3; % ascend/descend
-                ControlObject.Py = 0.5; % yaw-rotation
+                ControlObject.Py = 0.6; % yaw-rotation
                 ControlObject.D = 0.3; % forward/backward, left/right
                 ControlObject.Dh = 0; % ascend/descend
                 
@@ -74,7 +74,7 @@ classdef Controller
             
             % avoid rotation issue at +/- 0 radian
             if abs(YawDiff) > YawJumpTresh
-                YawDiff = 2*pi+YawDiff;
+                YawDiff = -1*sign(YawDiff)*(2*pi-abs(YawDiff));
                 Pc = Py*YawDiff;
             else
                 Pc = Py*YawDiff;

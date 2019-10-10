@@ -1,48 +1,8 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
-% This script controls the state of the Bebop towards a desired goal 
-% position and velocity. Thereby, the goal position is changing per
-% iteration in a circular manner, resulting in the drone following 
-% a circular trajectory. Similiar to "PositionControl.m", it takes the 
-% feedback from the VICON positioning system, pass it through a 
-% constant velocity modeled EKF in order to estimate the position and velocity 
-% and uses a PD controller to move the drone towards the goal state.
-%
-% In order to optimize the performance, the following parameters 
-% need to be tuned:
-%   - P/D-gains in "Controller.m"
-%   - x/P-initialization in "ConstantVelocityEKF.m"
-%   - R/Q-covariance in "ConstantVelocityEKF.m"
-%   - Goal state changing rate f in "TrajectoryGenerator.m"
-%
-% Furthermore, the following points need to be investigated:
-%   - The yaw correction method could be optimized.
-%     [By grouping translation and rotation in one command, jiggly
-%     movementes can be avoided.]
-%   - Are the buttons of the Spacemouse fast enough to react?
-%     [Yes, VICON readings and iterations occur at high frequency]
-%   - Tune the time-variant goal velocities and goal state rate 
-%     such that the flight is smooth. Is goal velocities and goal state rate 
-%     coupled?
-%     [An equation is relating frequency to absolute velocities now.]
-%   - Is the dT timing accurate?
-%
-% Step-by-Step:
-%   1. Calibrate the VICON system and place the origin in the middle of the room 
-%      with the T-link.
-%   2. Attach VICON markers on the Bebop, group the markers on the VICON
-%      Tracker to an object and name it "Bebop_Johann".
-%   3. Place the drone such that the body-fixed frame (x-forward,y-left,z-ascend)
-%      is aligned with the VICON frame.
-%   4. Connect the computer with the VICON machine via Ethernet.
-%   5. Turn on the Bebop and connect the laptop with it over Wi-Fi.
-%   6. Turn on the Spacemouse and start its ROS driver.
-%   7. Start the ROS VICON bridge node.
-%   8. Start the ROS driver for the Bebop.
-%   9. Set the desired circle parameters.
-%   10. Run the following script.
+% This script controls the Bebop drone to fly a predefined spline.
 
-clear; clc;
+clear; clc; 
 
 rosshutdown; rosinit;
 
@@ -51,14 +11,13 @@ rosshutdown; rosinit;
 % initialize the trajectory object
 MidPoint = [0,0];
 Height = 1;
-Radius = 1;
-Frequency = 1/30;
-AbsVel = 2*Radius*pi*Frequency;
-TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
+Frequency = 1/100;
+SplineVariable = 0.5;
+Radius = 0; % placeholder
+AbsVel = 0; % placeholder
+TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency,SplineVariable);
 
 Time = 0; % helper variable to estimate the time-variant goal state
-
-ChangeHeading = false; % drone is pointing in the direction of flight
 
 %% Preliminary
 
@@ -108,21 +67,12 @@ while true
     [CurPos,CurVel] = Model.UpdateMeasurement(ViconPos);
     tic;
     
-    if ChangeHeading == false
-        % time-variant goal position and velocity
-        [GoalPos,GoalVel] = TrajObj.getCircleTrajectory(Time);
+    % time-variant goal position, yaw and velocity
+    [GoalPos,GoalYaw,GoalVel] = TrajObj.getYawCircleTraj(Time);
         
-        % moving the drone towards the desired goal position while 
-        % keeping the orientation fixed
-        ControlObj.NoTurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat);
-    else
-        % time-variant goal position, yaw and velocity
-        [GoalPos,GoalYaw,GoalVel] = TrajObj.getYawCircleTraj(Time);
-        
-        % moving the drone towards the desired goal position while 
-        % keeping the orientation in the direction of flight
-        ControlObj.TurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat,GoalYaw);
-    end
+    % moving the drone towards the desired goal position while 
+    % keeping the orientation in the direction of flight
+    ControlObj.TurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat,GoalYaw);
     
     % saving to array
     SaveViconPos(:,i) = ViconPos;
@@ -145,22 +95,13 @@ SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
 
-if ChangeHeading == false
-    save('VicCircConData.mat','SaveViconPos','SaveViconQuat', ...
+save('VicSplineConData.mat','SaveViconPos','SaveViconQuat', ...
         'SaveCurPos','SaveCurVel','SaveGoalPos');
-else
-    save('VicYawCircConData.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos');    
-end
+
+ %% Plotting and Results
+
+load('VicSplineConData.mat');
     
-%% Plotting and Results
-
-if ChangeHeading == false
-    load('VicCircConData.mat');
-else
-    load('VicYawCircConData.mat');
-end
-
 SaveViconPos = SaveViconPos(:,1:300:end);
 SaveViconQuat = SaveViconQuat(:,1:300:end);
 SaveCurPos = SaveCurPos(:,1:300:end);

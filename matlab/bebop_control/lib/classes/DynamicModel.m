@@ -8,7 +8,7 @@ classdef DynamicModel < handle
         C
         MaxTiltAngle
         MaxVertSpeed
-        MaxRotSpeed
+        MaxYawRate
     end
     
     methods
@@ -19,6 +19,7 @@ classdef DynamicModel < handle
             DynamicObject.C = 0.35; % translational drag constant
             DynamicObject.MaxTiltAngle = 15/180*pi; % maximal pitch and roll angle
             DynamicObject.MaxVertSpeed = 1; % maximal speed in vertical direction
+            DynamicObject.MaxYawRate = pi/2; % maximal yaw rate
         end
         
         % This function calculates the new state from the current state using the

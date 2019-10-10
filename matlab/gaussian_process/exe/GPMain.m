@@ -23,7 +23,7 @@ f = @(x) sin(x); % ground-truth underlying function
 s0 = 1; s1 = 1; % kernel parameters initialization
 NoiseStd = 0.2; % standard deviation for noise
 a = -pi; b = pi; % interval of training data [a,b]
-t = 100; % number of training data
+t = 10; % number of training data
 X = a + (b-a)*rand(1,t); % training data
 Y = f(X)+normrnd(0,NoiseStd,[1,size(X,2)]); % response data
 Xt = linspace(a,b,2000); % testing data

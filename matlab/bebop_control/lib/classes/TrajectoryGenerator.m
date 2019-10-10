@@ -13,6 +13,7 @@ classdef TrajectoryGenerator < handle
         v
         r
         f
+        w
         FullRot
     end
     
@@ -24,10 +25,14 @@ classdef TrajectoryGenerator < handle
         %   - AbsVel: Constant velocity in scalar form
         %   - Radius: Radius of circle
         %   - Frequency: Rate for the change of waypoints
-        function TrajectoryObject = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency)
+        %   - SplineVariable: Variable for creating a spline trajectory
+        function TrajectoryObject = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency,SplineVariable)
             if nargin == 3
                Radius = 0;
                Frequency = 0;
+               SplineVariable = 0;
+            elseif nargin == 5
+               SplineVariable = 0;
             end
             
             TrajectoryObject.m = MidPoint;
@@ -35,6 +40,8 @@ classdef TrajectoryGenerator < handle
             TrajectoryObject.v = AbsVel;
             TrajectoryObject.r = Radius;
             TrajectoryObject.f = Frequency;
+            TrajectoryObject.w = SplineVariable;
+            
             
             TrajectoryObject.FullRot = 2*pi;
         end
@@ -109,15 +116,15 @@ classdef TrajectoryGenerator < handle
         %   - TrajectoryObject: Trajectory object defined by the constructor
         %   - t: Timestep at which the the corresponding waypoint should be
         %        gathered
-        function [GoalPos,GoalVel] = getSplinePosition(TrajectoryObject,t)
+        function [GoalPos,GoalYaw,GoalVel] = getSplinePosition(TrajectoryObject,t)
             m = TrajectoryObject.m;
             h = TrajectoryObject.h;
-            v = TrajectoryObject.v;
             f = TrajectoryObject.f;
+            w = TrajectoryObject.w;
 
-            Points = [m(1)-0.5,m(2)+0.5,h;m(1)-0.5,m(2)-0.5,h; ...
-                m(1),m(2)-0.5,h;m(1),m(2)+0.5,h; ...
-                m(1)+0.5,m(2)+0.5,h;m(1)+0.5,m(2)-0.5,h];
+            Points = [m(1)-w,m(2)+w,h;m(1)-w,m(2)-w,h; ...
+                m(1),m(2)-w,h;m(1),m(2)+w,h; ...
+                m(1)+w,m(2)+w,h;m(1)+w,m(2)-w,h];
             
             xPoints = Points(:,1); yPoints = Points(:,2);
             
@@ -130,6 +137,28 @@ classdef TrajectoryGenerator < handle
             yQuery = spline(s,[SlopeStart;yPoints;SlopeFinal],sq);
             
             N = size(xQuery,2);
+            
+            CurrentIndex = ceil(N*f*t);
+            if CurrentIndex > N
+                CurrentIndex = N;
+            end
+            
+            NextIndex = CurrentIndex+1;
+            if NextIndex > N
+                NextIndex = CurrentIndex;
+            end
+            
+            xDiff = xQuery(NextIndex)-xQuery(CurrentIndex);
+            yDiff = yQuery(NextIndex)-yQuery(CurrentIndex);
+            
+            GoalYaw = atan2(yDiff,xDiff);
+            if GoalYaw < 0
+               GoalYaw = 2*pi+GoalYaw; 
+            end
+            
+            GoalPos(1) = xQuery(CurrentIndex);
+            GoalPos(2) = yQuery(CurrentIndex);
+            GoalPos(3) = h;
             
             GoalVel(1) = 0;
             GoalVel(2) = 0;
