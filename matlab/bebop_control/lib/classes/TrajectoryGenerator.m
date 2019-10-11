@@ -131,19 +131,19 @@ classdef TrajectoryGenerator < handle
             xQuery = spline(u,[SlopeStart;xPoints;SlopeFinal],uq);
             yQuery = spline(u,[SlopeStart;yPoints;SlopeFinal],uq);
             
-            GoalPos(1) = xQuery(CurrentIndex);
-            GoalPos(2) = yQuery(CurrentIndex);
-            GoalPos(3) = h;
-            
             AbsVel = getArcLength(xQuery,yQuery,'s')*f;
             
             N = size(xQuery,2);
             CurrentIndex = ceil(N*f*t);
             NextIndex = CurrentIndex+1;
-            if CurrentIndex == N
+            if CurrentIndex >= N
                 CurrentIndex = N-1;
                 NextIndex = N;
             end
+            
+            GoalPos(1) = xQuery(CurrentIndex);
+            GoalPos(2) = yQuery(CurrentIndex);
+            GoalPos(3) = h;
             
             xDiff = xQuery(NextIndex)-xQuery(CurrentIndex);
             yDiff = yQuery(NextIndex)-yQuery(CurrentIndex);
