@@ -88,12 +88,14 @@ while true
         break;
     end
     
-    % Vicon ground-truth position and quaternion of the drone
-    [ViconPos,ViconQuat] = getGroundTruth(VicDroneSub);
-    
-    % prior and posterior update with process and measurement model
+    % prior update with process model
     dT = toc;
     Model.UpdatePrior(dT);
+    
+    % Vicon ground-truth position and quaternion of the drone
+    [ViconPos,ViconQuat] = getGroundTruth(VicDroneSub);    
+    
+    % posterior update with measurement model
     [CurPos,CurVel] = Model.UpdateMeasurement(ViconPos);
     tic;
     

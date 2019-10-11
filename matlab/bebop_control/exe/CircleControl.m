@@ -20,7 +20,9 @@
 %     [By grouping translation and rotation in one command, jiggly
 %     movementes can be avoided.]
 %   - Are the buttons of the Spacemouse fast enough to react?
-%     [Yes, VICON readings and iterations occur at high frequency]
+%     [Yes, VICON readings and iterations occur at high frequency. Sometimes 
+%     drone stops but does not land, which require an additional command send
+%     over terminal.]
 %   - Tune the time-variant goal velocities and goal state rate 
 %     such that the flight is smooth. Is goal velocities and goal state rate 
 %     coupled?
@@ -48,12 +50,13 @@ rosshutdown; rosinit;
 
 %% Parameters
 
-% initialize the trajectory object
 MidPoint = [0,0];
 Height = 1;
 Radius = 1;
 Frequency = 1/30;
 AbsVel = 2*Radius*pi*Frequency;
+
+% initialize the trajectory object
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
@@ -99,12 +102,14 @@ while true
         break;
     end
     
+    % prior update with process model
+    dT = toc; Time = Time + dT;
+    Model.UpdatePrior(dT);
+    
     % Vicon ground-truth position and quaternion of the drone
     [ViconPos,ViconQuat] = getGroundTruth(VicDroneSub);
     
-    % prior and posterior update with process and measurement model
-    dT = toc; Time = Time + dT;
-    Model.UpdatePrior(dT);
+    % posterior update with measurement model
     [CurPos,CurVel] = Model.UpdateMeasurement(ViconPos);
     tic;
     

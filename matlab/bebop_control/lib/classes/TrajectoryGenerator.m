@@ -13,7 +13,7 @@ classdef TrajectoryGenerator < handle
         v
         r
         f
-        w
+        s
         FullRot
     end
     
@@ -25,14 +25,14 @@ classdef TrajectoryGenerator < handle
         %   - AbsVel: Constant velocity in scalar form
         %   - Radius: Radius of circle
         %   - Frequency: Rate for the change of waypoints
-        %   - SplineVariable: Variable for creating a spline trajectory
-        function TrajectoryObject = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency,SplineVariable)
+        %   - SplinePoints: Points for spline approximation in form (n x 3)
+        function TrajectoryObject = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency,SplinePoints)
             if nargin == 3
                Radius = 0;
                Frequency = 0;
-               SplineVariable = 0;
+               SplinePoints = 0;
             elseif nargin == 5
-               SplineVariable = 0;
+               SplinePoints = 0;
             end
             
             TrajectoryObject.m = MidPoint;
@@ -40,14 +40,14 @@ classdef TrajectoryGenerator < handle
             TrajectoryObject.v = AbsVel;
             TrajectoryObject.r = Radius;
             TrajectoryObject.f = Frequency;
-            TrajectoryObject.w = SplineVariable;
-            
+            TrajectoryObject.s = SplinePoints;
             
             TrajectoryObject.FullRot = 2*pi;
         end
         
         % This function calculates the dynamic position and the corresponding 
-        % velocity for a circular flight.
+        % velocity for a circular flight, where the drone keeps facing
+        % forward.
         %   - TrajectoryObject: Trajectory object defined by the constructor
         %   - t: Timestep at which the the corresponding waypoint should be
         %        gathered
@@ -117,52 +117,47 @@ classdef TrajectoryGenerator < handle
         %   - t: Timestep at which the the corresponding waypoint should be
         %        gathered
         function [GoalPos,GoalYaw,GoalVel] = getSplinePosition(TrajectoryObject,t)
-            m = TrajectoryObject.m;
             h = TrajectoryObject.h;
             f = TrajectoryObject.f;
-            w = TrajectoryObject.w;
-
-            Points = [m(1)-w,m(2)+w,h;m(1)-w,m(2)-w,h; ...
-                m(1),m(2)-w,h;m(1),m(2)+w,h; ...
-                m(1)+w,m(2)+w,h;m(1)+w,m(2)-w,h];
+            s = TrajectoryObject.s;
             
-            xPoints = Points(:,1); yPoints = Points(:,2);
+            xPoints = s(:,1); yPoints = s(:,2);
             
-            s = [0,1,2,3,4,5];
-            sq = 0:0.1:5;
+            u = [0,1,2,3,4,5];
+            uq = 0:0.1:5;
             
             SlopeStart = 0; SlopeFinal = 0;
             
-            xQuery = spline(s,[SlopeStart;xPoints;SlopeFinal],sq);
-            yQuery = spline(s,[SlopeStart;yPoints;SlopeFinal],sq);
+            xQuery = spline(u,[SlopeStart;xPoints;SlopeFinal],uq);
+            yQuery = spline(u,[SlopeStart;yPoints;SlopeFinal],uq);
+            
+            GoalPos(1) = xQuery(CurrentIndex);
+            GoalPos(2) = yQuery(CurrentIndex);
+            GoalPos(3) = h;
+            
+            AbsVel = getArcLength(xQuery,yQuery,'s')*f;
             
             N = size(xQuery,2);
-            
             CurrentIndex = ceil(N*f*t);
-            if CurrentIndex > N
-                CurrentIndex = N;
-            end
-            
             NextIndex = CurrentIndex+1;
-            if NextIndex > N
-                NextIndex = CurrentIndex;
+            if CurrentIndex == N
+                CurrentIndex = N-1;
+                NextIndex = N;
             end
             
             xDiff = xQuery(NextIndex)-xQuery(CurrentIndex);
             yDiff = yQuery(NextIndex)-yQuery(CurrentIndex);
+            Norm = vecnorm([xDiff,yDiff]);
             
             GoalYaw = atan2(yDiff,xDiff);
             if GoalYaw < 0
                GoalYaw = 2*pi+GoalYaw; 
             end
             
-            GoalPos(1) = xQuery(CurrentIndex);
-            GoalPos(2) = yQuery(CurrentIndex);
-            GoalPos(3) = h;
-            
-            GoalVel(1) = 0;
-            GoalVel(2) = 0;
-            GoalVel(3) = 0;            
+            GoalVel(1) = xDiff/Norm*AbsVel;
+            GoalVel(2) = yDiff/Norm*AbsVel;
+            GoalVel(3) = 0;
+
         end
     end
 end

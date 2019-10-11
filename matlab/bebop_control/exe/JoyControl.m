@@ -1,8 +1,7 @@
 % Johann Diep (jdiep@student.ethz.ch) - August 2019
 %
 % This script allows the control of the Bebop drone with the 3D connexion
-% joystick. If ground-truth data is needed, it also collects VICON
-% measurements.
+% joystick. It also collects VICON measurements for ground-truth data.
 %
 % Step-by-Step:
 %   1. Turn on the Spacemouse and start its ROS driver.

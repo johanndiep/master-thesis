@@ -1,6 +1,49 @@
-% Johann Diep (jdiep@student.ethz.ch) - August 2019
+% Johann Diep (jdiep@student.ethz.ch) - October 2019
 %
-% This script controls the Bebop drone to fly a predefined spline.
+% This script controls the state of the Bebop towards a desired goal 
+% position and velocity. Thereby, the goal position is changing per
+% iteration in a spline shape, resulting in the drone following 
+% a spline trajectory. Similiar to "PositionControl.m", it takes the 
+% feedback from the VICON positioning system, pass it through a 
+% constant velocity modeled EKF in order to estimate the position and velocity 
+% and uses a PD controller to move the drone towards the goal state.
+%
+% In order to optimize the performance, the following parameters 
+% need to be tuned:
+%   - P/D-gains in "Controller.m"
+%   - x/P-initialization in "ConstantVelocityEKF.m"
+%   - R/Q-covariance in "ConstantVelocityEKF.m"
+%   - Goal state changing rate f in "TrajectoryGenerator.m"
+%
+% Furthermore, the following points need to be investigated:
+%   - The yaw correction method could be optimized.
+%     [By grouping translation and rotation in one command, jiggly
+%     movementes can be avoided.]
+%   - Are the buttons of the Spacemouse fast enough to react?
+%     [Yes, VICON readings and iterations occur at high frequency. Sometimes 
+%     drone stops but does not land, which require an additional command send
+%     over terminal.]
+%   - Tune the time-variant goal velocities and goal state rate 
+%     such that the flight is smooth. Is goal velocities and goal state rate 
+%     coupled?
+%     [An equation is relating frequency to absolute velocities now.]
+%   - Is the dT timing accurate?
+%   - Is the spline goal velocity estimation accurate? 
+%
+% Step-by-Step:
+%   1. Calibrate the VICON system and place the origin in the middle of the room 
+%      with the T-link.
+%   2. Attach VICON markers on the Bebop, group the markers on the VICON
+%      Tracker to an object and name it "Bebop_Johann".
+%   3. Place the drone such that the body-fixed frame (x-forward,y-left,z-ascend)
+%      is aligned with the VICON frame.
+%   4. Connect the computer with the VICON machine via Ethernet.
+%   5. Turn on the Bebop and connect the laptop with it over Wi-Fi.
+%   6. Turn on the Spacemouse and start its ROS driver.
+%   7. Start the ROS VICON bridge node.
+%   8. Start the ROS driver for the Bebop.
+%   9. Set the desired spline parameters.
+%   10. Run the following script.
 
 clear; clc; 
 
@@ -8,16 +51,27 @@ rosshutdown; rosinit;
 
 %% Parameters
 
-% initialize the trajectory object
 MidPoint = [0,0];
 Height = 1;
-Frequency = 1/100;
-SplineVariable = 0.5;
-Radius = 0; % placeholder
-AbsVel = 0; % placeholder
-TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency,SplineVariable);
+Frequency = 1/30;
+SplineVariable = 1;
+
+SplinePoints = [MidPoint(1)-SplineVariable,MidPoint(2)+SplineVariable,Height; ...
+    MidPoint(1)-SplineVariable,MidPoint(2)-SplineVariable,Height; ...
+    MidPoint(1),MidPoint(2)-SplineVariable,Height; ...
+    MidPoint(1),MidPoint(2)+SplineVariable,Height; ...
+    MidPoint(1)+SplineVariable,MidPoint(2)+SplineVariable,Height; ...
+    MidPoint(1)+SplineVariable,MidPoint(2)-SplineVariable,Height];
+
+Radius = 0;
+AbsVel = 0;
+
+% initialize the trajectory object
+TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency,SplinePoints);
 
 Time = 0; % helper variable to estimate the time-variant goal state
+
+ChangeHeading = true; % drone is pointing in the direction of flight
 
 %% Preliminary
 
@@ -58,17 +112,19 @@ while true
         break;
     end
     
+    % prior update with process model
+    dT = toc; Time = Time + dT;
+    Model.UpdatePrior(dT);
+    
     % Vicon ground-truth position and quaternion of the drone
     [ViconPos,ViconQuat] = getGroundTruth(VicDroneSub);
     
-    % prior and posterior update with process and measurement model
-    dT = toc; Time = Time + dT;
-    Model.UpdatePrior(dT);
+    % posterior update with measurement model
     [CurPos,CurVel] = Model.UpdateMeasurement(ViconPos);
     tic;
     
     % time-variant goal position, yaw and velocity
-    [GoalPos,GoalYaw,GoalVel] = TrajObj.getYawCircleTraj(Time);
+    [GoalPos,GoalYaw,GoalVel] = TrajObj.getSplinePosition(Time);
         
     % moving the drone towards the desired goal position while 
     % keeping the orientation in the direction of flight
@@ -102,11 +158,11 @@ save('VicSplineConData.mat','SaveViconPos','SaveViconQuat', ...
 
 load('VicSplineConData.mat');
     
-SaveViconPos = SaveViconPos(:,1:300:end);
-SaveViconQuat = SaveViconQuat(:,1:300:end);
-SaveCurPos = SaveCurPos(:,1:300:end);
-SaveCurVel = SaveCurVel(:,1:300:end);
-SaveGoalPos = SaveGoalPos(:,1:300:end);
+SaveViconPos = SaveViconPos(:,1:10:end);
+SaveViconQuat = SaveViconQuat(:,1:10:end);
+SaveCurPos = SaveCurPos(:,1:10:end);
+SaveCurVel = SaveCurVel(:,1:10:end);
+SaveGoalPos = SaveGoalPos(:,1:10:end);
 
 figure();
 
