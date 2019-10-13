@@ -17,26 +17,25 @@ classdef Controller
     methods
         % Initialize the control object with the publisher object 
         % for messaging, the chosen gains and the threshold for yaw-rotations. 
-        function ControlObject = Controller(ChangeHeading)
+        function ControlObject = Controller(FastModus)
             ControlObject.Publisher = BebopControl();
             
-            if ChangeHeading == false
-                ControlObject.P = 0.5; % forward/backward, left/right
-                ControlObject.Ph = 0.5; % ascend/descend
-                ControlObject.Py = 0.8; % yaw-rotation
-                ControlObject.D = 0.3; % forward/backward, left/right
-                ControlObject.Dh = 0.3; % ascend/descend
-                
-                ControlObject.TreshYaw = 1/180*pi; % absolute rotation threshold
+            if FastModus == false
+                ControlObject.P = 0.6*0.5; % forward/backward, left/right
+                ControlObject.Ph = 0.6*0.5; % ascend/descend
+                ControlObject.Py = 0.6*0.8; % yaw-rotation
+                ControlObject.D = 0.6*0.3; % forward/backward, left/right
+                ControlObject.Dh = 0.6*0.3; % ascend/descend               
             else
                 ControlObject.P = 0.5; % forward/backward, left/right
                 ControlObject.Ph = 0.5; % ascend/descend
                 ControlObject.Py = 0.8; % yaw-rotation
                 ControlObject.D = 0.3; % forward/backward, left/right
                 ControlObject.Dh = 0.3; % ascend/descend
-                
-                ControlObject.YawJumpTresh = pi;
             end
+            
+            ControlObject.TreshYaw = 1/180*pi; % absolute rotation threshold
+            ControlObject.YawJumpTresh = pi;
         end
         
         % Calculating the translative proportional and differential error.

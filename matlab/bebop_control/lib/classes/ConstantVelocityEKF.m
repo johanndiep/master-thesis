@@ -18,7 +18,7 @@ classdef ConstantVelocityEKF < handle
             
             Model.R = diag([0.01,0.01,0.01]);
 
-            Model.X = zeros(6,1); % (px,vx,py,vy,pz,vz)
+            Model.X = zeros(6,1);  % [px;vx;py;vy;pz;vz]
             Model.P = 10*eye(6);
         end
         
@@ -29,7 +29,7 @@ classdef ConstantVelocityEKF < handle
             X = Model.X;
             P = Model.P;
 
-            SigmaNoise = 3;
+            SigmaNoise = 2;
             q = [0.25*dT^4,0.5*dT^3;0.5*dT^3,dT^2]*SigmaNoise;
             Q = blkdiag(q,q,q);
             

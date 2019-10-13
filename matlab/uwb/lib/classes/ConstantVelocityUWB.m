@@ -15,13 +15,17 @@ classdef ConstantVelocityUWB < handle
         % Initialize the EKF with the anchor positions and the corresponding 
         % matrices for the process and measurement model.
         %   - AnchorPos: The position of the 6 anchors in form (6 x 3)
-        function Model = ConstantVelocityUWB(AnchorPos)
+        %   - RangeArray: Initial range measurements from UWB in form (6 x 1)
+        function Model = ConstantVelocityUWB(AnchorPos,RangeArray)
             Model.AnchorPos = AnchorPos;
             
-            Model.R = diag([0.1,0.1,0.1,0.1,0.1,0.1]);
+            Model.R = diag([0.01,0.01,0.01,0.01,0.01,0.01]);
             
-            Model.X = zeros(6,1); % (px,vx,py,vy,pz,vz)
-            Model.P = 10*eye(6);
+            ObjNorm = @(p) getTriangulationNorm(RangeArray,AnchorPos,p);
+            p = fmincon(ObjNorm,[0;0;0],[],[],[],[],[],[],[]);
+            
+            Model.X = [p(1);0;p(2);0;p(3);0]; % [px;vx;py;vy;pz;vz]
+            Model.P = 1*eye(6);
         end
         
         % Outputs the measurement model and its linearization 
@@ -49,7 +53,8 @@ classdef ConstantVelocityUWB < handle
             X = Model.X;
             P = Model.P;
 
-            q = [0.25*dT^4,0.5*dT^3;0.5*dT^3,dT^2]*3;
+            SigmaNoise = 0.9;
+            q = [0.25*dT^4,0.5*dT^3;0.5*dT^3,dT^2]*SigmaNoise;
             Q = blkdiag(q,q,q);
             
             a = [1,dT;0,1];

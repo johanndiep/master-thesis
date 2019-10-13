@@ -48,7 +48,7 @@ AbsVel = 0;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel);
 [GoalPos,GoalVel] = TrajObj.getStaticPosition;
 
-ChangeHeading = false;
+FastModus = true; % fast iteration frequency
 
 %% Preliminary
 
@@ -57,7 +57,7 @@ JoySub = rossubscriber('/spacenav/joy');
 VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 
 % initializing a controller object
-ControlObj = Controller(ChangeHeading);
+ControlObj = Controller(FastModus);
 
 % pre-allocation
 SaveViconPos = zeros(3,7000);

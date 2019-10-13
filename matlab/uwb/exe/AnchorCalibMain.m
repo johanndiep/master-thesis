@@ -9,7 +9,7 @@
 %   - Anchor 1 is set to be the origin of the coordinate system.
 %   - Anchor 3 and 5 are fixed on the same height as anchor 1.
 %   - Anchor 2, 4 and 6 are fixed at a known constant height.
-%   - Anchor 5 is assumed to be on the same axis with anchor 1 
+%   - Anchor 5 is assumed to have same x-coordinate as anchor 1 
 %     without loss of generality.
 %   - Top anchors are assumed to have same x/y-coordinates as 
 %     bottom anchors.
@@ -21,7 +21,9 @@
 %
 % Furthermore, the following points need to be investigated:
 %   - How to deal with ranging offset resulting in positioning inaccuracy?
+%     [Hopefully, the GP corrects this offset.]
 %   - Are the assumptions too limiting?
+%     [Hopefully, the GP corrects this limitation.]
 %   - Test out different placements of the poles.
 %   - Relevance of the variable NrIterAv. 
 %     [Empirically set to 100, since larger values does not result in an increase 
@@ -58,7 +60,7 @@ save('AnchorRangeMean.mat','AnchorRangeMean');
 
 %% Parameters
 
-h = 2.156; % distance between the top and bottom anchor
+h = 2.16; % distance between the top and bottom anchor
 s = zeros(1,3); % initialization of parameter p1/p2/p3
 
 %% Optimization
@@ -84,8 +86,8 @@ title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([0,4]);
-ylim([0,4]);
+xlim([-1,6]);
+ylim([-1,6]);
 zlim([0,2.5]);
 hold on;
 

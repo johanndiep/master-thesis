@@ -94,27 +94,29 @@ clear; clc;
 
 rosinit;
 
-% load('AnchorPos.mat'); % load the anchor positions
-load('HyperparametersGP.mat'); % load the VICON anchor positions
+load('AnchorPos.mat'); % load the anchor positions if available
 
 %% Parameters
 
-% coordinate transformation, only needed for anchor self-calibration
-% T = diag(ones(1,4));
-% T(1:3,4) = [-0.23;-0.245;0.245];
-% A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
+MarkTag = [-5,8,80]/1000; % body-frame coordinate of tag antenna
+
+% coordinate transformation
+T = diag(ones(1,4));
+T(1:3,4) = [-0.23;-0.25;0.25];
+A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 
 % initialize the trajectory object
-MidPoint = [0,0];
+MidPoint = [2.5,2];
 Height = 1;
 Radius = 1;
-Frequency = 0.01;
+Frequency = 1/10;
 AbsVel = 2*Radius*pi*Frequency;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
 
-ChangeHeading = false; % drone is pointing in the direction of flight
+FastModus = false; % fast iteration frequency
+ChangeHeading = false; % drone pointing in direction of flight
 
 %% Preliminary
 
@@ -126,15 +128,15 @@ JoySub = rossubscriber('/spacenav/joy');
 VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 
 % initializing a controller object
-ControlObj = Controller(ChangeHeading);
+ControlObj = Controller(FastModus);
 
 % pre-allocation
-SaveViconPos = zeros(3,10000);
-SaveViconQuat = zeros(4,10000);
-SaveCurPos = zeros(3,10000);
-SaveCurVel = zeros(3,10000);
-SaveGoalPos = zeros(3,10000);
-SaveRangeArr = zeros(6,10000);
+SaveViconPos = zeros(3,600);
+SaveViconQuat = zeros(4,600);
+SaveCurPos = zeros(3,600);
+SaveCurVel = zeros(3,600);
+SaveGoalPos = zeros(3,600);
+SaveRangeArr = zeros(6,600);
 
 %% PID
 
@@ -148,7 +150,8 @@ ControlObj.Start; % starting the drone
 pause(5);
 
 % initializing the constant velocity modeled EKF
-Model = ConstantVelocityUWB(AnchorPos);
+RangeArray = RangeMeasObj.TagAnchorRanging/1000;
+Model = ConstantVelocityUWB(AnchorPos,RangeArray);
 tic;
 
 i = 1;
@@ -165,9 +168,11 @@ while true
     % Reading UWB range measurements
     RangeArray = RangeMeasObj.TagAnchorRanging/1000;    
     
-    % prior and posterior update with process and measurement model
+    % prior update with process model
     dT = toc; Time = Time + dT;
     Model.UpdatePrior(dT);
+    
+    % posterior update with measurement model
     [CurPos,CurVel] = Model.UpdateMeasurement(RangeArray);
     tic;
     
@@ -209,20 +214,36 @@ SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
 
-save('UWBCircConData.mat','SaveViconPos','SaveViconQuat', ...
-    'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr');
+if ChangeHeading == false
+    save('UWBCircConData.mat','SaveViconPos','SaveViconQuat', ...
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
+        'AnchorPos','MarkTag','MidPoint');
+else
+    save('UWBYawCircConData.mat','SaveViconPos','SaveViconQuat', ...
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
+        'AnchorPos','MarkTag','MidPoint');
+end
 
 clear; clc;
 
 %% Plotting and Results
 
-load('UWBCircConData.mat');
+if ChangeHeading == false
+    load('UWBCircConData.mat');
+else
+    load('UWBYawCircConData.mat');
+end
+    
+%%
 
-SaveViconPos = SaveViconPos(:,1:1:end);
-SaveViconQuat = SaveViconQuat(:,1:1:end);
-SaveCurPos = SaveCurPos(:,1:1:end);
-SaveCurVel = SaveCurVel(:,1:1:end);
-SaveGoalPos = SaveGoalPos(:,1:1:end);
+TagPosition = zeros(4,size(SaveViconPos,2));
+for i = 1:size(SaveViconPos,2)
+    T = diag(ones(1,4));
+    T(1:3,1:3) = quat2rotm(SaveViconQuat(:,i)');
+    T(1:3,4) = SaveViconPos(:,i);
+    TagPosition(:,i) = T*[MarkTag';1];
+end
+TagPosition(4,:) = [];
 
 figure();
 
@@ -230,21 +251,23 @@ title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([-2,2]);
-ylim([-2,2]);
+xlim([MidPoint(1)-3,MidPoint(1)+3]);
+ylim([MidPoint(2)-3,MidPoint(2)+3]);
 zlim([0,2.5]);
 hold on;
 
-scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),200,'ro');
+scatter3(TagPosition(1,1),TagPosition(2,1),TagPosition(3,1),200,'ro');
 scatter3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),50,'b.');
-scatter3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:),10,'r.');
-scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),10,'ko');
+scatter3(TagPosition(1,:),TagPosition(2,:),TagPosition(3,:),10,'r.');
+scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),5,'ko');
 quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
     SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.5,'k');
+scatter3(AnchorPos(:,1),AnchorPos(:,2),AnchorPos(:,3),10,'ro');
 
 set(0,'DefaultLegendAutoUpdate','off')
 legend('Start Position','Desired Trajectory','Vicon Position', ...
-'EKF-UWB Position Estimation','EKF-UWB Velocity Estimation');
+'EKF-UWB Position Estimation','EKF-UWB Velocity Estimation', ...
+'Estimated Anchor Positions');
 
 quiver3(0,0,0,1,0,0,0.5,'r','LineWidth',2);
 quiver3(0,0,0,0,1,0,0.5,'g','LineWidth',2);

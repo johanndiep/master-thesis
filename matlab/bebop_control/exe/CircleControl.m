@@ -50,7 +50,7 @@ rosshutdown; rosinit;
 
 %% Parameters
 
-MidPoint = [0,0];
+MidPoint = [2.5,2];
 Height = 1;
 Radius = 1;
 Frequency = 1/30;
@@ -61,7 +61,8 @@ TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
 
-ChangeHeading = false; % drone is pointing in the direction of flight
+FastModus = true; % fast iteration frequency
+ChangeHeading = false; % drone pointing in direction of flight
 
 %% Preliminary
 
@@ -70,7 +71,7 @@ JoySub = rossubscriber('/spacenav/joy');
 VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 
 % initializing a controller object
-ControlObj = Controller(ChangeHeading);
+ControlObj = Controller(FastModus);
 
 % pre-allocation
 SaveViconPos = zeros(3,30000);
@@ -152,12 +153,14 @@ SaveGoalPos(:,CuttingIndex:end) = [];
 
 if ChangeHeading == false
     save('VicCircConData.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos');
+        'SaveCurPos','SaveCurVel','SaveGoalPos','MidPoint');
 else
     save('VicYawCircConData.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos');    
+        'SaveCurPos','SaveCurVel','SaveGoalPos','MidPoint');    
 end
-    
+
+clear; clc;
+
 %% Plotting and Results
 
 if ChangeHeading == false
@@ -166,11 +169,11 @@ else
     load('VicYawCircConData.mat');
 end
 
-SaveViconPos = SaveViconPos(:,1:300:end);
-SaveViconQuat = SaveViconQuat(:,1:300:end);
-SaveCurPos = SaveCurPos(:,1:300:end);
-SaveCurVel = SaveCurVel(:,1:300:end);
-SaveGoalPos = SaveGoalPos(:,1:300:end);
+SaveViconPos = SaveViconPos(:,1:10:end);
+SaveViconQuat = SaveViconQuat(:,1:10:end);
+SaveCurPos = SaveCurPos(:,1:10:end);
+SaveCurVel = SaveCurVel(:,1:10:end);
+SaveGoalPos = SaveGoalPos(:,1:10:end);
 
 figure();
 
@@ -178,8 +181,8 @@ title("Bebop Flying Machine Arena");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([-2,2]);
-ylim([-2,2]);
+xlim([MidPoint(1)-3,MidPoint(1)+3]);
+ylim([MidPoint(2)-3,MidPoint(2)+3]);
 zlim([0,2.5]);
 hold on;
 

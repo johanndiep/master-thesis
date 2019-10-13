@@ -71,7 +71,7 @@ TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency,SplinePoin
 
 Time = 0; % helper variable to estimate the time-variant goal state
 
-ChangeHeading = true; % drone is pointing in the direction of flight
+FastModus = false; % fast iteration frequency
 
 %% Preliminary
 
@@ -80,7 +80,7 @@ JoySub = rossubscriber('/spacenav/joy');
 VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 
 % initializing a controller object
-ControlObj = Controller(ChangeHeading);
+ControlObj = Controller(FastModus);
 
 % pre-allocation
 SaveViconPos = zeros(3,30000);

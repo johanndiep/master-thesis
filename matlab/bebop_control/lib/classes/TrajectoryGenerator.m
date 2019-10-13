@@ -157,7 +157,6 @@ classdef TrajectoryGenerator < handle
             GoalVel(1) = xDiff/Norm*AbsVel;
             GoalVel(2) = yDiff/Norm*AbsVel;
             GoalVel(3) = 0;
-
         end
     end
 end

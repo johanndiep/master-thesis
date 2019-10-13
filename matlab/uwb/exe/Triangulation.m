@@ -14,10 +14,14 @@ for i = 1:size(Savet,2)
    Tp(:,i) = fmincon(ObjNorm,[0;0;0],[],[],[],[],[],[],[]);
 end
 
+%% Triangulation
+
 for i = 1:size(SaveAbs,2)
    ObjNorm = @(s) getTriangulationNorm(SaveAbs(:,i),AnchorPos,s);
    P(:,i) = fmincon(ObjNorm,[0;0;0],[],[],[],[],[],[],[]);    
 end
+
+%% Triangulation
 
 for i = 1:size(SaveRangeArr,2)
    ObjNorm = @(u) getTriangulationNorm(SaveRangeArr(:,i),AnchorPos,u);
