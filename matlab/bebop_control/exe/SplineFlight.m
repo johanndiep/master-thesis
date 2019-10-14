@@ -51,10 +51,10 @@ rosshutdown; rosinit;
 
 %% Parameters
 
-MidPoint = [0,0];
+MidPoint = [3,2];
 Height = 1;
 Frequency = 1/30;
-SplineVariable = 1;
+SplineVariable = 1.5;
 
 SplinePoints = [MidPoint(1)-SplineVariable,MidPoint(2)+SplineVariable,Height; ...
     MidPoint(1)-SplineVariable,MidPoint(2)-SplineVariable,Height; ...

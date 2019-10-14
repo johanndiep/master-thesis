@@ -23,21 +23,23 @@ clear; clc;
 
 rosshutdown; rosinit;
 
-load('HyperparametersGP.mat'); % load the parameters
+% load('CircleHypGP.mat'); % load the parameters
+load('YawCircleHypGP.mat'); % load the parameters with yaw
 
 %% Parameters
 
 % initialize the trajectory object
-MidPoint = [0,0];
+MidPoint = [2.5,2];
 Height = 1;
-Radius = 1;
-Frequency = 0.01;
+Radius = 1.5;
+Frequency = 1/20;
 AbsVel = 2*Radius*pi*Frequency;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
 
-ChangeHeading = false; % drone is pointing in the direction of flight
+FastModus = false; % fast iteration frequency
+ChangeHeading = true; % drone pointing in direction of flight
 
 Kernel = @DistanceKernel;
 Mode = "GP";
@@ -52,18 +54,18 @@ JoySub = rossubscriber('/spacenav/joy');
 VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
 
 % initializing a controller object
-ControlObj = Controller(ChangeHeading);
+ControlObj = Controller(FastModus);
 
 % pre-allocation
-SaveViconPos = zeros(3,5000);
-SaveViconQuat = zeros(4,5000);
-SaveCurPos = zeros(3,5000);
-SaveCurVel = zeros(3,5000);
-SaveGoalPos = zeros(3,5000);
-SaveRangeArr = zeros(6,5000);
-Savet = zeros(6,5000);
-SaveAbs = zeros(6,5000);
-SaveCovVal = zeros(6,5000);
+SaveViconPos = zeros(3,600);
+SaveViconQuat = zeros(4,600);
+SaveCurPos = zeros(3,600);
+SaveCurVel = zeros(3,600);
+SaveGoalPos = zeros(3,600);
+SaveRangeArr = zeros(6,600);
+Savet = zeros(6,600);
+SaveAbs = zeros(6,600);
+SaveCovVal = zeros(6,600);
 
 %% PID
 
@@ -77,7 +79,8 @@ ControlObj.Start; % starting the drone
 pause(5);
 
 % initializing the constant velocity modeled EKF
-Model = ConstantVelocityGP(Xa,Ya,Kernel,NoiseStd,s0,s1,AnchorPos);
+RangeArray = RangeMeasObj.TagAnchorRanging/1000;
+Model = ConstantVelocityGP(X,Y,Kernel,NoiseStd,s0,s1,AnchorPos,RangeArray);
 tic;
 
 i = 1;
@@ -94,9 +97,11 @@ while true
     % Reading UWB range measurements
     RangeArray = RangeMeasObj.TagAnchorRanging/1000;
     
-    % prior and posterior update with process and measurement model
+    % prior update with process model
     dT = toc; Time = Time + dT;
     Model.UpdatePrior(dT);
+    
+    % posterior update with measurement model
     [CurPos,CurVel,t,Abs,CovVal] = Model.UpdateMeasurement(RangeArray,Mode);
     tic;
     
@@ -145,58 +150,48 @@ Savet(:,CuttingIndex:end) = [];
 SaveAbs(:,CuttingIndex:end) = [];
 SaveCovVal(:,CuttingIndex:end) = [];
 
-save('GPCircConData.mat','SaveViconPos','SaveViconQuat', ...
-    'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-    'Savet','SaveAbs','SaveCovVal');
+if ChangeHeading == false
+    save('GPCircConData.mat','SaveViconPos','SaveViconQuat', ...
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
+        'Savet','SaveAbs','SaveCovVal','MidPoint','ChangeHeading');
+else
+    save('GPYawCircConData.mat','SaveViconPos','SaveViconQuat', ...
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
+        'Savet','SaveAbs','SaveCovVal','MidPoint','ChangeHeading');
+end
 
 clear; clc;
 
 %% Plotting and Results
 
-load('GPCircConData.mat');
-
-SaveViconPos = SaveViconPos(:,1:1:end);
-SaveViconQuat = SaveViconQuat(:,1:1:end);
-SaveCurPos = SaveCurPos(:,1:1:end);
-SaveCurVel = SaveCurVel(:,1:1:end);
-SaveGoalPos = SaveGoalPos(:,1:1:end);
+if ChangeHeading == false
+    load('GPCircConData.mat');
+else
+    load('GPYawCircConData.mat');
+end
 
 figure();
 
-title("Bebop Flying Machine Arena");
+title("Flight Trajectory");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([-2,2]);
-ylim([-2,2]);
+xlim([MidPoint(1)-3,MidPoint(1)+3]);
+ylim([MidPoint(2)-3,MidPoint(2)+3]);
 zlim([0,2.5]);
 hold on;
 
-scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),200,'ro');
-scatter3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),50,'b.');
-scatter3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:),10,'r.');
-scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),10,'ko');
-quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.5,'k');
+plot3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),'LineWidth',0.5,'Color','b');
+plot3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:),'LineWidth',1.5,'Color','r','LineStyle',':');
+plot3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),'LineWidth',1.5,'Color','k','LineStyle',':');
 
 set(0,'DefaultLegendAutoUpdate','off')
-legend('Start Position','Desired Trajectory','Vicon Position', ...
-'EKF-UWB/GP Position Estimation','EKF-UWB/GP Velocity Estimation');
+legend('Reference','Vicon Position Measurement','EKF Position Estimation');
 
-quiver3(0,0,0,1,0,0,0.5,'r','LineWidth',2);
-quiver3(0,0,0,0,1,0,0.5,'g','LineWidth',2);
-quiver3(0,0,0,0,0,1,0.5,'b','LineWidth',2);
-
-RotMats = quat2rotm(SaveViconQuat');
-Xb = permute(RotMats(:,1,:),[1,3,2]);
-Yb = permute(RotMats(:,2,:),[1,3,2]);
-Zb = permute(RotMats(:,3,:),[1,3,2]);
-quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    Xb(1,:),Xb(2,:),Xb(3,:),0.2,'r');
-quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    Yb(1,:),Yb(2,:),Yb(3,:),0.2,'g');
-quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    Zb(1,:),Zb(2,:),Zb(3,:),0.2,'b');
+quiver3(0,0,0,1,0,0,0.3,'k','LineWidth',1);
+quiver3(0,0,0,0,1,0,0.3,'k','LineWidth',1);
+quiver3(0,0,0,0,0,1,0.3,'k','LineWidth',1);
 
 grid on;
+daspect([1 1 1]);
 hold off;

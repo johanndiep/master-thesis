@@ -19,13 +19,13 @@ classdef ConstantVelocityUWB < handle
         function Model = ConstantVelocityUWB(AnchorPos,RangeArray)
             Model.AnchorPos = AnchorPos;
             
-            Model.R = diag([0.01,0.01,0.01,0.01,0.01,0.01]);
+            Model.R = diag([0.05,0.05,0.05,0.05,0.05,0.05]);
             
             ObjNorm = @(p) getTriangulationNorm(RangeArray,AnchorPos,p);
             p = fmincon(ObjNorm,[0;0;0],[],[],[],[],[],[],[]);
             
             Model.X = [p(1);0;p(2);0;p(3);0]; % [px;vx;py;vy;pz;vz]
-            Model.P = 1*eye(6);
+            Model.P = 0.1*eye(6);
         end
         
         % Outputs the measurement model and its linearization 
@@ -53,7 +53,7 @@ classdef ConstantVelocityUWB < handle
             X = Model.X;
             P = Model.P;
 
-            SigmaNoise = 0.9;
+            SigmaNoise = 2;
             q = [0.25*dT^4,0.5*dT^3;0.5*dT^3,dT^2]*SigmaNoise;
             Q = blkdiag(q,q,q);
             

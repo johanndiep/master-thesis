@@ -32,8 +32,8 @@ classdef ConstantVelocityGP < handle
         %   - s0/s1: Scalar kernel parameters in form (1 x 6)
         %   - AnchorPos: The position of the 6 anchors in form (6 x 3)
         %   - Xi: Pseudo-input data in form (3 x m x 6)
-        function Model = ConstantVelocityGP(Xd,Yd,Kernel,NoiseStd,s0,s1,AnchorPos,Xi)
-            if nargin == 7
+        function Model = ConstantVelocityGP(Xd,Yd,Kernel,NoiseStd,s0,s1,AnchorPos,RangeArray,Xi)
+            if nargin == 8
                 Xi = ones(3,1,6);
             end
             
@@ -46,14 +46,17 @@ classdef ConstantVelocityGP < handle
             Model.s1 = s1;
             Model.AnchorPos = AnchorPos;
             
-            if nargin == 7
+            if nargin == 8
                 Model.ParamGP = Model.ParameterGP;
             else
                 Model.ParamSPGP = Model.ParameterSPGP;
             end
           
-            Model.X = zeros(6,1); % (px,vx,py,vy,pz,vz)
-            Model.P = 10*eye(6);
+            ObjNorm = @(p) getTriangulationNorm(RangeArray,AnchorPos,p);
+            p = fmincon(ObjNorm,[0;0;0],[],[],[],[],[],[],[]);            
+            
+            Model.X = [p(1);0;p(2);0;p(3);0]; % [px;vx;py;vy;pz;vz]
+            Model.P = 0.1*eye(6);
         end
 
         % In total, there are 6 different Gaussian Process models, one
@@ -250,7 +253,8 @@ classdef ConstantVelocityGP < handle
             X = Model.X;
             P = Model.P;
 
-            q = [0.25*dT^4,0.5*dT^3;0.5*dT^3,dT^2]*3;
+            SigmaNoise = 2;
+            q = [0.25*dT^4,0.5*dT^3;0.5*dT^3,dT^2]*SigmaNoise;
             Q = blkdiag(q,q,q);
             
             a = [1,dT;0,1];

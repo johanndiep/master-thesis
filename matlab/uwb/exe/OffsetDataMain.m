@@ -46,7 +46,6 @@
 %   - Does a batch of range measurement match to the current position good enough?
 %   - Should zero measurements be rejected?
 %   - Closing procedure right?
-%   - Set tag number, check if this number is interrogated.
 %
 % Step-by-Step:
 %   1. Place pole 1 and pole 3 such that the corresponding anchors have 
@@ -65,46 +64,43 @@
 %   9. Attach VICON markers on the Bebop and on the UWB antenna ("TagMarker"), 
 %      group the markers on the VICON Tracker to an object and name it 
 %      "Bebop_Johann".
-%   10. Attach VICON markers on the anchor poles ("Pole1", "Pole2" and "Pole3"),
-%      group the markers on the VICON Tracker to an object and name it 
-%      "Anchors_Johann".
-%   11. Write down the body-frame coordinates of "TagMarker", "Pole1", "Pole2" 
-%       and "Pole3". The coordinates can be seen in VICON Tracker application.
-%   12. Connect the computer with the VICON machine via Ethernet
-%   13. Turn on the Bebop and connect the laptop with it over Wi-Fi.
-%   14. Turn on the Spacemouse and start its ROS driver.
-%   15. Start the ROS VICON bridge node.
-%   16. Start the ROS driver for the Bebop.
-%   17. Set the desired circle parameters.
-%   18. Run the following script.
+%   10. Connect the computer with the VICON machine via Ethernet
+%   11. Turn on the Bebop and connect the laptop with it over Wi-Fi.
+%   12. Turn on the Spacemouse and start its ROS driver.
+%   13. Start the ROS VICON bridge node.
+%   14. Start the ROS driver for the Bebop.
+%   15. Set the desired circle parameters.
+%   16. Run the following script.
 %
 % To-Do:
 %   - Figure out how to subscribe to "/vicon/markers".
+%   - Set tag number, check if this number is interrogated.
 
 clear; clc;
 
 rosshutdown; rosinit;
 
+load('AnchorPos.mat'); % load the anchor positions if available
+
 %% Parameters
 
-% marker positions
-Marker.Dev = [-0.04,2.116];
-Marker.MarkP1 = [-1512,-1526,6]/1000;
-Marker.MarkP2 = [2952,58,-30]/1000;
-Marker.MarkP3 = [-1440,1468,24]/1000;
-Marker.MarkTag = [0,0,0];
+% coordinate transformation
+T = diag(ones(1,4));
+T(1:3,4) = [-0.23;-0.25;0.25];
+A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 
 % initialize the trajectory object
-MidPoint = [0,0];
+MidPoint = [2.5,2];
 Height = 1;
-Radius = 1;
-Frequency = 0.01;
+Radius = 1.5;
+Frequency = 1/60;
 AbsVel = 2*Radius*pi*Frequency;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
 
-ChangeHeading = false; % drone is pointing in the direction of flight
+FastModus = false; % fast iteration frequency
+ChangeHeading = true; % drone is pointing in the direction of flight
 
 %% Preliminary
 
@@ -114,21 +110,17 @@ RangeMeasObj = RangeMeasurements();
 % ROS subscribers for Spacemouse and VICON positioning system
 JoySub = rossubscriber('/spacenav/joy'); 
 VicDroneSub = rossubscriber('/vicon/Bebop_Johann/Bebop_Johann');
-VicAncSub = rossubscriber('/vicon/Anchors_Johann/Anchors_Johann');
 
 % initializing a controller object
-ControlObj = Controller(ChangeHeading);
+ControlObj = Controller(FastModus);
 
 % pre-allocation
-SaveViconPos = zeros(3,5000);
-SaveViconQuat = zeros(4,5000);
-SaveCurPos = zeros(3,5000);
-SaveCurVel = zeros(3,5000);
-SaveGoalPos = zeros(3,5000);
-SaveRangeArr = zeros(6,5000);
-
-% anchor positions
-[VicAncPos,VicAncQuat] = getGroundTruth(VicAncSub);
+SaveViconPos = zeros(3,1000);
+SaveViconQuat = zeros(4,1000);
+SaveCurPos = zeros(3,1000);
+SaveCurVel = zeros(3,1000);
+SaveGoalPos = zeros(3,1000);
+SaveRangeArr = zeros(6,1000);
 
 %% PID
 
@@ -159,9 +151,11 @@ while true
     % Reading UWB range measurements
     RangeArray = RangeMeasObj.TagAnchorRanging;    
     
-    % prior and posterior update with process and measurement model
+    % prior update with process model
     dT = toc; Time = Time + dT;
     Model.UpdatePrior(dT);
+    
+    % posterior update with measurement model
     [CurPos,CurVel] = Model.UpdateMeasurement(ViconPos);
     tic;
     
@@ -196,8 +190,6 @@ pause(5);
 
 rosshutdown;
 
-%%
-
 CuttingIndex = find(SaveViconPos(1,:),1,'last')+1;
 SaveViconPos(:,CuttingIndex:end) = [];
 SaveViconQuat(:,CuttingIndex:end) = [];
@@ -206,8 +198,14 @@ SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
 SaveRangeArr(:,CuttingIndex:end) = [];
 
-save('UWB-GP.mat','SaveViconPos','SaveViconQuat', ...
-    'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-    'VicAncPos','VicAncQuat','Marker');
+if ChangeHeading == false
+    save('UWBCircConDataGP.mat','SaveViconPos','SaveViconQuat', ...
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
+        'AnchorPos','MidPoint','Height','Radius','ChangeHeading');
+else
+    save('UWBYawCircConDataGP.mat','SaveViconPos','SaveViconQuat', ...
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
+        'AnchorPos','MidPoint','Height','Radius','ChangeHeading');   
+end
 
 clear; clc;

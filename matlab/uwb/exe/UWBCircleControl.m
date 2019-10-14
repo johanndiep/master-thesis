@@ -52,7 +52,6 @@
 %   - Does the delay in range reading influence position estimation?
 %   - Does a batch of range measurement match to the current position good enough?
 %   - Closing procedure right?
-%   - Set tag number, check if this number is interrogated.
 %   - How to accomodate for ranging offset from the UWB modules?
 %     [Learning the offset via Gaussian Process.]
 %   - For more points on anchor calibration, see "AnchorCalibMain.m".
@@ -88,7 +87,8 @@
 %   16. Run the following script
 %
 % To-Do:
-%   - Track marker instead of drone center with VICON.
+%   - Track marker instead of drone center with VICON. [x]
+%   - Set tag number, check if this number is interrogated.
 
 clear; clc;
 
@@ -108,15 +108,15 @@ A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 % initialize the trajectory object
 MidPoint = [2.5,2];
 Height = 1;
-Radius = 1;
-Frequency = 1/10;
+Radius = 1.5;
+Frequency = 1/30;
 AbsVel = 2*Radius*pi*Frequency;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
 Time = 0; % helper variable to estimate the time-variant goal state
 
 FastModus = false; % fast iteration frequency
-ChangeHeading = false; % drone pointing in direction of flight
+ChangeHeading = true; % drone pointing in direction of flight
 
 %% Preliminary
 
@@ -217,11 +217,11 @@ SaveGoalPos(:,CuttingIndex:end) = [];
 if ChangeHeading == false
     save('UWBCircConData.mat','SaveViconPos','SaveViconQuat', ...
         'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-        'AnchorPos','MarkTag','MidPoint');
+        'AnchorPos','MarkTag','MidPoint','ChangeHeading');
 else
     save('UWBYawCircConData.mat','SaveViconPos','SaveViconQuat', ...
         'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-        'AnchorPos','MarkTag','MidPoint');
+        'AnchorPos','MarkTag','MidPoint','ChangeHeading');
 end
 
 clear; clc;
@@ -233,8 +233,6 @@ if ChangeHeading == false
 else
     load('UWBYawCircConData.mat');
 end
-    
-%%
 
 TagPosition = zeros(4,size(SaveViconPos,2));
 for i = 1:size(SaveViconPos,2)
@@ -247,7 +245,7 @@ TagPosition(4,:) = [];
 
 figure();
 
-title("Bebop Flying Machine Arena");
+title("Flight Trajectory");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
@@ -256,33 +254,17 @@ ylim([MidPoint(2)-3,MidPoint(2)+3]);
 zlim([0,2.5]);
 hold on;
 
-scatter3(TagPosition(1,1),TagPosition(2,1),TagPosition(3,1),200,'ro');
-scatter3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),50,'b.');
-scatter3(TagPosition(1,:),TagPosition(2,:),TagPosition(3,:),10,'r.');
-scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),5,'ko');
-quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.5,'k');
-scatter3(AnchorPos(:,1),AnchorPos(:,2),AnchorPos(:,3),10,'ro');
+plot3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),'LineWidth',0.5,'Color','b');
+plot3(TagPosition(1,:),TagPosition(2,:),TagPosition(3,:),'LineWidth',1.5,'Color','r','LineStyle',':');
+plot3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),'LineWidth',1.5,'Color','k','LineStyle',':');
 
 set(0,'DefaultLegendAutoUpdate','off')
-legend('Start Position','Desired Trajectory','Vicon Position', ...
-'EKF-UWB Position Estimation','EKF-UWB Velocity Estimation', ...
-'Estimated Anchor Positions');
+legend('Reference','Vicon Position Measurement','EKF Position Estimation');
 
-quiver3(0,0,0,1,0,0,0.5,'r','LineWidth',2);
-quiver3(0,0,0,0,1,0,0.5,'g','LineWidth',2);
-quiver3(0,0,0,0,0,1,0.5,'b','LineWidth',2);
-
-RotMats = quat2rotm(SaveViconQuat');
-Xb = permute(RotMats(:,1,:),[1,3,2]);
-Yb = permute(RotMats(:,2,:),[1,3,2]);
-Zb = permute(RotMats(:,3,:),[1,3,2]);
-quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    Xb(1,:),Xb(2,:),Xb(3,:),0.2,'r');
-quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    Yb(1,:),Yb(2,:),Yb(3,:),0.2,'g');
-quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    Zb(1,:),Zb(2,:),Zb(3,:),0.2,'b');
+quiver3(0,0,0,1,0,0,0.3,'k','LineWidth',1);
+quiver3(0,0,0,0,1,0,0.3,'k','LineWidth',1);
+quiver3(0,0,0,0,0,1,0.3,'k','LineWidth',1);
 
 grid on;
+daspect([1 1 1]);
 hold off;

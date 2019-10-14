@@ -31,10 +31,10 @@ classdef DataPrep < handle
             
             X = quat2eul(VicQuat');
             X(:,2:3) = [];
-        end
+        end      
         
         % Returns the offsets for the UWB range measurement during flight
-        % as well as the anchor positions in VICON inertial frame and the ground-truth
+        % as well as the anchor positions in Vicon inertial frame and the ground-truth
         % ranges.
         %   - DataPrepObj: Data preprocessing object defined by the constructor
         %   - Marker: Sruct containing the marker positions in corresponding 
@@ -87,5 +87,25 @@ classdef DataPrep < handle
                Ya(j,:) = Pa(j,:)-RangeArray(j,:);
             end
         end
+        
+        % Returns the offsets for the UWB range measurement during flight
+        % as well as the anchor positions in Vicon inertial frame and the ground-truth
+        % ranges. Thereby, the self-localized anchor positions and the
+        % Vicon position of the drone are used.
+        %   - DataPrepObj: Data preprocessing object defined by the constructor
+        %   - VicDrPos: Vicon position measurements of the drone in form (3 x n)
+        %   - AnchorPos: Self-localized anchor positions in Vicon frame in
+        %     form (6 x 3)
+        function [X,Y,P] = SimplifiedFlight(DataPrepObj,VicDrPos,AnchorPos)
+            RangeArray = DataPrepObj.RangeArray;
+            
+            X = VicDrPos;
+            
+            for j = 1:6
+               B = repmat(AnchorPos(j,:)',1,size(X,2));
+               P(j,:) = vecnorm(B-X);
+               Y(j,:) = P(j,:)-RangeArray(j,:);
+            end
+        end   
     end
 end

@@ -16,7 +16,7 @@ classdef ConstantVelocityEKF < handle
         function Model = ConstantVelocityEKF()
             Model.H = [1,0,0,0,0,0;0,0,1,0,0,0;0,0,0,0,1,0];
             
-            Model.R = diag([0.01,0.01,0.01]);
+            Model.R = diag([0.001,0.001,0.001]);
 
             Model.X = zeros(6,1);  % [px;vx;py;vy;pz;vz]
             Model.P = 10*eye(6);
