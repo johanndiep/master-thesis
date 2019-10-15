@@ -51,10 +51,10 @@ rosshutdown; rosinit;
 
 %% Parameters
 
-MidPoint = [3,2];
+MidPoint = [2.5,2];
 Height = 1;
-Frequency = 1/30;
-SplineVariable = 1.5;
+Frequency = 1/50;
+SplineVariable = 1;
 
 SplinePoints = [MidPoint(1)-SplineVariable,MidPoint(2)+SplineVariable,Height; ...
     MidPoint(1)-SplineVariable,MidPoint(2)-SplineVariable,Height; ...
@@ -152,54 +152,36 @@ SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
 
 save('VicSplineConData.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos');
+        'SaveCurPos','SaveCurVel','SaveGoalPos','MidPoint');
 
  %% Plotting and Results
 
 load('VicSplineConData.mat');
-    
-SaveViconPos = SaveViconPos(:,1:10:end);
-SaveViconQuat = SaveViconQuat(:,1:10:end);
-SaveCurPos = SaveCurPos(:,1:10:end);
-SaveCurVel = SaveCurVel(:,1:10:end);
-SaveGoalPos = SaveGoalPos(:,1:10:end);
 
 figure();
 
-title("Bebop Flying Machine Arena");
+title("Flight Trajectory");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([-2,2]);
-ylim([-2,2]);
+xlim([MidPoint(1)-3,MidPoint(1)+3]);
+ylim([MidPoint(2)-3,MidPoint(2)+3]);
 zlim([0,2.5]);
 hold on;
 
-scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1),200,'ro');
-scatter3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),50,'b.');
-scatter3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:),10,'r.');
-scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),10,'ko');
-quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    SaveCurVel(1,:),SaveCurVel(2,:),SaveCurVel(3,:),0.5,'k');
+SaveCurPos = SaveCurPos(:,1:50:end);
+SaveViconQuat = SaveViconQuat(:,1:50:end);
 
+plot3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),'LineWidth',0.5,'Color','b');
+plot3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:),'LineWidth',1.5,'Color','r','LineStyle',':');
+plot3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),'LineWidth',1.5,'Color','k','LineStyle',':');
 set(0,'DefaultLegendAutoUpdate','off')
-legend('Start Position','Desired Trajectory','Vicon Position', ...
-    'EKF Position Estimation','EKF Velocity Estimation');
+legend('Reference','Vicon Position Measurement','EKF Position Estimation');
 
-quiver3(0,0,0,1,0,0,0.5,'r','LineWidth',2);
-quiver3(0,0,0,0,1,0,0.5,'g','LineWidth',2);
-quiver3(0,0,0,0,0,1,0.5,'b','LineWidth',2);
-
-RotMats = quat2rotm(SaveViconQuat');
-Xb = permute(RotMats(:,1,:),[1,3,2]);
-Yb = permute(RotMats(:,2,:),[1,3,2]);
-Zb = permute(RotMats(:,3,:),[1,3,2]);
-quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    Xb(1,:),Xb(2,:),Xb(3,:),0.2,'r');
-quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    Yb(1,:),Yb(2,:),Yb(3,:),0.2,'g');
-quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
-    Zb(1,:),Zb(2,:),Zb(3,:),0.2,'b');
+quiver3(0,0,0,1,0,0,0.3,'k','LineWidth',1);
+quiver3(0,0,0,0,1,0,0.3,'k','LineWidth',1);
+quiver3(0,0,0,0,0,1,0.3,'k','LineWidth',1);
 
 grid on;
+daspect([1 1 1]);
 hold off;

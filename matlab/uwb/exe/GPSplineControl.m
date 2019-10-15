@@ -23,25 +23,31 @@ clear; clc;
 
 rosshutdown; rosinit;
 
-% load('CircleHypGP.mat'); % load the parameters
-% load('YawCircleHypGP.mat'); % load the parameters with yaw
-load('CenCircleHypGP.mat'); % load the center parameters 
+load('SplineHypGP.mat'); % load the parameters
 
 %% Parameters
 
-% initialize the trajectory object
 MidPoint = [2.5,2];
 Height = 1;
-Radius = 1.5;
-Frequency = 1/30;
-AbsVel = 2*Radius*pi*Frequency;
-TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
+Frequency = 1/50;
+SplineVariable = 1;
+
+SplinePoints = [MidPoint(1)-SplineVariable,MidPoint(2)+SplineVariable,Height; ...
+    MidPoint(1)-SplineVariable,MidPoint(2)-SplineVariable,Height; ...
+    MidPoint(1),MidPoint(2)-SplineVariable,Height; ...
+    MidPoint(1),MidPoint(2)+SplineVariable,Height; ...
+    MidPoint(1)+SplineVariable,MidPoint(2)+SplineVariable,Height; ...
+    MidPoint(1)+SplineVariable,MidPoint(2)-SplineVariable,Height];
+
+Radius = 0;
+AbsVel = 0;
+
+% initialize the trajectory object
+TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency,SplinePoints);
 
 Time = 0; % helper variable to estimate the time-variant goal state
 
 FastModus = false; % fast iteration frequency
-ChangeHeading = true; % drone pointing in direction of flight
-PointToCenter = true; % able to face to the center of the circle
 
 Kernel = @DistanceKernel;
 Mode = "GP";
@@ -107,26 +113,12 @@ while true
     [CurPos,CurVel,t,Abs,CovVal] = Model.UpdateMeasurement(RangeArray,Mode);
     tic;
     
-    if ChangeHeading == false
-        % time-variant goal position and velocity
-        [GoalPos,GoalVel] = TrajObj.getCircleTrajectory(Time);
+    % time-variant goal position, yaw and velocity
+    [GoalPos,GoalYaw,GoalVel] = TrajObj.getSplinePosition(Time);
         
-        % moving the drone towards the desired goal position while
-        % keeping the orientation fixed
-        ControlObj.NoTurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat);
-    else
-        if PointToCenter == false
-            % time-variant goal position, yaw and velocity
-            [GoalPos,GoalYaw,GoalVel] = TrajObj.getYawCircleTraj(Time);
-        else
-            % time-variant goal position, yaw and velocity
-            [GoalPos,GoalYaw,GoalVel] = TrajObj.getCenCircleTraj(Time);
-        end
-        
-        % moving the drone towards the desired goal position while 
-        % keeping the orientation in the direction of flight
-        ControlObj.TurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat,GoalYaw);      
-    end
+    % moving the drone towards the desired goal position while 
+    % keeping the orientation in the direction of flight
+    ControlObj.TurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat,GoalYaw);
     
     % saving to array
     SaveViconPos(:,i) = ViconPos;
@@ -157,38 +149,15 @@ Savet(:,CuttingIndex:end) = [];
 SaveAbs(:,CuttingIndex:end) = [];
 SaveCovVal(:,CuttingIndex:end) = [];
 
-if ChangeHeading == false
-    save('GPCircConData.mat','SaveViconPos','SaveViconQuat', ...
+    save('GPSplineConData.mat','SaveViconPos','SaveViconQuat', ...
         'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-        'Savet','SaveAbs','SaveCovVal','MidPoint','ChangeHeading','PointToCenter');
-else
-    if PointToCenter == false
-        save('GPYawCircConData.mat','SaveViconPos','SaveViconQuat', ...
-            'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-            'Savet','SaveAbs','SaveCovVal','MidPoint','ChangeHeading','PointToCenter');
-    else
-        save('GPCenCircConData.mat','SaveViconPos','SaveViconQuat', ...
-            'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-            'Savet','SaveAbs','SaveCovVal','MidPoint','ChangeHeading','PointToCenter');
-    end
-    
-end
+        'Savet','SaveAbs','SaveCovVal','MidPoint');
 
 clear; clc;
 
 %% Plotting and Results
 
-if ChangeHeading == false
-    load('GPCircConData.mat');
-else
-    if PointToCenter == false
-        load('GPYawCircConData.mat');
-    else
-        load('GPCenCircConData.mat');
-    end
-end
-
-%%
+load('GPSplineConData.mat');
 
 figure();
 

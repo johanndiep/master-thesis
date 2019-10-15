@@ -28,6 +28,7 @@
 %     coupled?
 %     [An equation is relating frequency to absolute velocities now.]
 %   - Is the dT timing accurate?
+%     [Yes, no limitations]
 %
 % Step-by-Step:
 %   1. Calibrate the VICON system and place the origin in the middle of the room 
@@ -52,7 +53,7 @@ rosinit;
 
 MidPoint = [2.5,2];
 Height = 1;
-Radius = 1.5;
+Radius = 1.3;
 Frequency = 1/30;
 AbsVel = 2*Radius*pi*Frequency;
 
@@ -62,7 +63,8 @@ TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 Time = 0; % helper variable to estimate the time-variant goal state
 
 FastModus = true; % fast iteration frequency
-ChangeHeading = true; % drone pointing in direction of flight
+ChangeHeading = true; % able to change its direction during flight
+PointToCenter = false; % able to face to the center of the circle
 
 %% Preliminary
 
@@ -122,8 +124,13 @@ while true
         % keeping the orientation fixed
         ControlObj.NoTurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat);
     else
-        % time-variant goal position, yaw and velocity
-        [GoalPos,GoalYaw,GoalVel] = TrajObj.getYawCircleTraj(Time);
+        if PointToCenter == false
+            % time-variant goal position, yaw and velocity
+            [GoalPos,GoalYaw,GoalVel] = TrajObj.getYawCircleTraj(Time);
+        else
+            % time-variant goal position, yaw and velocity
+            [GoalPos,GoalYaw,GoalVel] = TrajObj.getCenCircleTraj(Time);
+        end
         
         % moving the drone towards the desired goal position while 
         % keeping the orientation in the direction of flight
@@ -153,10 +160,15 @@ SaveGoalPos(:,CuttingIndex:end) = [];
 
 if ChangeHeading == false
     save('VicCircConData.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos','MidPoint','ChangeHeading');
+        'SaveCurPos','SaveCurVel','SaveGoalPos','MidPoint','ChangeHeading','PointToCenter');
 else
-    save('VicYawCircConData.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos','MidPoint','ChangeHeading');    
+    if PointToCenter == false
+        save('VicYawCircConData.mat','SaveViconPos','SaveViconQuat', ...
+            'SaveCurPos','SaveCurVel','SaveGoalPos','MidPoint','ChangeHeading','PointToCenter');
+    else
+        save('VicCenCircConData.mat','SaveViconPos','SaveViconQuat', ...
+            'SaveCurPos','SaveCurVel','SaveGoalPos','MidPoint','ChangeHeading','PointToCenter');
+    end
 end
 
 clear; clc;
@@ -166,7 +178,11 @@ clear; clc;
 if ChangeHeading == false
     load('VicCircConData.mat');
 else
-    load('VicYawCircConData.mat');
+    if PointToCenter == false
+        load('VicYawCircConData.mat');
+    else
+        load('VicCenCircConData.mat');
+    end
 end
 
 figure();

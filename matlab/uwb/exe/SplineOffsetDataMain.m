@@ -1,8 +1,8 @@
-% Johann Diep (jdiep@student.ethz.ch) - August 2019
+% Johann Diep (jdiep@student.ethz.ch) - October 2019
 %
 % With this script, UWB range offset measurement can be gathered while the drone
-% is commanded to fly a circular trajectory. The control part is copied from
-% "CircleControl.m".
+% is commanded to fly a spline trajectory. The control part is copied from
+% "SplineControl.m".
 %
 % Placement of the anchors with the following assumptions:
 %   - Anchor 1 is set to be the origin of the coordinate system
@@ -89,18 +89,32 @@ T = diag(ones(1,4));
 T(1:3,4) = [-0.23;-0.25;0.25];
 A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 
-% initialize the trajectory object
 MidPoint = [2.5,2];
 Height = 1;
-Radius = 1.5;
 Frequency = 1/60;
-AbsVel = 2*Radius*pi*Frequency;
-TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
+SplineVariable = 1;
+
+SplinePoints = [MidPoint(1)-SplineVariable,MidPoint(2)+SplineVariable,Height; ...
+    MidPoint(1)-SplineVariable,MidPoint(2)-SplineVariable,Height; ...
+    MidPoint(1),MidPoint(2)-SplineVariable,Height; ...
+    MidPoint(1),MidPoint(2)+SplineVariable,Height; ...
+    MidPoint(1)+SplineVariable,MidPoint(2)+SplineVariable,Height; ...
+    MidPoint(1)+SplineVariable,MidPoint(2)-SplineVariable,Height];
+
+Radius = 0;
+AbsVel = 0;
+
+% initialize the trajectory object
+TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency,SplinePoints);
 
 Time = 0; % helper variable to estimate the time-variant goal state
 
 FastModus = false; % fast iteration frequency
-ChangeHeading = true; % drone is pointing in the direction of flight
+
+% do not change those variables
+ChangeHeading = true;
+PointToCenter = false;
+SplineFlight = true;
 
 %% Preliminary
 
@@ -146,10 +160,10 @@ while true
     end
     
     % Vicon ground-truth position and quaternion of the drone
-    [ViconPos,ViconQuat] = getGroundTruth(VicDroneSub);
+    [ViconPos,ViconQuat] = getGroundTruth(VicDroneSub);   
     
     % Reading UWB range measurements
-    RangeArray = RangeMeasObj.TagAnchorRanging;    
+    RangeArray = RangeMeasObj.TagAnchorRanging;
     
     % prior update with process model
     dT = toc; Time = Time + dT;
@@ -159,21 +173,12 @@ while true
     [CurPos,CurVel] = Model.UpdateMeasurement(ViconPos);
     tic;
     
-    if ChangeHeading == false
-        % time-variant goal position and velocity
-        [GoalPos,GoalVel] = TrajObj.getCircleTrajectory(Time);
+    % time-variant goal position, yaw and velocity
+    [GoalPos,GoalYaw,GoalVel] = TrajObj.getSplinePosition(Time);
         
-        % moving the drone towards the desired goal position while
-        % keeping the orientation fixed
-        ControlObj.NoTurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat);
-    else
-        % time-variant goal position, yaw and velocity
-        [GoalPos,GoalYaw,GoalVel] = TrajObj.getYawCircleTraj(Time);
-        
-        % moving the drone towards the desired goal position while 
-        % keeping the orientation in the direction of flight
-        ControlObj.TurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat,GoalYaw);        
-    end
+    % moving the drone towards the desired goal position while 
+    % keeping the orientation in the direction of flight
+    ControlObj.TurnFlight(CurPos,GoalPos',CurVel,GoalVel',ViconQuat,GoalYaw);
     
     % saving to array
     SaveViconPos(:,i) = ViconPos;
@@ -198,14 +203,8 @@ SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
 SaveRangeArr(:,CuttingIndex:end) = [];
 
-if ChangeHeading == false
-    save('UWBCircConDataGP.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-        'AnchorPos','MidPoint','Height','Radius','ChangeHeading');
-else
-    save('UWBYawCircConDataGP.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-        'AnchorPos','MidPoint','Height','Radius','ChangeHeading');   
-end
+save('UWBSplineConDataGP.mat','SaveViconPos','SaveViconQuat', ...
+    'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
+    'AnchorPos','MidPoint','ChangeHeading','PointToCenter','SplineFlight');
 
 clear; clc;

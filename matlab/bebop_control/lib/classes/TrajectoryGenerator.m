@@ -92,6 +92,33 @@ classdef TrajectoryGenerator < handle
             GoalVel(1) = v*cos(2*pi*f*t);
             GoalVel(2) = v*sin(2*pi*f*t);
             GoalVel(3) = 0;
+        end
+             
+        % This function calculates the dynamic position and the corresponding 
+        % velocity for a circular flight, where the drone is facing to the
+        % center.
+        %   - TrajectoryObject: Trajectory object defined by the constructor
+        %   - t: Timestep at which the the corresponding waypoint should be
+        %        gathered        
+        function [GoalPos,GoalYaw,GoalVel] = getCenCircleTraj(TrajectoryObject,t)
+            m = TrajectoryObject.m;
+            h = TrajectoryObject.h;
+            v = TrajectoryObject.v;
+            r = TrajectoryObject.r;
+            f = TrajectoryObject.f;
+            FullRot = TrajectoryObject.FullRot;
+            
+            GoalPos(1) = m(1)+r*sin(2*pi*f*t);
+            GoalPos(2) = m(2)-r*cos(2*pi*f*t);
+            GoalPos(3) = h;
+
+            Yaw = 2*pi*f*t+0.5*pi;
+            RotationCounter = floor(Yaw/FullRot);
+            GoalYaw = Yaw - RotationCounter*2*pi;
+    
+            GoalVel(1) = v*cos(2*pi*f*t);
+            GoalVel(2) = v*sin(2*pi*f*t);
+            GoalVel(3) = 0;
         end        
         
         % This function returns a static position for hovering.
@@ -124,7 +151,7 @@ classdef TrajectoryGenerator < handle
             xPoints = s(:,1); yPoints = s(:,2);
             
             u = [0,1,2,3,4,5];
-            uq = 0:0.1:5;
+            uq = 0:0.05:5;
             
             SlopeStart = 0; SlopeFinal = 0;
             

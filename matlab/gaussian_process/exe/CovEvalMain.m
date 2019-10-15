@@ -28,7 +28,9 @@
 clear; clc;
 
 % load('UWBCircConDataGP.mat'); % UWB and VICON measurements
-load('UWBYawCircConDataGP.mat'); % UWB and VICON measuremements with yaw
+% load('UWBYawCircConDataGP.mat'); % UWB and VICON measuremements with yaw
+load('UWBCenCircConDataGP.mat'); % UWB and VICON centered measurements
+% load('UWBSplineConDataGP.mat'); % UWB and VICON measurements at spline
 
 %% Data Preprocessing
 
@@ -57,8 +59,8 @@ Xt(1,:) = x(:)';
 Xt(2,:) = y(:)';
 Xt(3,:) = ones(size(Xt(1,:)));
 
-ShowResults = false;
-Save = true;
+ShowResults = true;
+Save = false;
 Mode = "GP";
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
@@ -80,7 +82,7 @@ end
 
 %% Optimization and Prediction
 
-for i = 1:6
+for i = 1
     % negative log marginal likelihood as objective function
     if Mode == "GP"
         tic;
@@ -188,13 +190,29 @@ if Save == true
         if ChangeHeading == false
             save('CircleHypGP.mat','X','Y','AnchorPos','NoiseStd','s0','s1');
         else
-            save('YawCircleHypGP.mat','X','Y','AnchorPos','NoiseStd','s0','s1');
+            if PointToCenter == false
+                if SplineFlight == false
+                    save('YawCircleHypGP.mat','X','Y','AnchorPos','NoiseStd','s0','s1');
+                else
+                    save('SplineHypGP.mat','X','Y','AnchorPos','NoiseStd','s0','s1');
+                end
+            else
+                save('CenCircleHypGP.mat','X','Y','AnchorPos','NoiseStd','s0','s1');
+            end
         end
     elseif Mode == "SPGP"
         if ChangeHeading == false
             save('CircleHypSPGP.mat','X','Y','AnchorPos','NoiseStd','s0','s1','Xi');
         else
-            save('YawCircleHypSPGP.mat','X','Y','AnchorPos','NoiseStd','s0','s1','Xi');
+            if PointToCenter == false
+                if SplineFlight == false
+                    save('YawCircleHypSPGP.mat','X','Y','AnchorPos','NoiseStd','s0','s1','Xi');
+                else
+                    save('SplineHypSPGP.mat','X','Y','AnchorPos','NoiseStd','s0','s1','Xi');
+                end
+            else
+                save('CenCircleHypSPGP.mat','X','Y','AnchorPos','NoiseStd','s0','s1','Xi');
+            end
         end
-        end
+    end
 end
