@@ -1,0 +1,90 @@
+% This file was created by matlab2tikz.
+%
+%The latest updates can be retrieved from
+%  http://www.mathworks.com/matlabcentral/fileexchange/22022-matlab2tikz-matlab2tikz
+%where you can also make suggestions and rate matlab2tikz.
+%
+\begin{tikzpicture}
+
+\begin{axis}[%
+width=0.951\fwidth,
+height=0.577\fwidth,
+at={(0\fwidth,0\fwidth)},
+scale only axis,
+clip=false,
+xmin=-1,
+xmax=5,
+tick align=outside,
+xlabel style={font=\color{white!15!black}},
+xlabel={x-Axis [m]},
+ymin=-1,
+ymax=4,
+ylabel style={font=\color{white!15!black}},
+ylabel={y-Axis [m]},
+zmin=0,
+zmax=2.5,
+zlabel style={font=\color{white!15!black}},
+zlabel={z-Axis [m]},
+view={35.7078408836752}{44.821796926716},
+axis background/.style={fill=white},
+axis x line*=bottom,
+axis y line*=left,
+axis z line*=left,
+xmajorgrids,
+ymajorgrids,
+zmajorgrids,
+legend style={legend cell align=left, align=left, draw=white!15!black}
+]
+\addplot3[only marks, mark=o, mark options={}, mark size=1.3693pt, draw=red] table[row sep=crcr]{%
+x	y	z\\
+-0.204165394951944	-0.238691069077788	0.298153362677134\\
+-0.20413577580197	-0.237990097416149	2.45815324873302\\
+3.84256615135485	2.60681004923431	0.2312727348918\\
+3.84259577050482	2.60751102089595	2.39127262094768\\
+-0.176390386544369	3.41102589871417	0.299880161453614\\
+-0.176360767394395	3.41172687037581	2.4598800475095\\
+};
+\addlegendentry{Ground-Truth}
+
+\addplot3[only marks, mark=+, mark options={}, mark size=2.5000pt, draw=red] table[row sep=crcr]{%
+x	y	z\\
+-0.23	-0.25	0.25\\
+-0.23	-0.25	2.41\\
+3.68366893906023	2.53448033772514	0.25\\
+3.68366893906023	2.53448033772514	2.41\\
+-0.23	3.15091683614868	0.25\\
+-0.23	3.15091683614868	2.41\\
+};
+\addlegendentry{Calculated Anchor Positions}
+
+\node[right, align=left]
+at (axis cs:-0.104,-0.139,0.398) {A1};
+\node[right, align=left]
+at (axis cs:-0.104,-0.138,2.558) {A2};
+\node[right, align=left]
+at (axis cs:3.943,2.707,0.331) {A3};
+\node[right, align=left]
+at (axis cs:3.943,2.708,2.491) {A4};
+\node[right, align=left]
+at (axis cs:-0.076,3.511,0.4) {A5};
+\node[right, align=left]
+at (axis cs:-0.076,3.512,2.56) {A6};
+\end{axis}
+
+\begin{axis}[%
+width=1.227\fwidth,
+height=0.708\fwidth,
+at={(-0.16\fwidth,-0.078\fwidth)},
+scale only axis,
+xmin=0,
+xmax=1,
+ymin=0,
+ymax=1,
+axis line style={draw=none},
+ticks=none,
+axis x line*=bottom,
+axis y line*=left,
+legend style={legend cell align=left, align=left, draw=white!15!black}
+]
+\end{axis}
+\end{tikzpicture}%

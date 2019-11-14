@@ -52,9 +52,11 @@ time = toc;
 
 figure();
 
-plotCurveBar(Xt,Mean,cov2corr(Covariance));
+plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
 hold on;
-plot(X,Y,'ko','MarkerSize',3);
+plot(X,Y,'ko','MarkerSize',2);
+xlabel('Yaw Angle [Radian]');
+ylabel('Ranging Offset [m]');
 
 legend('Double Standard Deviations','Mean Prediction','Training Data', ...
     'Location','northeast');

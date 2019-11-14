@@ -50,6 +50,8 @@ plot(X,Y,'ko','MarkerSize',3);
 for i = 1:size(Xi,2)
    xline(Xi(i),':r','LineWidth',0.5);
 end
+xlabel('Yaw Angle [Radian]');
+ylabel('Ranging Offset [m]');
 
 legend('Double Standard Deviations','Mean Prediction','Training Data', ...
     'Pseudo-input Locations','Location','northeast');
