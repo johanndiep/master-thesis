@@ -28,8 +28,8 @@
 clear; clc;
 
 % load('UWBCircConDataGP.mat'); % UWB and VICON measurements
-% load('UWBYawCircConDataGP.mat'); % UWB and VICON measuremements with yaw
-load('UWBCenCircConDataGP.mat'); % UWB and VICON centered measurements
+load('UWBYawCircConDataGP.mat'); % UWB and VICON measuremements with yaw
+% load('UWBCenCircConDataGP.mat'); % UWB and VICON centered measurements
 % load('UWBSplineConDataGP.mat'); % UWB and VICON measurements at spline
 
 %% Data Preprocessing
@@ -44,7 +44,12 @@ SaveViconQuat(:,c) = [];
 DataPrepObj = DataPrep(SaveRangeArr);
 [X,Y,P] = DataPrepObj.SimplifiedFlight(SaveViconPos,AnchorPos);
 
-Kernel = @DistanceKernel;
+Downsample = 1;
+X = X(:,1:Downsample:end);
+Y = Y(:,1:Downsample:end);
+
+Kernel = @RBFKernel;
+% Kernel = @DistanceKernel;
 
 % pre-allocation
 NoiseStd = zeros(1,6);
@@ -52,15 +57,16 @@ s0 = zeros(1,6);
 s1 = zeros(1,6);
 
 % testing space and testing data
-a = linspace(MidPoint(1)-3,MidPoint(1)+3,100);
-b = linspace(MidPoint(1)-3,MidPoint(1)+3,100);
+TestingPoints = 30;
+a = linspace(MidPoint(1)-Radius-1,MidPoint(1)+Radius+1,TestingPoints);
+b = linspace(MidPoint(2)-Radius-1,MidPoint(2)+Radius+1,TestingPoints);
 [x,y] = meshgrid(a,b);
 Xt(1,:) = x(:)';
 Xt(2,:) = y(:)';
 Xt(3,:) = ones(size(Xt(1,:)));
 
 ShowResults = true;
-Save = false;
+Save = true;
 Mode = "GP";
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
@@ -82,11 +88,11 @@ end
 
 %% Optimization and Prediction
 
-for i = 1
+for i = 1:6
     % negative log marginal likelihood as objective function
     if Mode == "GP"
         tic;
-        LogLikelihood = @(p) getLogLikelihood(AnchorPos(i,:)'-X,Y(i,:),Kernel,p(1),p(2),p(3));
+        LogLikelihood = @(p) getLogLikelihood(X,Y(i,:),Kernel,p(1),p(2),p(3));
         s = fmincon(LogLikelihood,[1,1,1],[],[],[],[],[0,0,0],[Inf,Inf,Inf],[],options);
         time = toc;
         
@@ -112,8 +118,8 @@ for i = 1
     if ShowResults == true        
         % prediction at testing data
         if Mode == "GP"
-            [Mean,Covariance,LogLikelihood] = GaussianProcess(AnchorPos(i,:)'-X,Y(i,:), ...
-                AnchorPos(i,:)'-Xt,Kernel,NoiseStd(i),s0(i),s1(i));
+            [Mean,Covariance,LogLikelihood] = GaussianProcess(X,Y(i,:), ...
+                Xt,Kernel,NoiseStd(i),s0(i),s1(i));
         elseif Mode == "SPGP"
             [Mean,Covariance,LogLikelihood] = SparseGaussianProcess(AnchorPos(i,:)'-X,Y(i,:), ...
                 AnchorPos(i,:)'-Xt,Kernel,AnchorPos(i,:)'-Xi(:,:,i),NoiseStd(i),s0(i),s1(i));
@@ -121,54 +127,52 @@ for i = 1
         
         figure();
         
-        subplot(1,3,1);
-        title("Flight Offset");
+%         subplot(1,3,1);
+%         title("Flight Offset");
+%         xlabel("x-Axis [m]");
+%         ylabel("y-Axis [m]");
+%         zlabel("Range Offset [m]");
+%         xlim([MidPoint(1)-Radius-1,MidPoint(1)+Radius+1]);
+%         ylim([MidPoint(2)-Radius-1,MidPoint(2)+Radius+1]);
+%         hold on;
+%         
+%         % offset
+%         scatter3(X(1,:),X(2,:),Y(i,:),5,'k+');
+% 
+%         view(35.1654,48.1915)
+%         grid on;
+%         hold off;
+        
+        subplot(1,2,1);
         xlabel("x-Axis [m]");
         ylabel("y-Axis [m]");
-        zlabel("Range Offset [m]");
-        hold on;
-        
-        % offset
-        scatter3(X(1,:),X(2,:),Y(i,:),5,'k+');
-        scatter3(AnchorPos(i,1),AnchorPos(i,2),0,'bx');
-
-        grid on;
-        hold off;
-        
-        subplot(1,3,2);
-        title("Flight Space Offset Evaluation");
-        xlabel("x-Axis [m]");
-        ylabel("y-Axis [m]");
-        zlabel("Range Offset Prediction [m]");
+        zlabel("Mean [m]");
         hold on;
         
         % offset evaluation
-        scatter3(Xt(1,:),Xt(2,:),Mean,10,Mean);
-        colormap(gca,'jet');
-        colorbar;
+        surf(x,y,vec2mat(Mean,TestingPoints));
         
+        view(35.1654,48.1915)
         grid on;
         hold off;
         
-        subplot(1,3,3);
-        title("Flight Space Covariance Evaluation");
+        subplot(1,2,2);
         xlabel("x-Axis [m]");
         ylabel("y-Axis [m]");
-        zlabel("Standard Deviation Prediction [cm]");
+        zlabel("Standard Deviation [m]");
         hold on;
         
         % covariance evaluation
-        Std = sqrt(diag(Covariance))*100;
-        scatter3(Xt(1,:),Xt(2,:),Std,10,Std);
-        colormap(gca,'jet');
-        colorbar;
+        Cov = diag(sqrt(Covariance));
+        surf(x,y,vec2mat(Cov,TestingPoints));
         
+        view(35.1654,48.1915)
         grid on;
         hold off;
         
         % results
         if Mode == "GP"
-            disp("Kernel: DistanceKernel");
+            disp("Kernel: RBFKernel");
             disp("Training time: "+time+" seconds");
             disp("Final negative log marginal likelihood: "+LogLikelihood);
             disp("Number of training points: "+size(X,2));

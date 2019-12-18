@@ -90,9 +90,9 @@ T(1:3,4) = [-0.23;-0.25;0.25];
 A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 
 % initialize the trajectory object
-MidPoint = [2.5,2];
+MidPoint = [2,1.5];
 Height = 1;
-Radius = 1.5;
+Radius = 1.25;
 Frequency = 1/60;
 AbsVel = 2*Radius*pi*Frequency;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
@@ -101,7 +101,7 @@ Time = 0; % helper variable to estimate the time-variant goal state
 
 FastModus = false; % fast iteration frequency
 ChangeHeading = true; % drone is pointing in the direction of flight
-PointToCenter = true; % able to face to the center of the circle
+PointToCenter = false; % able to face to the center of the circle
 SplineFlight = false; % do not change this variable
 
 %% Preliminary
@@ -122,6 +122,7 @@ SaveViconQuat = zeros(4,1000);
 SaveCurPos = zeros(3,1000);
 SaveCurVel = zeros(3,1000);
 SaveGoalPos = zeros(3,1000);
+SaveGoalVel = zeros(3,1000);
 SaveRangeArr = zeros(6,1000);
 
 %% PID
@@ -188,6 +189,7 @@ while true
     SaveCurPos(:,i) = CurPos;
     SaveCurVel(:,i) = CurVel;
     SaveGoalPos(:,i) = GoalPos';
+    SaveGoalVel(:,i) = GoalVel';
     SaveRangeArr(:,i) = RangeArray;
     i = i+1;
 end
@@ -207,18 +209,18 @@ SaveRangeArr(:,CuttingIndex:end) = [];
 
 if ChangeHeading == false
     save('UWBCircConDataGP.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel','SaveRangeArr', ...
         'AnchorPos','MidPoint','Height','Radius','ChangeHeading','PointToCenter', ...
         'SplineFlight');
 else
     if PointToCenter == false
         save('UWBYawCircConDataGP.mat','SaveViconPos','SaveViconQuat', ...
-            'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
+            'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel','SaveRangeArr', ...
             'AnchorPos','MidPoint','Height','Radius','ChangeHeading','PointToCenter', ...
             'SplineFlight');
     else
         save('UWBCenCircConDataGP.mat','SaveViconPos','SaveViconQuat', ...
-            'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
+            'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel','SaveRangeArr', ...
             'AnchorPos','MidPoint','Height','Radius','ChangeHeading','PointToCenter', ...
             'SplineFlight');
     end

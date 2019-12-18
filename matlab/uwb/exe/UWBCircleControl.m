@@ -98,7 +98,7 @@ load('AnchorPos.mat'); % load the anchor positions if available
 
 %% Parameters
 
-MarkTag = [-6,6,80]/1000; % body-frame coordinate of tag antenna
+MarkTag = [-6.15657,6.14709,78.9883]/1000; % body-frame coordinate of tag antenna
 
 % coordinate transformation
 T = diag(ones(1,4));
@@ -106,10 +106,10 @@ T(1:3,4) = [-0.23;-0.25;0.25];
 A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 
 % initialize the trajectory object
-MidPoint = [2.5,2];
+MidPoint = [2,1.5];
 Height = 1;
-Radius = 1.5;
-Frequency = 1/30;
+Radius = 1.25;
+Frequency = 1/25;
 AbsVel = 2*Radius*pi*Frequency;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
@@ -137,7 +137,9 @@ SaveViconQuat = zeros(4,600);
 SaveCurPos = zeros(3,600);
 SaveCurVel = zeros(3,600);
 SaveGoalPos = zeros(3,600);
+SaveGoalVel = zeros(3,600);
 SaveRangeArr = zeros(6,600);
+SaveTime = zeros(1,600);
 
 %% PID
 
@@ -204,7 +206,9 @@ while true
     SaveCurPos(:,i) = CurPos;
     SaveCurVel(:,i) = CurVel;
     SaveGoalPos(:,i) = GoalPos';
+    SaveGoalVel(:,i) = GoalVel';
     SaveRangeArr(:,i) = RangeArray;
+    SaveTime(i) = Time;
     i = i+1;
 end
 
@@ -219,68 +223,187 @@ SaveViconQuat(:,CuttingIndex:end) = [];
 SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
+SaveGoalVel(:,CuttingIndex:end) = [];
+SaveTime(CuttingIndex:end) = [];
 
 if ChangeHeading == false
     save('UWBCircConData.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-        'AnchorPos','MarkTag','MidPoint','ChangeHeading','PointToCenter');
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel','SaveRangeArr', ...
+        'AnchorPos','MarkTag','MidPoint','ChangeHeading','PointToCenter',...
+        'Radius','SaveTime');
 else
     if PointToCenter == false
     save('UWBYawCircConData.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-        'AnchorPos','MarkTag','MidPoint','ChangeHeading','PointToCenter');
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel','SaveRangeArr', ...
+        'AnchorPos','MarkTag','MidPoint','ChangeHeading','PointToCenter',...
+        'Radius','SaveTime');
     else
     save('UWBCenCircConData.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-        'AnchorPos','MarkTag','MidPoint','ChangeHeading','PointToCenter');        
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel','SaveRangeArr', ...
+        'AnchorPos','MarkTag','MidPoint','ChangeHeading','PointToCenter',...
+        'Radius','SaveTime');        
     end
 end
 
 clear; clc;
 
-%% Plotting and Results
+%% Subplot 1: Trajectory
 
-if ChangeHeading == false
-    load('UWBCircConData.mat');
-else
-    if PointToCenter == false
-        load('UWBYawCircConData.mat');
-    else
-        load('UWBCenCircConData.mat');
-    end
-end
-
-TagPosition = zeros(4,size(SaveViconPos,2));
-for i = 1:size(SaveViconPos,2)
-    T = diag(ones(1,4));
-    T(1:3,1:3) = quat2rotm(SaveViconQuat(:,i)');
-    T(1:3,4) = SaveViconPos(:,i);
-    TagPosition(:,i) = T*[MarkTag';1];
-end
-TagPosition(4,:) = [];
+% load('UWBYawCircConData.mat');
 
 figure();
 
-title("Flight Trajectory");
+subplot(1,2,1);
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([MidPoint(1)-3,MidPoint(1)+3]);
-ylim([MidPoint(2)-3,MidPoint(2)+3]);
+xlim([MidPoint(1)-Radius-1,MidPoint(1)+Radius+1]);
+ylim([MidPoint(2)-Radius-1,MidPoint(2)+Radius+1]);
 zlim([0,2.5]);
 hold on;
 
-plot3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),'LineWidth',0.5,'Color','b');
-plot3(TagPosition(1,:),TagPosition(2,:),TagPosition(3,:),'LineWidth',1.5,'Color','r','LineStyle',':');
-plot3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),'LineWidth',1.5,'Color','k','LineStyle',':');
+SaveViconPos = SaveViconPos(:,1:2:end);
+SaveViconQuat = SaveViconQuat(:,1:2:end);
 
+scatter3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:)*0,1,'k.');
+
+Angle = 0:0.01:2*pi;
+x = MidPoint(1)+Radius*cos(Angle);
+y = MidPoint(2)+Radius*sin(Angle) ;
+z = zeros(size(x));
+plot3(x,y,z,'r-')
+
+legend('Projected Ground-Truth','Reference');
 set(0,'DefaultLegendAutoUpdate','off')
-legend('Reference','Vicon Position Measurement','EKF Position Estimation');
 
-quiver3(0,0,0,1,0,0,0.3,'k','LineWidth',1);
-quiver3(0,0,0,0,1,0,0.3,'k','LineWidth',1);
-quiver3(0,0,0,0,0,1,0.3,'k','LineWidth',1);
+RotMats = quat2rotm(SaveViconQuat');
+Xb = permute(RotMats(:,1,:),[1,3,2]);
+Yb = permute(RotMats(:,2,:),[1,3,2]);
+Zb = permute(RotMats(:,3,:),[1,3,2]);
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Xb(1,:),Xb(2,:),Xb(3,:),0.3,'r');
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Yb(1,:),Yb(2,:),Yb(3,:),0.3,'g');
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Zb(1,:),Zb(2,:),Zb(3,:),0.3,'b');
 
 grid on;
-daspect([1 1 1]);
+view(35.1654,48.1915)
+
+clear; clc;
+
+%% Subplot 2: Trajectory
+
+% load('UWBCenCircConData.mat');
+
+subplot(1,2,2);
+xlabel("x-Axis [m]");
+ylabel("y-Axis [m]");
+zlabel("z-Axis [m]");
+xlim([MidPoint(1)-Radius-1,MidPoint(1)+Radius+1]);
+ylim([MidPoint(2)-Radius-1,MidPoint(2)+Radius+1]);
+zlim([0,2.5]);
+hold on;
+
+SaveViconPos = SaveViconPos(:,1:2:end);
+SaveViconQuat = SaveViconQuat(:,1:2:end);
+
+scatter3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:)*0,1,'k.');
+
+Angle = 0:0.01:2*pi;
+x = MidPoint(1)+Radius*cos(Angle);
+y = MidPoint(2)+Radius*sin(Angle) ;
+z = zeros(size(x));
+plot3(x,y,z,'r-')
+
+legend('Projected Ground-Truth','Reference');
+set(0,'DefaultLegendAutoUpdate','off')
+
+RotMats = quat2rotm(SaveViconQuat');
+Xb = permute(RotMats(:,1,:),[1,3,2]);
+Yb = permute(RotMats(:,2,:),[1,3,2]);
+Zb = permute(RotMats(:,3,:),[1,3,2]);
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Xb(1,:),Xb(2,:),Xb(3,:),0.3,'r');
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Yb(1,:),Yb(2,:),Yb(3,:),0.3,'g');
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Zb(1,:),Zb(2,:),Zb(3,:),0.3,'b');
+
+grid on;
+view(35.1654,48.1915)
+
+hold off;
+
+%% Position Graph: Trajectory 1
+
+% load('UWBYawCircConData.mat');
+
+figure();
+
+subplot(3,2,1);
+title("Heading to Flying Direction",'FontWeight','Normal');
+hold on;
+plot(SaveTime,SaveGoalPos(1,:)-SaveViconPos(1,:),'r','LineWidth',1);
+plot(SaveTime,SaveGoalPos(1,:)-SaveCurPos(1,:),'b','LineWidth',1);
+plot(SaveTime,zeros(1,size(SaveTime,2)),'k--');
+ylabel("x-Error [m]");
+xlim([SaveTime(1),SaveTime(end)]);
+ylim([-0.25,0.5]);
+hold off;
+
+subplot(3,2,3);
+hold on;
+plot(SaveTime,SaveGoalPos(2,:)-SaveViconPos(2,:),'r','LineWidth',1);
+plot(SaveTime,SaveGoalPos(2,:)-SaveCurPos(2,:),'b','LineWidth',1);
+plot(SaveTime,zeros(1,size(SaveTime,2)),'k--');
+ylabel("y-Error [m]");
+xlim([SaveTime(1),SaveTime(end)]);
+ylim([-0.25,0.3]);
+hold off;
+
+subplot(3,2,5);
+hold on;
+plot(SaveTime,SaveGoalPos(3,:)-SaveViconPos(3,:),'r','LineWidth',1);
+plot(SaveTime,SaveGoalPos(3,:)-SaveCurPos(3,:),'b','LineWidth',1);
+plot(SaveTime,zeros(1,size(SaveTime,2)),'k--');
+ylabel("z-Error [m]");
+xlabel("Time [s]");
+xlim([SaveTime(1),SaveTime(end)]);
+ylim([-0.3,0.25]);
+hold off;
+
+clear; clc;
+
+%% Position Graph: Trajectory 2
+
+% load('UWBCenCircConData.mat');
+
+subplot(3,2,2);
+title("Heading to Center",'FontWeight','Normal');
+hold on;
+plot(SaveTime,SaveGoalPos(1,:)-SaveViconPos(1,:),'r','LineWidth',1);
+plot(SaveTime,SaveGoalPos(1,:)-SaveCurPos(1,:),'b','LineWidth',1);
+plot(SaveTime,zeros(1,size(SaveTime,2)),'k--');
+xlim([SaveTime(1),SaveTime(end)]);
+ylim([-0.5,0.5]);
+hold off;
+
+subplot(3,2,4);
+hold on;
+plot(SaveTime,SaveGoalPos(2,:)-SaveViconPos(2,:),'r','LineWidth',1);
+plot(SaveTime,SaveGoalPos(2,:)-SaveCurPos(2,:),'b','LineWidth',1);
+plot(SaveTime,zeros(1,size(SaveTime,2)),'k--');
+xlim([SaveTime(1),SaveTime(end)]);
+ylim([-0.5,0.5]);
+hold off;
+
+subplot(3,2,6);
+hold on;
+plot(SaveTime,SaveGoalPos(3,:)-SaveViconPos(3,:),'r','LineWidth',1);
+plot(SaveTime,SaveGoalPos(3,:)-SaveCurPos(3,:),'b','LineWidth',1);
+plot(SaveTime,zeros(1,size(SaveTime,2)),'k--');
+xlabel("Time [s]");
+xlim([SaveTime(1),SaveTime(end)]);
+ylim([-0.3,0.3]);
 hold off;

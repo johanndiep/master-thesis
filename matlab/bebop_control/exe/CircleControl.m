@@ -51,10 +51,10 @@ rosinit;
 
 %% Parameters
 
-MidPoint = [2.5,2];
+MidPoint = [2,1.5];
 Height = 1;
-Radius = 1.3;
-Frequency = 1/30;
+Radius = 1.25;
+Frequency = 1/25;
 AbsVel = 2*Radius*pi*Frequency;
 
 % initialize the trajectory object
@@ -64,7 +64,7 @@ Time = 0; % helper variable to estimate the time-variant goal state
 
 FastModus = true; % fast iteration frequency
 ChangeHeading = true; % able to change its direction during flight
-PointToCenter = false; % able to face to the center of the circle
+PointToCenter = true; % able to face to the center of the circle
 
 %% Preliminary
 
@@ -81,6 +81,8 @@ SaveViconQuat = zeros(4,30000);
 SaveCurPos = zeros(3,30000);
 SaveCurVel = zeros(3,30000);
 SaveGoalPos = zeros(3,30000);
+SaveGoalVel = zeros(3,30000);
+SaveTime = zero(1,30000);
 
 %% PID
 
@@ -143,6 +145,8 @@ while true
     SaveCurPos(:,i) = CurPos;
     SaveCurVel(:,i) = CurVel;
     SaveGoalPos(:,i) = GoalPos';
+    SaveGoalVel(:,i) = GoalVel';
+    SaveTime(i) = Time;
     i = i+1;
 end
 
@@ -157,57 +161,110 @@ SaveViconQuat(:,CuttingIndex:end) = [];
 SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
+SaveGoalVel(:,CuttingIndex:end) = [];
+SaveTime(CuttingIndex:end) = [];
 
 if ChangeHeading == false
     save('VicCircConData.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos','MidPoint','ChangeHeading','PointToCenter');
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel','MidPoint', ...
+        'ChangeHeading','PointToCenter','Radius','SaveTime');
 else
     if PointToCenter == false
         save('VicYawCircConData.mat','SaveViconPos','SaveViconQuat', ...
-            'SaveCurPos','SaveCurVel','SaveGoalPos','MidPoint','ChangeHeading','PointToCenter');
+            'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel','MidPoint', ...
+            'ChangeHeading','PointToCenter','Radius','SaveTime');
     else
         save('VicCenCircConData.mat','SaveViconPos','SaveViconQuat', ...
-            'SaveCurPos','SaveCurVel','SaveGoalPos','MidPoint','ChangeHeading','PointToCenter');
+            'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel','MidPoint', ...
+            'ChangeHeading','PointToCenter','Radius','SaveTime');
     end
 end
 
 clear; clc;
 
-%% Plotting and Results
+%% Subplot 1: Trajectory
 
-if ChangeHeading == false
-    load('VicCircConData.mat');
-else
-    if PointToCenter == false
-        load('VicYawCircConData.mat');
-    else
-        load('VicCenCircConData.mat');
-    end
-end
+load('VicYawCircConData.mat');
 
 figure();
-title("Flight Trajectory");
+subplot(1,2,1);
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([MidPoint(1)-3,MidPoint(1)+3]);
-ylim([MidPoint(2)-3,MidPoint(2)+3]);
+xlim([MidPoint(1)-Radius-1,MidPoint(1)+Radius+1]);
+ylim([MidPoint(2)-Radius-1,MidPoint(2)+Radius+1]);
 zlim([0,2.5]);
 hold on;
 
-SaveCurPos = SaveCurPos(:,1:50:end);
-SaveViconQuat = SaveViconQuat(:,1:50:end);
+SaveCurPos = SaveCurPos(:,1:120:end);
+SaveViconQuat = SaveViconQuat(:,1:120:end);
 
-plot3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),'LineWidth',0.5,'Color','b');
-plot3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:),'LineWidth',1.5,'Color','r','LineStyle',':');
-plot3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),'LineWidth',1.5,'Color','k','LineStyle',':');
+scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:)*0,1,'k.');
+
+Angle = 0:0.01:2*pi;
+x = MidPoint(1)+Radius*cos(Angle);
+y = MidPoint(2)+Radius*sin(Angle) ;
+z = zeros(size(x));
+plot3(x,y,z,'r-')
+
+legend('Projected Ground-Truth','Reference');
 set(0,'DefaultLegendAutoUpdate','off')
-legend('Reference','Vicon Position Measurement','EKF Position Estimation');
 
-quiver3(0,0,0,1,0,0,0.3,'k','LineWidth',1);
-quiver3(0,0,0,0,1,0,0.3,'k','LineWidth',1);
-quiver3(0,0,0,0,0,1,0.3,'k','LineWidth',1);
+RotMats = quat2rotm(SaveViconQuat');
+Xb = permute(RotMats(:,1,:),[1,3,2]);
+Yb = permute(RotMats(:,2,:),[1,3,2]);
+Zb = permute(RotMats(:,3,:),[1,3,2]);
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    Xb(1,:),Xb(2,:),Xb(3,:),0.3,'r');
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    Yb(1,:),Yb(2,:),Yb(3,:),0.3,'g');
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    Zb(1,:),Zb(2,:),Zb(3,:),0.3,'b');
 
 grid on;
-daspect([1 1 1]);
+view(35.1654,48.1915)
+
+clear; clc;
+
+%% Subplot 2: Trajectory
+
+load('VicCenCircConData.mat');
+
+subplot(1,2,2);
+xlabel("x-Axis [m]");
+ylabel("y-Axis [m]");
+zlabel("z-Axis [m]");
+xlim([MidPoint(1)-Radius-1,MidPoint(1)+Radius+1]);
+ylim([MidPoint(2)-Radius-1,MidPoint(2)+Radius+1]);
+zlim([0,2.5]);
+hold on;
+
+SaveCurPos = SaveCurPos(:,1:120:end);
+SaveViconQuat = SaveViconQuat(:,1:120:end);
+
+scatter3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:)*0,1,'k.');
+
+Angle = 0:0.01:2*pi;
+x = MidPoint(1)+Radius*cos(Angle);
+y = MidPoint(2)+Radius*sin(Angle) ;
+z = zeros(size(x));
+plot3(x,y,z,'r-')
+
+legend('Projected Ground-Truth','Reference');
+set(0,'DefaultLegendAutoUpdate','off')
+
+RotMats = quat2rotm(SaveViconQuat');
+Xb = permute(RotMats(:,1,:),[1,3,2]);
+Yb = permute(RotMats(:,2,:),[1,3,2]);
+Zb = permute(RotMats(:,3,:),[1,3,2]);
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    Xb(1,:),Xb(2,:),Xb(3,:),0.3,'r');
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    Yb(1,:),Yb(2,:),Yb(3,:),0.3,'g');
+quiver3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:), ...
+    Zb(1,:),Zb(2,:),Zb(3,:),0.3,'b');
+
+grid on;
+view(35.1654,48.1915)
+
 hold off;

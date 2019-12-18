@@ -21,19 +21,19 @@
 
 clear; clc;
 
-rosshutdown; rosinit;
+rosinit;
 
 % load('CircleHypGP.mat'); % load the parameters
-% load('YawCircleHypGP.mat'); % load the parameters with yaw
-load('CenCircleHypGP.mat'); % load the center parameters 
+load('YawCircleHypGP.mat'); % load the parameters with yaw
+% load('CenCircleHypGP.mat'); % load the center parameters 
 
 %% Parameters
 
 % initialize the trajectory object
-MidPoint = [2.5,2];
+MidPoint = [2,1.5];
 Height = 1;
-Radius = 1.5;
-Frequency = 1/30;
+Radius = 1.25;
+Frequency = 1/25;
 AbsVel = 2*Radius*pi*Frequency;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
@@ -43,7 +43,8 @@ FastModus = false; % fast iteration frequency
 ChangeHeading = true; % drone pointing in direction of flight
 PointToCenter = true; % able to face to the center of the circle
 
-Kernel = @DistanceKernel;
+Kernel = @RBFKernel;
+% Kernel = @DistanceKernel;
 Mode = "GP";
 
 %% Preliminary
@@ -64,10 +65,12 @@ SaveViconQuat = zeros(4,600);
 SaveCurPos = zeros(3,600);
 SaveCurVel = zeros(3,600);
 SaveGoalPos = zeros(3,600);
+SaveGoalVel = zeros(3,600);
 SaveRangeArr = zeros(6,600);
 Savet = zeros(6,600);
 SaveAbs = zeros(6,600);
 SaveCovVal = zeros(6,600);
+SaveTime = zeros(1,600);
 
 %% PID
 
@@ -134,10 +137,12 @@ while true
     SaveCurPos(:,i) = CurPos;
     SaveCurVel(:,i) = CurVel;
     SaveGoalPos(:,i) = GoalPos';
+    SaveGoalVel(:,i) = GoalVel';
     SaveRangeArr(:,i) = RangeArray;
     Savet(:,i) = t;
     SaveAbs(:,i) = Abs;
     SaveCovVal(:,i) = CovVal;
+    SaveTime(i) = Time;
     i = i+1;
 end
 
@@ -152,66 +157,200 @@ SaveViconQuat(:,CuttingIndex:end) = [];
 SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
+SaveGoalVel(:,CuttingIndex:end) = [];
 SaveRangeArr(:,CuttingIndex:end) = [];
 Savet(:,CuttingIndex:end) = [];
 SaveAbs(:,CuttingIndex:end) = [];
 SaveCovVal(:,CuttingIndex:end) = [];
+SaveTime(CuttingIndex:end) = [];
 
 if ChangeHeading == false
     save('GPCircConData.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-        'Savet','SaveAbs','SaveCovVal','MidPoint','ChangeHeading','PointToCenter');
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel', ...
+        'SaveRangeArr','Savet','SaveAbs','SaveCovVal','MidPoint', ...
+        'ChangeHeading','PointToCenter','SaveTime','Radius');
 else
     if PointToCenter == false
         save('GPYawCircConData.mat','SaveViconPos','SaveViconQuat', ...
-            'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-            'Savet','SaveAbs','SaveCovVal','MidPoint','ChangeHeading','PointToCenter');
+            'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel', ...
+            'SaveRangeArr','Savet','SaveAbs','SaveCovVal','MidPoint', ...
+            'ChangeHeading','PointToCenter','SaveTime','Radius');
     else
         save('GPCenCircConData.mat','SaveViconPos','SaveViconQuat', ...
-            'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-            'Savet','SaveAbs','SaveCovVal','MidPoint','ChangeHeading','PointToCenter');
+            'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel', ...
+            'SaveRangeArr','Savet','SaveAbs','SaveCovVal','MidPoint', ...
+            'ChangeHeading','PointToCenter','SaveTime','Radius');
     end
-    
 end
 
 clear; clc;
 
-%% Plotting and Results
+%% Subplot 1: Trajectory
 
-if ChangeHeading == false
-    load('GPCircConData.mat');
-else
-    if PointToCenter == false
-        load('GPYawCircConData.mat');
-    else
-        load('GPCenCircConData.mat');
-    end
-end
-
-%%
+% load('GPYawCircConData.mat');
 
 figure();
 
-title("Flight Trajectory");
+subplot(1,2,1);
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([MidPoint(1)-3,MidPoint(1)+3]);
-ylim([MidPoint(2)-3,MidPoint(2)+3]);
+xlim([MidPoint(1)-Radius-1,MidPoint(1)+Radius+1]);
+ylim([MidPoint(2)-Radius-1,MidPoint(2)+Radius+1]);
 zlim([0,2.5]);
 hold on;
 
-plot3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),'LineWidth',0.5,'Color','b');
-plot3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:),'LineWidth',1.5,'Color','r','LineStyle',':');
-plot3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),'LineWidth',1.5,'Color','k','LineStyle',':');
+SaveViconPos = SaveViconPos(:,1:2:end);
+SaveViconQuat = SaveViconQuat(:,1:2:end);
 
+scatter3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:)*0,1,'k.');
+
+Angle = 0:0.01:2*pi;
+x = MidPoint(1)+Radius*cos(Angle);
+y = MidPoint(2)+Radius*sin(Angle) ;
+z = zeros(size(x));
+plot3(x,y,z,'r-')
+
+legend('Projected Ground-Truth','Reference');
 set(0,'DefaultLegendAutoUpdate','off')
-legend('Reference','Vicon Position Measurement','EKF Position Estimation');
 
-quiver3(0,0,0,1,0,0,0.3,'k','LineWidth',1);
-quiver3(0,0,0,0,1,0,0.3,'k','LineWidth',1);
-quiver3(0,0,0,0,0,1,0.3,'k','LineWidth',1);
+RotMats = quat2rotm(SaveViconQuat');
+Xb = permute(RotMats(:,1,:),[1,3,2]);
+Yb = permute(RotMats(:,2,:),[1,3,2]);
+Zb = permute(RotMats(:,3,:),[1,3,2]);
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Xb(1,:),Xb(2,:),Xb(3,:),0.3,'r');
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Yb(1,:),Yb(2,:),Yb(3,:),0.3,'g');
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Zb(1,:),Zb(2,:),Zb(3,:),0.3,'b');
 
 grid on;
-daspect([1 1 1]);
+view(35.1654,48.1915)
+
+clear; clc;
+
+%% Subplot 2: Trajectory
+
+% load('GPCenCircConData.mat');
+
+subplot(1,2,2);
+xlabel("x-Axis [m]");
+ylabel("y-Axis [m]");
+zlabel("z-Axis [m]");
+xlim([MidPoint(1)-Radius-1,MidPoint(1)+Radius+1]);
+ylim([MidPoint(2)-Radius-1,MidPoint(2)+Radius+1]);
+zlim([0,2.5]);
+hold on;
+
+SaveViconPos = SaveViconPos(:,1:2:end);
+SaveViconQuat = SaveViconQuat(:,1:2:end);
+
+scatter3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:)*0,1,'k.');
+
+Angle = 0:0.01:2*pi;
+x = MidPoint(1)+Radius*cos(Angle);
+y = MidPoint(2)+Radius*sin(Angle) ;
+z = zeros(size(x));
+plot3(x,y,z,'r-')
+
+legend('Projected Ground-Truth','Reference');
+set(0,'DefaultLegendAutoUpdate','off')
+
+RotMats = quat2rotm(SaveViconQuat');
+Xb = permute(RotMats(:,1,:),[1,3,2]);
+Yb = permute(RotMats(:,2,:),[1,3,2]);
+Zb = permute(RotMats(:,3,:),[1,3,2]);
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Xb(1,:),Xb(2,:),Xb(3,:),0.3,'r');
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Yb(1,:),Yb(2,:),Yb(3,:),0.3,'g');
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Zb(1,:),Zb(2,:),Zb(3,:),0.3,'b');
+
+grid on;
+view(35.1654,48.1915)
+
 hold off;
+
+%% Position Graph: Trajectory 1
+
+% load('GPYawCircConData.mat');
+
+figure();
+
+%SaveTime(363/3*2:end) = [];
+%SaveGoalPos(:,363/3*2:end) = [];
+%SaveViconPos(:,363/3*2:end) = [];
+%SaveCurPos(:,363/3*2:end) = [];
+
+subplot(3,2,1);
+title("Heading to Flying Direction",'FontWeight','Normal');
+hold on;
+plot(SaveTime,SaveGoalPos(1,:)-SaveViconPos(1,:),'r','LineWidth',1);
+plot(SaveTime,SaveGoalPos(1,:)-SaveCurPos(1,:),'b','LineWidth',1);
+plot(SaveTime,zeros(1,size(SaveTime,2)),'k--');
+ylabel("x-Error [m]");
+xlim([SaveTime(1),SaveTime(end)]);
+ylim([-0.2,0.5]);
+hold off;
+
+subplot(3,2,3);
+hold on;
+plot(SaveTime,SaveGoalPos(2,:)-SaveViconPos(2,:),'r','LineWidth',1);
+plot(SaveTime,SaveGoalPos(2,:)-SaveCurPos(2,:),'b','LineWidth',1);
+plot(SaveTime,zeros(1,size(SaveTime,2)),'k--');
+ylabel("y-Error [m]");
+xlim([SaveTime(1),SaveTime(end)]);
+ylim([-0.2,0.3]);
+hold off;
+
+subplot(3,2,5);
+hold on;
+plot(SaveTime,SaveGoalPos(3,:)-SaveViconPos(3,:),'r','LineWidth',1);
+plot(SaveTime,SaveGoalPos(3,:)-SaveCurPos(3,:),'b','LineWidth',1);
+plot(SaveTime,zeros(1,size(SaveTime,2)),'k--');
+ylabel("z-Error [m]");
+xlabel("Time [s]");
+xlim([SaveTime(1),SaveTime(end)]);
+ylim([-0.1,0.2]);
+hold off;
+
+clear; clc;
+
+%% Position Graph: Trajectory 2
+
+% load('GPCenCircConData.mat');
+
+subplot(3,2,2);
+title("Heading to Center",'FontWeight','Normal');
+hold on;
+plot(SaveTime,SaveGoalPos(1,:)-SaveViconPos(1,:),'r','LineWidth',1);
+plot(SaveTime,SaveGoalPos(1,:)-SaveCurPos(1,:),'b','LineWidth',1);
+plot(SaveTime,zeros(1,size(SaveTime,2)),'k--');
+xlim([SaveTime(1),SaveTime(end)]);
+ylim([-0.3,0.4]);
+hold off;
+
+subplot(3,2,4);
+hold on;
+plot(SaveTime,SaveGoalPos(2,:)-SaveViconPos(2,:),'r','LineWidth',1);
+plot(SaveTime,SaveGoalPos(2,:)-SaveCurPos(2,:),'b','LineWidth',1);
+plot(SaveTime,zeros(1,size(SaveTime,2)),'k--');
+xlim([SaveTime(1),SaveTime(end)]);
+ylim([-0.3,0.4]);
+hold off;
+
+subplot(3,2,6);
+hold on;
+plot(SaveTime,SaveGoalPos(3,:)-SaveViconPos(3,:),'r','LineWidth',1);
+plot(SaveTime,SaveGoalPos(3,:)-SaveCurPos(3,:),'b','LineWidth',1);
+plot(SaveTime,zeros(1,size(SaveTime,2)),'k--');
+xlabel("Time [s]");
+xlim([SaveTime(1),SaveTime(end)]);
+ylim([-0.3,0.2]);
+hold off;
+
+%% RMSE
+
+RMSE = sqrt(sum((vecnorm(SaveGoalPos-SaveViconPos)).^2)/size(SaveGoalPos,2))

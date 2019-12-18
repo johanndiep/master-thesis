@@ -77,15 +77,13 @@ figure();
 
 plotCurveBar(Xt,Mean,2*cov2corr(Covariance));
 hold on;
-plot(X,Y,'ko','MarkerSize',3);
-for i = 1:m
-   xline(s(i),':r','LineWidth',0.5);
-end
+plot(X,Y,'ko','MarkerSize',2);
+
 xlabel('Yaw Angle [Radian]');
 ylabel('Ranging Offset [m]');
 
 legend('Double Standard Deviations','Mean Prediction','Training Data', ...
-    'Pseudo-input Locations','Location','northeast');
+    'Location','northeast');
 
 grid on;
 hold off;

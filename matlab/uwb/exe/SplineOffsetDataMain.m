@@ -89,9 +89,9 @@ T = diag(ones(1,4));
 T(1:3,4) = [-0.23;-0.25;0.25];
 A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 
-MidPoint = [2.5,2];
+MidPoint = [2,1.5];
 Height = 1;
-Frequency = 1/60;
+Frequency = 1/100;
 SplineVariable = 1;
 
 SplinePoints = [MidPoint(1)-SplineVariable,MidPoint(2)+SplineVariable,Height; ...
@@ -134,6 +134,7 @@ SaveViconQuat = zeros(4,1000);
 SaveCurPos = zeros(3,1000);
 SaveCurVel = zeros(3,1000);
 SaveGoalPos = zeros(3,1000);
+SaveGoalVel = zeros(3,1000);
 SaveRangeArr = zeros(6,1000);
 
 %% PID
@@ -186,6 +187,7 @@ while true
     SaveCurPos(:,i) = CurPos;
     SaveCurVel(:,i) = CurVel;
     SaveGoalPos(:,i) = GoalPos';
+    SaveGoalVel(:,i) = GoalVel';
     SaveRangeArr(:,i) = RangeArray;
     i = i+1;
 end
@@ -204,7 +206,7 @@ SaveGoalPos(:,CuttingIndex:end) = [];
 SaveRangeArr(:,CuttingIndex:end) = [];
 
 save('UWBSplineConDataGP.mat','SaveViconPos','SaveViconQuat', ...
-    'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
+    'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel','SaveRangeArr', ...
     'AnchorPos','MidPoint','ChangeHeading','PointToCenter','SplineFlight');
 
 clear; clc;

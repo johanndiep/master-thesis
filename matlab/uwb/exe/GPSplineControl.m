@@ -27,9 +27,9 @@ load('SplineHypGP.mat'); % load the parameters
 
 %% Parameters
 
-MidPoint = [2.5,2];
+MidPoint = [2,1.5];
 Height = 1;
-Frequency = 1/50;
+Frequency = 1/40;
 SplineVariable = 1;
 
 SplinePoints = [MidPoint(1)-SplineVariable,MidPoint(2)+SplineVariable,Height; ...
@@ -49,7 +49,8 @@ Time = 0; % helper variable to estimate the time-variant goal state
 
 FastModus = false; % fast iteration frequency
 
-Kernel = @DistanceKernel;
+Kernel = @RBFKernel;
+% Kernel = @DistanceKernel;
 Mode = "GP";
 
 %% Preliminary
@@ -70,10 +71,12 @@ SaveViconQuat = zeros(4,600);
 SaveCurPos = zeros(3,600);
 SaveCurVel = zeros(3,600);
 SaveGoalPos = zeros(3,600);
+SaveGoalVel = zeros(3,600);
 SaveRangeArr = zeros(6,600);
 Savet = zeros(6,600);
 SaveAbs = zeros(6,600);
 SaveCovVal = zeros(6,600);
+SaveTime = zeros(1,600);
 
 %% PID
 
@@ -126,10 +129,12 @@ while true
     SaveCurPos(:,i) = CurPos;
     SaveCurVel(:,i) = CurVel;
     SaveGoalPos(:,i) = GoalPos';
+    SaveGoalVel(:,i) = GoalVel';
     SaveRangeArr(:,i) = RangeArray;
     Savet(:,i) = t;
     SaveAbs(:,i) = Abs;
     SaveCovVal(:,i) = CovVal;
+    SaveTime(i) = Time;
     i = i+1;
 end
 
@@ -144,43 +149,55 @@ SaveViconQuat(:,CuttingIndex:end) = [];
 SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
+SaveGoalVel(:,CuttingIndex:end) = [];
 SaveRangeArr(:,CuttingIndex:end) = [];
 Savet(:,CuttingIndex:end) = [];
 SaveAbs(:,CuttingIndex:end) = [];
 SaveCovVal(:,CuttingIndex:end) = [];
+SaveTime(CuttingIndex:end) = [];
 
     save('GPSplineConData.mat','SaveViconPos','SaveViconQuat', ...
-        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveRangeArr', ...
-        'Savet','SaveAbs','SaveCovVal','MidPoint');
+        'SaveCurPos','SaveCurVel','SaveGoalPos','SaveGoalVel', ...
+        'SaveRangeArr','Savet','SaveAbs','SaveCovVal','MidPoint', ...
+        'SaveTime');
 
 clear; clc;
 
-%% Plotting and Results
+%% Plot
 
-load('GPSplineConData.mat');
+% load('GPSplineConData.mat');
 
 figure();
 
-title("Flight Trajectory");
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
 zlabel("z-Axis [m]");
-xlim([MidPoint(1)-3,MidPoint(1)+3]);
-ylim([MidPoint(2)-3,MidPoint(2)+3]);
+xlim([MidPoint(1)-2,MidPoint(1)+2]);
+ylim([MidPoint(2)-2.5,MidPoint(2)+2.5]);
 zlim([0,2.5]);
 hold on;
 
-plot3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:),'LineWidth',0.5,'Color','b');
-plot3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:),'LineWidth',1.5,'Color','r','LineStyle',':');
-plot3(SaveCurPos(1,:),SaveCurPos(2,:),SaveCurPos(3,:),'LineWidth',1.5,'Color','k','LineStyle',':');
+SaveViconPos = SaveViconPos(:,1:2:end);
+SaveViconQuat = SaveViconQuat(:,1:2:end);
 
+scatter3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:)*0,1,'k.');
+plot3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:)*0,'r-');
+
+legend('Projected Ground-Truth','Reference');
 set(0,'DefaultLegendAutoUpdate','off')
-legend('Reference','Vicon Position Measurement','EKF Position Estimation');
 
-quiver3(0,0,0,1,0,0,0.3,'k','LineWidth',1);
-quiver3(0,0,0,0,1,0,0.3,'k','LineWidth',1);
-quiver3(0,0,0,0,0,1,0.3,'k','LineWidth',1);
+RotMats = quat2rotm(SaveViconQuat');
+Xb = permute(RotMats(:,1,:),[1,3,2]);
+Yb = permute(RotMats(:,2,:),[1,3,2]);
+Zb = permute(RotMats(:,3,:),[1,3,2]);
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Xb(1,:),Xb(2,:),Xb(3,:),0.3,'r');
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Yb(1,:),Yb(2,:),Yb(3,:),0.3,'g');
+quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
+    Zb(1,:),Zb(2,:),Zb(3,:),0.3,'b');
 
 grid on;
-daspect([1 1 1]);
-hold off;
+view(35.1654,48.1915)
+
+clear; clc;
