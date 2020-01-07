@@ -70,7 +70,9 @@ This subsection provide the basic instructions in order to run the executables. 
 
 Use this command after connecting the modified sniffer to the ground station computer. Since the exact USB port enumeration can differ, it is recommended to apply command-line completion here.
 
+```console
 $ sudo chmod 666 /dev/ttyACM0
+```
 
 **Spacemouse ROS Driver**
 
