@@ -31,12 +31,12 @@ The following hardware and platforms were used:
 * [Parrot Bebop 2](https://www.parrot.com/us/drones/parrot-bebop-2)
 * [Vicon Motion Capture System](https://www.vicon.com/)
 
-## Code Structure
+## Matlab Code Structure
 
-The [source code](https://gitlab.com/jdiep/semester-thesis/tree/master/neural_mesh_renderer/OBMBACPE/lib) folder contains all the essential classes with its corresponding methods:
+All the source code for the flight logic are stored in the matlab folder and commented extensively. The following lists the most important classes and functions:
 
-* **dataset.py:**<br/>
-This class is responsible for reading out the information from the rendered dataset. Additionally, it also contains the methods to return the scaled as well as the perturbed information.
+* **BebopControl.m:**<br/>
+ Interface to the bebop autonomy library.
 * **framework.py:**<br/>
 This class sets up the framework for the optimization process. It initializes the pose with a disturbance which is subsequently mapped to se(3)-formulation. Further, the objective function is defined here.
 * **imagegeneration.py:**<br/>
