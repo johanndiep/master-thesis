@@ -110,7 +110,7 @@ $ rostopic pub /bebop/land std_msgs/Empty "{}"
 
 Comparison between corrected and uncorrected measurement model on flight accuracy:
 
-![](thumbs.gfycat.com/AgedMisguidedHarborseal-mobile.mp4)
+![](https://gfycat.com/agedmisguidedharborseal)
 
 
 ## Version
