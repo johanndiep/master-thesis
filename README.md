@@ -113,7 +113,7 @@ Artificial blurred images generated during optimization.
 
 ## Version
 
-* 7. January 2020: Version 1.0, [Documentation](https://gitlab.com/jdiep/semester-thesis/tree/master/documentation)
+* 7. January 2020: Version 1.0, [Documentation](https://gitlab.com/jdiep/master-thesis/tree/master/documentation)
 
 ## Authors
 
