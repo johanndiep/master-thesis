@@ -62,6 +62,15 @@ The following lists the corresponding executable scripts:
 * **UWBSplineControl.m:**  Spline flight using UWB data and uncorrected measurement model.
 * **GPSplineControl.m:** Spline flight using UWB data and corrected measurement model.
 
+## Starting Instructions
+
+This subsection provide the basic instructions in order to run the executables. The following commands should be executed in individual terminal tabs and in order.
+
+**Enabling Serial Communication with Matlab**
+
+Use this command after connecting the modified sniffer to the ground station computer. Since the exact USB port enumeration can differ, it is recommended to apply command-line completion here.
+
+$ sudo chmod 666 /dev/ttyACM0
 
 ## Example: Optimization Process
 
