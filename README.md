@@ -76,27 +76,35 @@ $ sudo chmod 666 /dev/ttyACM0
 
 **Spacemouse ROS Driver**
 
+```console
 $ roslaunch spacenav_node classic.launch
+```
 
 **Vicon ROS Driver**
 
+```console
 $ cd vicon_ws
 $ source devel/setup.bash
 $ cd src/vicon_bridge/launch
 $ roslaunch vicon.launch
+```
 
 **Bebop ROS Driver**
 
+```console
 $ cd bebop_ws
 $ source devel/setup.bash
 $ cd src/bebop_autonomy/bebop_driver/launch
 $ roslaunch bebop_node.launch
+```
 
 **Bebop Forced Landing**
 
 For yet inexplicable reasons, the drone occasionally does not react to the landing command given using the Spacemouse. In those cases, the drone can be forced to land by using the following command:
 
+```console
 $ rostopic pub /bebop/land std_msgs/Empty "{}"
+```
 
 ## Example: Optimization Process
 
