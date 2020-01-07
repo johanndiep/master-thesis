@@ -23,12 +23,13 @@ This installation was tested for Ubuntu 16.04 LTS. For other operating systems, 
 
 Additional libraries might be required, install on request.
 
-## Dataset
+## Hardware and Platforms
 
-For evaluation, rendered dataset by Peidong Liu can be used:
+The following hardware and platforms were used:
 
-* [Realistic Rendering](https://gitlab.com/jdiep/semester-thesis/tree/master/RelisticRendering-dataset)
-* [Urban City](https://gitlab.com/jdiep/semester-thesis/tree/master/UrbanCity%20dataset)
+* [Loco Positioning Node](https://www.bitcraze.io/loco-pos-node/)
+* [Parrot Bebop 2](https://www.parrot.com/us/drones/parrot-bebop-2)
+* [Vicon Motion Capture System](https://www.vicon.com/)
 
 ## Code Structure
 
