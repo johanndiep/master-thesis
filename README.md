@@ -72,6 +72,30 @@ Use this command after connecting the modified sniffer to the ground station com
 
 $ sudo chmod 666 /dev/ttyACM0
 
+**Spacemouse ROS Driver**
+
+$ roslaunch spacenav_node classic.launch
+
+**Vicon ROS Driver**
+
+$ cd vicon_ws
+$ source devel/setup.bash
+$ cd src/vicon_bridge/launch
+$ roslaunch vicon.launch
+
+**Bebop ROS Driver**
+
+$ cd bebop_ws
+$ source devel/setup.bash
+$ cd src/bebop_autonomy/bebop_driver/launch
+$ roslaunch bebop_node.launch
+
+**Bebop Forced Landing**
+
+For yet inexplicable reasons, the drone occasionally does not react to the landing command given using the Spacemouse. In those cases, the drone can be forced to land by using the following command:
+
+$ rostopic pub /bebop/land std_msgs/Empty "{}"
+
 ## Example: Optimization Process
 
 Artificial blurred images generated during optimization.
