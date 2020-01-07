@@ -49,14 +49,19 @@ All the source code for the flight logic are stored in the matlab folder and com
 * **GaussianPrediction.m:** Returning the distribution for a specific input.
 
 
-The [main](https://gitlab.com/jdiep/semester-thesis/tree/master/neural_mesh_renderer/OBMBACPE) folder contains the executables of the classes mentioned above which can be run individually depending on the desired output:
+The following lists the corresponding executable scripts:
 
-* **pose estimation.py:**<br/>
-This is the main executable file of this project. It finds the pose of the blurred input image via an optimization process.
-* **3d representation.py:**<br/> 
-This program produces a 3D pointcloud and polygon-mesh representation of the environment in the intial frame. The generated txt- and obj-file can be observed in Meshlab.
-* **image generator.py:**<br/> 
-This program generates sharp and blurry images at arbitrary poses.
+* **AnchorCalibMain.m:**  Self-calibration of the anchor setup.
+* **CircOffsetDataMain.m:** Collection of data along the circular trajectory.
+* **SplineOffsetDataMain.m:** Collection of data along the spline trajectory.
+* **CovEvalMain.m:** Implementation of the Gaussian Process hyperparameter learning.
+* **CircleControl.m:** Circular flight using Vicon data.
+* **UWBCircleControl.m:**  Circular flight using UWB data and uncorrected measurement model.
+* **GPSCircleControl.m:** Circular flight using UWB data and corrected measurement model.
+* **SplineControl.m:** Spline flight using Vicon data.
+* **UWBSplineControl.m:**  Spline flight using UWB data and uncorrected measurement model.
+* **GPSplineControl.m:** Spline flight using UWB data and corrected measurement model.
+
 
 ## Example: Optimization Process
 
