@@ -11,20 +11,15 @@ Motivated by this gap, the work in the context of this thesis is to establish an
 
 ## Installation
 
-This installation was tested for Ubuntu 16.04 LTS. For other operating systems, changes or additional packages might be required. The following
-packages were used:
+This installation was tested for Ubuntu 16.04 LTS. For other operating systems, changes or additional packages might be required. The following software and packages were used:
 
-* [Python 3.6.5](https://www.python.org/downloads/source/)
-* [CUDA Toolkit 9.0](https://developer.nvidia.com/cuda-90-download-archive/)
-* [PyTorch](https://pytorch.org/)
-* [Neural 3D Mesh Renderer](http://hiroharu-kato.com/projects_en/neural_renderer.html) (A modified version was used for this project which is not publicly available at the time of writing.)
-* [pyquaternion](http://kieranwynn.github.io/pyquaternion/)
-* [meshzoo 0.4.3](https://pypi.org/project/meshzoo/)
-* [OpenCV 3.4.4](https://www.learnopencv.com/install-opencv-3-4-4-on-ubuntu-16-04/)
-* [tqdm](https://github.com/tqdm/tqdm)
-* [scikit-image 0.13.1](http://scikit-image.org/docs/0.13.x/install.html)
-* [matplotlib 3.0.2](https://matplotlib.org/users/installing.html) (optional)
-* [MeshLab 2016](http://www.meshlab.net/#download/) (optional)
+* [Matlab 9.6](https://www.mathworks.com/products/matlab.html)
+* [ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
+* [picocom serial communication program](https://www.github.com/npat-efault/picocom)
+* [bebop autonomy ROS driver for the Bebop drone](https://www.bebop-autonomy.readthedocs.io/en/latest/)
+* [vicon bridge ROS driver for the Vicon motion capture system](http://wiki.ros.org/vicon_bridge)
+* [spacenav node ROS driver for the Spacemouse:](http://wiki.ros.org/spacenav_node)
+* [GPy Gaussian Process Python framework](https://www.github.com/SheffieldML/GPy) (optional)
 
 Additional libraries might be required, install on request.
 
@@ -69,7 +64,6 @@ This program generates sharp and blurry images at arbitrary poses.
 
 Artificial blurred images generated during optimization.
 
-![](https://media.giphy.com/media/Y3e0dGYLjS0JegOLAW/giphy.gif)
 
 ## Version
 
