@@ -106,9 +106,11 @@ For yet inexplicable reasons, the drone occasionally does not react to the landi
 $ rostopic pub /bebop/land std_msgs/Empty "{}"
 ```
 
-## Example: Optimization Process
+## Example: Circular Flight
 
-Artificial blurred images generated during optimization.
+Comparison between corrected and uncorrected measurement model on flight accuracy:
+
+![](https://media.giphy.com/media/Y3e0dGYLjS0JegOLAW/giphy.gif)
 
 
 ## Version
