@@ -35,22 +35,19 @@ The following hardware and platforms were used:
 
 All the source code for the flight logic are stored in the matlab folder and commented extensively. The following lists the most important classes and functions:
 
-* **BebopControl.m:**<br/>
- Interface to the bebop autonomy library.
-* **framework.py:**<br/>
-This class sets up the framework for the optimization process. It initializes the pose with a disturbance which is subsequently mapped to se(3)-formulation. Further, the objective function is defined here.
-* **imagegeneration.py:**<br/>
-This class contains methods to generate rendered depth maps, sharp and blurred images at arbitrary poses.
-* **meshgeneration.py:**<br/>
-This class contains the construction of the 3D polygon-mesh.
-* **optimization.py:**<br/>
-The optimization with PyTorch automatic differentiation package is contained here.
-* **posetransformation.py:**
-Contains the exponential and logarithmic mapping methods.
-* **randomizer.py:**<br/> 
-Responsible for creating a cardinal directed vector with a defined length as well as an angle axis vector corresponding to an elemental rotation with a defined angle.
-* **renderer.py:**<br/> 
-Initializes the external renderer module, which is used for generating depth maps.
+* **BebopControl.m:** Interface to the bebop autonomy library.
+* **getGroundTruth.m:** Interface for the Vicon measurements.
+* **Controller.m:**  Implementation of the position and attitude controller.
+* **TrajectoryGenerator.m:** Construction of the specific trajectory.
+* **ConstantVelocityEKF.m:**  EKF implementation using Vicon data.
+* **ConstantVelocityUWB.m:** EKF implementation using UWB data.
+* **ConstantVelocityGP.m:**  Gaussian Process EKF implementation using UWB data.
+* **DataPrep.m:** Data preprocessing for Gaussian Process.
+* **RBFKernel.m:** Calculation of the radial basis kernel matrix.
+* **getLogLikelihood.m:** Returning the marginal log likelihood.
+* **GaussianModel.m:**  Returning all the terms for Gaussian Process regression.
+* **GaussianPrediction.m:** Returning the distribution for a specific input.
+
 
 The [main](https://gitlab.com/jdiep/semester-thesis/tree/master/neural_mesh_renderer/OBMBACPE) folder contains the executables of the classes mentioned above which can be run individually depending on the desired output:
 
