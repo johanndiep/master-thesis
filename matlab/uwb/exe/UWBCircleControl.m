@@ -108,8 +108,8 @@ A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 % initialize the trajectory object
 MidPoint = [2,1.5];
 Height = 1;
-Radius = 1.25;
-Frequency = 1/25;
+Radius = 1.5;
+Frequency = 1/14;
 AbsVel = 2*Radius*pi*Frequency;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
@@ -117,7 +117,7 @@ Time = 0; % helper variable to estimate the time-variant goal state
 
 FastModus = false; % fast iteration frequency
 ChangeHeading = true; % able to change its direction during flight
-PointToCenter = true; % able to face to the center of the circle
+PointToCenter = false; % able to face to the center of the circle
 
 %% Preliminary
 
@@ -249,7 +249,7 @@ clear; clc;
 
 %% Subplot 1: Trajectory
 
-% load('UWBYawCircConData.mat');
+load('UWBYawCircConData.mat');
 
 figure();
 

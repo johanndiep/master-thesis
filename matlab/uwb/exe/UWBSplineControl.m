@@ -15,7 +15,7 @@ A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 
 MidPoint = [2,1.5];
 Height = 1;
-Frequency = 1/40;
+Frequency = 1/27;
 SplineVariable = 1;
 
 SplinePoints = [MidPoint(1)-SplineVariable,MidPoint(2)+SplineVariable,Height; ...

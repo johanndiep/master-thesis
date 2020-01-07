@@ -29,7 +29,7 @@ load('SplineHypGP.mat'); % load the parameters
 
 MidPoint = [2,1.5];
 Height = 1;
-Frequency = 1/40;
+Frequency = 1/27;
 SplineVariable = 1;
 
 SplinePoints = [MidPoint(1)-SplineVariable,MidPoint(2)+SplineVariable,Height; ...
@@ -168,6 +168,7 @@ clear; clc;
 % load('GPSplineConData.mat');
 
 figure();
+set(gcf,'color','w');
 
 xlabel("x-Axis [m]");
 ylabel("y-Axis [m]");
@@ -180,24 +181,41 @@ hold on;
 SaveViconPos = SaveViconPos(:,1:2:end);
 SaveViconQuat = SaveViconQuat(:,1:2:end);
 
-scatter3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:)*0,1,'k.');
 plot3(SaveGoalPos(1,:),SaveGoalPos(2,:),SaveGoalPos(3,:)*0,'r-');
-
-legend('Projected Ground-Truth','Reference');
-set(0,'DefaultLegendAutoUpdate','off')
 
 RotMats = quat2rotm(SaveViconQuat');
 Xb = permute(RotMats(:,1,:),[1,3,2]);
 Yb = permute(RotMats(:,2,:),[1,3,2]);
 Zb = permute(RotMats(:,3,:),[1,3,2]);
-quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
-    Xb(1,:),Xb(2,:),Xb(3,:),0.3,'r');
-quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
-    Yb(1,:),Yb(2,:),Yb(3,:),0.3,'g');
-quiver3(SaveViconPos(1,:),SaveViconPos(2,:),SaveViconPos(3,:), ...
-    Zb(1,:),Zb(2,:),Zb(3,:),0.3,'b');
+
+scatter3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1)*0,1,'k.');
+
+quiver3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1), ...
+    Xb(1,1),Xb(2,1),Xb(3,1),0.3,'r');
+quiver3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1), ...
+    Yb(1,1),Yb(2,1),Yb(3,1),0.3,'g');
+quiver3(SaveViconPos(1,1),SaveViconPos(2,1),SaveViconPos(3,1), ...
+    Zb(1,1),Zb(2,1),Zb(3,1),0.3,'b');
+
+legend('Reference','Projected Ground-Truth');
+set(0,'DefaultLegendAutoUpdate','off')
 
 grid on;
 view(35.1654,48.1915)
+
+pause(0.01);
+
+for i = 2:size(SaveViconPos,2)
+    scatter3(SaveViconPos(1,i),SaveViconPos(2,i),SaveViconPos(3,i)*0,1,'k.');
+
+    quiver3(SaveViconPos(1,i),SaveViconPos(2,i),SaveViconPos(3,i), ...
+        Xb(1,i),Xb(2,i),Xb(3,i),0.3,'r');
+    quiver3(SaveViconPos(1,i),SaveViconPos(2,i),SaveViconPos(3,i), ...
+        Yb(1,i),Yb(2,i),Yb(3,i),0.3,'g');
+    quiver3(SaveViconPos(1,i),SaveViconPos(2,i),SaveViconPos(3,i), ...
+        Zb(1,i),Zb(2,i),Zb(3,i),0.3,'b');
+    
+    pause(0.41);
+end
 
 clear; clc;

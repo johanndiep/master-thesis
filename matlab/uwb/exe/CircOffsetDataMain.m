@@ -78,7 +78,8 @@
 
 clear; clc;
 
-rosshutdown; rosinit;
+%rosshutdown; 
+rosinit;
 
 load('AnchorPos.mat'); % load the anchor positions if available
 
@@ -92,8 +93,8 @@ A = T*[AnchorPos';ones(1,6)]; AnchorPos = A(1:3,:)';
 % initialize the trajectory object
 MidPoint = [2,1.5];
 Height = 1;
-Radius = 1.25;
-Frequency = 1/60;
+Radius = 1.5;
+Frequency = 1/90;
 AbsVel = 2*Radius*pi*Frequency;
 TrajObj = TrajectoryGenerator(MidPoint,Height,AbsVel,Radius,Frequency);
 
@@ -205,6 +206,7 @@ SaveViconQuat(:,CuttingIndex:end) = [];
 SaveCurPos(:,CuttingIndex:end) = [];
 SaveCurVel(:,CuttingIndex:end) = [];
 SaveGoalPos(:,CuttingIndex:end) = [];
+SaveGoalVel(:,CuttingIndex:end) = [];
 SaveRangeArr(:,CuttingIndex:end) = [];
 
 if ChangeHeading == false

@@ -28,9 +28,10 @@
 clear; clc;
 
 % load('UWBCircConDataGP.mat'); % UWB and VICON measurements
-load('UWBYawCircConDataGP.mat'); % UWB and VICON measuremements with yaw
+% load('UWBYawCircConDataGP.mat'); % UWB and VICON measuremements with yaw
 % load('UWBCenCircConDataGP.mat'); % UWB and VICON centered measurements
 % load('UWBSplineConDataGP.mat'); % UWB and VICON measurements at spline
+load('UWBPosConDataGP.mat'); % UWB and Vicon measurements for position holding
 
 %% Data Preprocessing
 
@@ -66,7 +67,7 @@ Xt(2,:) = y(:)';
 Xt(3,:) = ones(size(Xt(1,:)));
 
 ShowResults = true;
-Save = true;
+Save = false;
 Mode = "GP";
 options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 
@@ -187,7 +188,9 @@ for i = 1:6
             disp("Kernel hyperparameters: "+s0(i)+"/"+s1(i));
         end
     end
-end
+end 
+
+save('PositionHypGP.mat','X','Y','AnchorPos','NoiseStd','s0','s1');
 
 if Save == true
     if Mode == "GP"
