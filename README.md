@@ -74,13 +74,13 @@ Use this command after connecting the modified sniffer to the ground station com
 $ sudo chmod 666 /dev/ttyACM0
 ```
 
-**Spacemouse ROS Driver**
+**Starting Spacemouse ROS Driver**
 
 ```console
 $ roslaunch spacenav_node classic.launch
 ```
 
-**Vicon ROS Driver**
+**Starting Vicon ROS Driver**
 
 ```console
 $ cd vicon_ws
@@ -89,7 +89,9 @@ $ cd src/vicon_bridge/launch
 $ roslaunch vicon.launch
 ```
 
-**Bebop ROS Driver**
+**Starting Bebop ROS Driver**
+
+The following instructions starts the driver after connecting to the specific Wi-Fi of the drone.
 
 ```console
 $ cd bebop_ws
