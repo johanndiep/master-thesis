@@ -110,9 +110,10 @@ $ rostopic pub /bebop/land std_msgs/Empty "{}"
 
 ## Example: Circular Flight
 
-Comparison between corrected and uncorrected measurement model on flight accuracy (5 Hz update rate and 0.75 m/s flight velocity):
+Comparison between corrected and uncorrected measurement model on flight accuracy (5 Hz update rate and 0.75 m/s flight velocity).
 
-![](https://media.giphy.com/media/Q8yvP9fOQ9hlxExIgH/giphy.gif)
+[![Corrected Model](https://i.imgur.com/vKb2F1B.png)](https://youtu.be/vt5fpE0bzSY)
+[![Uncorrected Model](https://i.imgur.com/vKb2F1B.png)](https://youtu.be/vt5fpE0bzSY)
 
 
 ## Version
