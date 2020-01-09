@@ -123,3 +123,4 @@ Comparison between corrected and uncorrected measurement model on flight accurac
 ## Authors
 
 * Johann Diep (MSc Student Mechanical Engineering, ETH Zurich, jdiep@student.ethz.ch)
+* In cooperation with [Tinamu Labs AG](http://tinamu-labs.com/wp/)
