@@ -2,6 +2,7 @@
 
 This GitLab repository contains the code for the "Ultra-Wideband Localization Error Correction using Gaussian Process for Teach-and-Repeat UAV Flight" project. It was developed in the context of a master thesis at ETH Zurich.
 
+
 ## Context
 
 In recent years, unmanned aerial vehicles (UAV) have gained more interests in the research community. Due to their improved videography capabilities, they have the potential to bridge the gap between precise and flexible filming. However, their current localization methods are
@@ -115,10 +116,13 @@ Video comparison between corrected and uncorrected measurement model on flight a
 [![Corrected Model](https://i.imgur.com/kWOU5PV.png)](https://www.youtube.com/watch?v=YJo8tMqly8E)
 [![Uncorrected Model](https://i.imgur.com/gY58LXf.png)](https://www.youtube.com/watch?v=BqnEMfDYWC4)
 
-
 ## Version
 
 * 7. January 2020: Version 1.0, [Documentation](https://gitlab.com/jdiep/master-thesis/tree/master/documentation)
+
+## Credits
+
+This work is based on the publication ["Ultra-Wideband Range Measurement Model with Gaussian Processes"](https://ethz.ch/content/dam/ethz/special-interest/mavt/dynamic-systems-n-control/idsc-dam/People/antonl/cctaconf17.pdf) by Anton Ledergerber and Rafaello D'Andrea.
 
 ## Authors
 
