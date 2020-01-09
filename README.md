@@ -16,7 +16,7 @@ This installation was tested for Ubuntu 16.04 LTS. For other operating systems, 
 * [Matlab 9.6](https://www.mathworks.com/products/matlab.html)
 * [ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
 * [picocom](https://www.github.com/npat-efault/picocom) serial communication program
-* [bebop autonomy ROS driver](https://www.bebop-autonomy.readthedocs.io/en/latest/) for the Bebop drone
+* [bebop autonomy ROS driver](https://bebop-autonomy.readthedocs.io/en/latest/) for the Bebop drone
 * [vicon bridge ROS driver](http://wiki.ros.org/vicon_bridge) for the Vicon motion capture system
 * [spacenav node ROS driver](http://wiki.ros.org/spacenav_node) for the Spacemouse
 * [GPy](https://www.github.com/SheffieldML/GPy) Gaussian Process Python framework (optional)
