@@ -112,8 +112,8 @@ $ rostopic pub /bebop/land std_msgs/Empty "{}"
 
 Comparison between corrected and uncorrected measurement model on flight accuracy (5 Hz update rate and 0.75 m/s flight velocity).
 
-[![Corrected Model](https://i.imgur.com/7qvpdju.png)](https://www.youtube.com/watch?v=YJo8tMqly8E)
-[![Uncorrected Model](https://i.imgur.com/vKb2F1B.png)](https://www.youtube.com/watch?v=BqnEMfDYWC4)
+[![Corrected Model](https://i.imgur.com/kWOU5PV.png)](https://www.youtube.com/watch?v=YJo8tMqly8E)
+[![Uncorrected Model](https://i.imgur.com/gY58LXf.png)](https://www.youtube.com/watch?v=BqnEMfDYWC4)
 
 
 ## Version
