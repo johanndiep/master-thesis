@@ -120,11 +120,11 @@ Video comparison between corrected and uncorrected measurement model on flight a
 
 * 7. January 2020: Version 1.0, [Documentation](https://gitlab.com/jdiep/master-thesis/tree/master/documentation)
 
-## Credits
+## Credentional
 
-This work is based on the publication ["Ultra-Wideband Range Measurement Model with Gaussian Processes"](https://ethz.ch/content/dam/ethz/special-interest/mavt/dynamic-systems-n-control/idsc-dam/People/antonl/cctaconf17.pdf) by Anton Ledergerber and Rafaello D'Andrea.
+The core of this work is based on the publication ["Ultra-Wideband Range Measurement Model with Gaussian Processes"](https://ethz.ch/content/dam/ethz/special-interest/mavt/dynamic-systems-n-control/idsc-dam/People/antonl/cctaconf17.pdf) by Anton Ledergerber and Rafaello D'Andrea.
 
 ## Authors
 
 * Johann Diep (MSc Student Mechanical Engineering, ETH Zurich, jdiep@student.ethz.ch)
-* In cooperation with [Tinamu Labs AG](http://tinamu-labs.com/wp/)
+* In cooperation with [Tinamu Labs AG](http://tinamu-labs.com/wp/).
