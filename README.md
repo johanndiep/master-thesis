@@ -1,4 +1,4 @@
-# Ultra-Wideband Localization Error Correction using Gaussian Process for Teach-and-Repeat UAV Flight
+# Ultra-Wideband Localization Error Correction using Gaussian Process for UAV Flight
 
 This GitLab repository contains the code for the "Ultra-Wideband Localization Error Correction using Gaussian Process for Teach-and-Repeat UAV Flight" project. It was developed in the context of a master thesis at ETH Zurich.
 
