@@ -15,7 +15,7 @@ Motivated by this gap, the work in the context of this thesis is to establish an
 
 ## Pipeline
 
-[![Pipeline](https://i.imgur.com/yt4OnFC.png)]
+![Pipeline](https://i.imgur.com/yt4OnFC.png)
 
 ## Installation
 
