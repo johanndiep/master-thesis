@@ -125,7 +125,7 @@ Video comparison between corrected and uncorrected measurement model on flight a
 
 ## Version
 
-* 7. January 2020: Version 1.0, [Documentation](https://gitlab.com/jdiep/master-thesis/tree/master/documentation)
+* 22. January 2020: Version 2.0, [Documentation](https://gitlab.com/jdiep/master-thesis/tree/master/documentation)
 
 ## Credential
 
