@@ -1,7 +1,10 @@
 # Ultra-Wideband Localization Error Correction using Gaussian Process for UAV Flight
 
-This GitLab repository contains the code for the "Ultra-Wideband Localization Error Correction using Gaussian Process for Teach-and-Repeat UAV Flight" project. It was developed in the context of a master thesis at ETH Zurich.
+This GitLab repository contains the code for the "Ultra-Wideband Localization Error Correction using Gaussian Process for UAV Flight" project. It was developed in the context of a master thesis at ETH Zurich.
 
+## Summary
+
+This repository contains the development of an accurate localization system using UWB technology. It addresses the learning-based modeling of ranging offsets due to anisotropic antennas and radio signal noises. This project resulted in a fast deployable system for smooth camera shots using drones on a professional filmset.
 
 ## Context
 
@@ -9,6 +12,10 @@ In recent years, unmanned aerial vehicles (UAV) have gained more interests in th
 not reliable enough for tasks such as the following of a predefined trajectory.
 
 Motivated by this gap, the work in the context of this thesis is to establish an accurate localization system for UAVs based on commercially available ultra-wideband (UWB) technology. It describes the implementation of a system based on filtered multilateration using distance measurements between the drone-mounted tag and several environmentfixed anchors. Here, methods are presented to estimate the anchor placements as well as to correct for the systematic biases of the range readings. The former is solved by means of Gauss-Newton optimization using inter-anchor distance estimations. For the latter, in order to correct for the systematic distance measurement errors, a teach-and-repeat framework is proposed, where Gaussian Process models are derived from training data given by a motion capture system and incorporated in the corresponding equation of the state estimation algorithm.
+
+## Pipeline
+
+[![Pipeline](https://i.imgur.com/yt4OnFC.png)]
 
 ## Installation
 
