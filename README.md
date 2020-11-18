@@ -133,5 +133,5 @@ The core of this work is based on the publication ["Ultra-Wideband Range Measure
 
 ## Authors
 
-* Johann Diep (MSc Student Mechanical Engineering, ETH Zurich, jdiep@student.ethz.ch)
+* Johann Diep (MSc Student Mechanical Engineering, ETH Zurich, johanndiep@gmail.com)
 * In cooperation with [Tinamu Labs AG](http://tinamu-labs.com/wp/).
